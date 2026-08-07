@@ -1,0 +1,264 @@
+.lumora-cart {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    padding: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    direction: rtl;
+}
+
+.lumora-cart__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.lumora-cart__header h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.lumora-cart__header span {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.lumora-cart__clear {
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.lumora-cart__clear:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.lumora-cart__empty {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.lumora-cart__empty-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 4px;
+    border-radius: 14px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 23px;
+}
+
+.lumora-cart__empty strong {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.lumora-cart__empty span {
+    font-size: 10px;
+}
+
+.lumora-cart__lines {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+}
+
+.lumora-cart-line {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.lumora-cart-line__image {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #f7f8fa;
+}
+
+.lumora-cart-line__main {
+    min-width: 0;
+}
+
+.lumora-cart-line__main>strong {
+    display: block;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lumora-cart-line__unit-price {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+}
+
+.lumora-cart-line__discount {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    padding: 3px 6px;
+    border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 9px;
+}
+
+.lumora-cart-line__discount strong {
+    font-variant-numeric: tabular-nums;
+}
+
+.lumora-cart-line__controls {
+    display: flex;
+    min-width: 92px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+.lumora-cart-line__quantity {
+    display: grid;
+    grid-template-columns: 28px 28px 28px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.lumora-cart-line__quantity button {
+    height: 29px;
+    background: #f8fafb;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.lumora-cart-line__quantity button:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.lumora-cart-line__quantity span {
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.lumora-cart-line__total {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.lumora-cart__summary {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+}
+
+.lumora-cart__summary>div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.lumora-cart__summary strong {
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.lumora-cart__summary-discount strong {
+    color: var(--primary);
+}
+
+.lumora-cart__total {
+    margin-top: 3px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.lumora-cart__total span {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.lumora-cart__total strong {
+    color: var(--text);
+    font-size: 23px;
+    letter-spacing: -0.03em;
+}
+
+.lumora-cart__checkout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 auto;
+    min-height: 54px;
+    padding: 0 18px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.lumora-cart__checkout strong {
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+}
+
+.lumora-cart__checkout:hover:not(:disabled) {
+    background: var(--primary-hover);
+}
+
+.lumora-cart__checkout:disabled {
+    justify-content: center;
+    background: #d8dde4;
+    color: #929aa6;
+    cursor: not-allowed;
+}

@@ -1,0 +1,239 @@
+.receipt-page {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 18px;
+    direction: rtl;
+}
+
+.receipt-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 56px;
+    padding-bottom: 12px;
+}
+
+.receipt-page__header span {
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.receipt-page__header h1 {
+    margin: 2px 0 0;
+    font-size: 24px;
+}
+
+.receipt-page__back {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.receipt-page__workspace {
+    display: grid;
+    flex: 1;
+    grid-template-columns: minmax(380px, 560px) 220px;
+    justify-content: center;
+    gap: 18px;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.receipt {
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.receipt__business {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding-bottom: 18px;
+    text-align: center;
+}
+
+.receipt__business strong {
+    font-size: 20px;
+}
+
+.receipt__business span {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.receipt__document-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.receipt__document-title strong {
+    font-size: 15px;
+}
+
+.receipt__document-title span {
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.receipt__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px 0;
+}
+
+.receipt__meta div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.receipt__meta span {
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.receipt__meta strong {
+    font-size: 12px;
+}
+
+.receipt__lines {
+    border-top: 1px solid var(--border);
+}
+
+.receipt-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.receipt-line__main {
+    min-width: 0;
+}
+
+.receipt-line__main strong,
+.receipt-line__main span {
+    display: block;
+}
+
+.receipt-line__main strong {
+    font-size: 12px;
+}
+
+.receipt-line__main span {
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.receipt-line>strong {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.receipt__totals {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 0;
+}
+
+.receipt__totals>div,
+.receipt__payment {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.receipt__totals span {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.receipt__totals strong {
+    font-size: 12px;
+}
+
+.receipt__discount strong {
+    color: var(--primary);
+}
+
+.receipt__grand-total {
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.receipt__grand-total span {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.receipt__grand-total strong {
+    font-size: 22px;
+}
+
+.receipt__payments {
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.receipt__payments h2 {
+    margin: 0 0 10px;
+    font-size: 13px;
+}
+
+.receipt__payment {
+    padding: 5px 0;
+    font-size: 11px;
+}
+
+.receipt__footer {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-align: center;
+}
+
+.receipt-page__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.receipt-page__actions button {
+    min-height: 46px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.receipt-page__actions .receipt-page__primary {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+}

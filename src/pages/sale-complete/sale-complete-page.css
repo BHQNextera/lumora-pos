@@ -1,0 +1,97 @@
+.sale-complete-page {
+    display: grid;
+    height: 100%;
+    place-items: center;
+    padding: 24px;
+    direction: rtl;
+}
+
+.sale-complete-card {
+    width: min(520px, 100%);
+    padding: 32px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+}
+
+.sale-complete-card__icon {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    place-items: center;
+    border-radius: 18px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.sale-complete-card h1 {
+    margin: 0 0 24px;
+    font-size: 28px;
+}
+
+.sale-complete-card__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.sale-complete-card__meta>div {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fbfcfd;
+}
+
+.sale-complete-card__meta span,
+.sale-complete-card__meta strong {
+    display: block;
+}
+
+.sale-complete-card__meta span {
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.sale-complete-card__meta strong {
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+}
+
+.sale-complete-card__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.sale-complete-card__actions button {
+    min-height: 48px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.sale-complete-card__actions button:hover {
+    background: #f8fafb;
+}
+
+.sale-complete-card__actions .sale-complete-card__primary {
+    grid-column: 1 / -1;
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+    font-size: 16px;
+}
+
+.sale-complete-card__actions .sale-complete-card__primary:hover {
+    background: var(--primary-hover);
+}
