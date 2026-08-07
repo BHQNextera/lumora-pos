@@ -9,6 +9,7 @@ export type PaymentMethodCode =
     | "external_credit"
     | "credit_voucher"
     | "gift_card"
+    | "store_credit"
     | "custom";
 
 export type PaymentMethodKind =
@@ -36,85 +37,164 @@ export const defaultPaymentMethods: PaymentMethod[] = [
         code: "cash",
         name: "מזומן",
         kind: "cash",
+
         isActive: true,
         sortOrder: 10,
+
         requiresExternalReference: false,
         allowsPartialPayment: true,
         allowsOverpayment: true,
         returnsChange: true,
     },
+
     {
         code: "card_terminal",
         name: "אשראי",
         kind: "integrated",
+
         isActive: true,
         sortOrder: 20,
+
         requiresExternalReference: true,
         allowsPartialPayment: true,
         allowsOverpayment: false,
         returnsChange: false,
     },
+
     {
         code: "echo",
         name: "Echo",
         kind: "integrated",
+
         isActive: true,
         sortOrder: 30,
+
         requiresExternalReference: true,
         allowsPartialPayment: true,
         allowsOverpayment: false,
         returnsChange: false,
     },
+
+    {
+        code: "credit_voucher",
+        name: "שובר זיכוי",
+        kind: "stored_value",
+
+        isActive: true,
+        sortOrder: 40,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "gift_card",
+        name: "Gift Card",
+        kind: "stored_value",
+
+        isActive: true,
+        sortOrder: 50,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "store_credit",
+        name: "יתרת לקוח",
+        kind: "stored_value",
+
+        isActive: false,
+        sortOrder: 60,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
     {
         code: "bit",
         name: "Bit",
         kind: "recorded",
+
         isActive: false,
-        sortOrder: 40,
+        sortOrder: 70,
+
         requiresExternalReference: false,
         allowsPartialPayment: true,
         allowsOverpayment: false,
         returnsChange: false,
     },
+
     {
         code: "paybox",
         name: "PayBox",
         kind: "recorded",
+
         isActive: false,
-        sortOrder: 50,
+        sortOrder: 80,
+
         requiresExternalReference: false,
         allowsPartialPayment: true,
         allowsOverpayment: false,
         returnsChange: false,
     },
+
     {
         code: "bank_transfer",
         name: "העברה בנקאית",
         kind: "recorded",
+
         isActive: false,
-        sortOrder: 60,
-        requiresExternalReference: false,
+        sortOrder: 90,
+
+        requiresExternalReference: true,
         allowsPartialPayment: true,
         allowsOverpayment: false,
         returnsChange: false,
     },
+
     {
         code: "cheque",
         name: "המחאה",
         kind: "recorded",
+
         isActive: false,
-        sortOrder: 70,
-        requiresExternalReference: false,
+        sortOrder: 100,
+
+        requiresExternalReference: true,
         allowsPartialPayment: true,
         allowsOverpayment: false,
         returnsChange: false,
     },
+
     {
         code: "external_credit",
         name: "אשראי חיצוני",
         kind: "recorded",
+
         isActive: false,
-        sortOrder: 80,
+        sortOrder: 110,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "custom",
+        name: "אמצעי תשלום נוסף",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 120,
+
         requiresExternalReference: false,
         allowsPartialPayment: true,
         allowsOverpayment: false,

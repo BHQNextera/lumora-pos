@@ -1,0 +1,88 @@
+.refund-page {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 18px;
+    padding: 18px;
+    direction: rtl;
+}
+
+.refund-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.refund-page__header button {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.refund-page__header p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.refund-page__header h1 {
+    margin: 3px 0 0;
+    font-size: 30px;
+}
+
+.refund-page__methods {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.refund-method {
+    display: flex;
+    min-height: 150px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    text-align: right;
+}
+
+.refund-method strong {
+    font-size: 16px;
+}
+
+.refund-method span {
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.refund-method--active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.refund-page__confirm {
+    min-height: 54px;
+    margin-top: auto;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.refund-page__confirm:disabled {
+    background: #d8dde4;
+    color: #929aa6;
+    cursor: not-allowed;
+}

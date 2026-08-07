@@ -1,0 +1,208 @@
+.returns-page {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    overflow: hidden;
+    direction: rtl;
+}
+
+.returns-page__header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+}
+
+.returns-page__header>button {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.returns-page__header p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.returns-page__header h1 {
+    margin: 3px 0 0;
+    font-size: 24px;
+}
+
+.returns-page__header>strong {
+    color: var(--primary);
+    font-size: 28px;
+    font-variant-numeric: tabular-nums;
+}
+
+.returns-page__reason {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.returns-page__reason label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.returns-page__reason span {
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.returns-page__reason select {
+    min-width: 210px;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    outline: none;
+    background: #fbfcfd;
+    color: var(--text);
+}
+
+.returns-page__reason select:focus {
+    border-color: var(--primary);
+}
+
+.returns-page__lines {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.return-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.return-line:last-child {
+    border-bottom: 0;
+}
+
+.return-line>div:first-child {
+    min-width: 0;
+}
+
+.return-line>div:first-child strong,
+.return-line>div:first-child span {
+    display: block;
+}
+
+.return-line>div:first-child strong {
+    font-size: 13px;
+}
+
+.return-line>div:first-child span {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.return-line>div:first-child span:last-child {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.return-line__actions {
+    display: grid;
+    grid-template-columns: 38px 44px 38px;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.return-line__actions button {
+    height: 38px;
+    background: #f8fafb;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.return-line__actions button:hover:not(:disabled) {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.return-line__actions button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.return-line__actions strong {
+    text-align: center;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.returns-page__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.returns-page__footer>div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.returns-page__footer span {
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.returns-page__footer strong {
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+}
+
+.returns-page__footer button {
+    min-width: 180px;
+    min-height: 48px;
+    border-radius: 11px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.returns-page__footer button:disabled {
+    background: #d8dde4;
+    color: #929aa6;
+    cursor: not-allowed;
+}

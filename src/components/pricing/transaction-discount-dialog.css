@@ -1,0 +1,136 @@
+.transaction-discount-dialog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: grid;
+    place-items: center;
+    background: rgb(18 20 23 / 34%);
+    direction: rtl;
+}
+
+.transaction-discount-dialog {
+    width: min(420px, calc(100vw - 40px));
+    padding: 18px;
+    border: 1px solid #d8dade;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(0 0 0 / 18%);
+}
+
+.transaction-discount-dialog header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.transaction-discount-dialog header span {
+    color: #777c84;
+    font-size: 10px;
+}
+
+.transaction-discount-dialog h2 {
+    margin: 2px 0 0;
+    color: #26292e;
+    font-size: 19px;
+    font-weight: 600;
+}
+
+.transaction-discount-dialog header button {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #f5f6f7;
+    color: #555a62;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.transaction-discount-dialog__modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin: 18px 0 14px;
+}
+
+.transaction-discount-dialog__mode {
+    min-height: 40px;
+    border: 1px solid #d9dce0;
+    border-radius: 9px;
+    background: #fff;
+    color: #555b63;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.transaction-discount-dialog__mode--active {
+    border-color: #555b63;
+    background: #f2f3f4;
+    color: #24272c;
+    font-weight: 600;
+}
+
+.transaction-discount-dialog label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.transaction-discount-dialog label span {
+    color: #676c74;
+    font-size: 10px;
+}
+
+.transaction-discount-dialog input {
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #d9dce0;
+    border-radius: 9px;
+    outline: none;
+    color: #24272c;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+}
+
+.transaction-discount-dialog input:focus {
+    border-color: #555b63;
+    box-shadow: 0 0 0 3px rgb(55 60 67 / 8%);
+}
+
+.transaction-discount-dialog footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.transaction-discount-dialog footer>div {
+    display: flex;
+    gap: 7px;
+}
+
+.transaction-discount-dialog footer button {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid #d9dce0;
+    border-radius: 9px;
+    background: #fff;
+    color: #4b5058;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.transaction-discount-dialog__remove {
+    color: #6c7077 !important;
+}
+
+.transaction-discount-dialog__apply {
+    border-color: #2e3238 !important;
+    background: #2e3238 !important;
+    color: #fff !important;
+}
+
+.transaction-discount-dialog__apply:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

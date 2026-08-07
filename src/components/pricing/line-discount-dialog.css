@@ -1,0 +1,100 @@
+.line-discount-dialog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: grid;
+    place-items: center;
+    background: rgb(18 20 23 / 34%);
+    direction: rtl;
+}
+
+.line-discount-dialog {
+    width: min(420px, calc(100vw - 40px));
+    padding: 18px;
+    border: 1px solid #d8dade;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(0 0 0 / 18%);
+}
+
+.line-discount-dialog header,
+.line-discount-dialog footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.line-discount-dialog header span {
+    color: #747982;
+    font-size: 10px;
+}
+
+.line-discount-dialog h2 {
+    margin: 3px 0 0;
+    color: #282b30;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.line-discount-dialog header>button {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #f4f5f6;
+    cursor: pointer;
+}
+
+.line-discount-dialog__modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin: 18px 0 12px;
+}
+
+.line-discount-dialog__mode {
+    min-height: 40px;
+    border: 1px solid #d8dade;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.line-discount-dialog__mode--active {
+    border-color: #555b63;
+    background: #f2f3f4;
+}
+
+.line-discount-dialog>input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #d8dade;
+    border-radius: 9px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.line-discount-dialog footer {
+    margin-top: 18px;
+}
+
+.line-discount-dialog footer>div {
+    display: flex;
+    gap: 7px;
+}
+
+.line-discount-dialog footer button {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid #d8dade;
+    border-radius: 9px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.line-discount-dialog__apply {
+    border-color: #30343a !important;
+    background: #30343a !important;
+    color: #fff;
+}

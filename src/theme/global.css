@@ -38,7 +38,7 @@ button {
 
 .pos-app-shell__main {
   display: grid;
-  grid-template-rows: 58px minmax(0, 1fr) 38px;
+  grid-template-rows: minmax(0, 1fr) 38px;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -196,7 +196,7 @@ button {
   font-size: 18px;
 }
 
-.pos-sidebar__item > span:last-child {
+.pos-sidebar__item>span:last-child {
   font-size: 12px;
   font-weight: 650;
 }
@@ -232,7 +232,7 @@ button {
   font-size: 9px;
 }
 
-.pos-sidebar__shift-status > span {
+.pos-sidebar__shift-status>span {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -440,7 +440,7 @@ button {
   font-size: 14px;
 }
 
-.sale-page__cart-empty > span:last-child {
+.sale-page__cart-empty>span:last-child {
   font-size: 10px;
 }
 
@@ -452,7 +452,7 @@ button {
   border-top: 1px solid var(--border);
 }
 
-.sale-page__cart-summary > div {
+.sale-page__cart-summary>div {
   display: flex;
   align-items: center;
   justify-content: space-between;

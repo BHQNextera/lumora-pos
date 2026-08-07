@@ -6,10 +6,24 @@ export type SaleStatus =
     | "completed"
     | "cancelled";
 
+export type TransactionType =
+    | "sale"
+    | "return"
+    | "exchange";
+
+export type SaleCustomer = {
+    id?: string;
+    name: string;
+};
+
 export type Sale = {
     id: string;
     number: string;
+
     status: SaleStatus;
+    transactionType: TransactionType;
+
+    customer: SaleCustomer;
 
     lines: SaleLine[];
 
