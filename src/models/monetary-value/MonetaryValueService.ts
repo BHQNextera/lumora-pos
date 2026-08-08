@@ -349,3 +349,136 @@ export function redeemMonetaryValue(
             after,
     };
 }
+
+export type RestoreMonetaryValueInput = {
+    number: string;
+
+    amount: number;
+
+    transactionId?: string;
+    paymentId?: string;
+
+    employeeId?: string;
+    registerCode?: string;
+
+    reason?: string;
+};
+
+export function restoreMonetaryValue(
+    input: RestoreMonetaryValueInput,
+) {
+    const value =
+        getMonetaryValueByNumber(
+            input.number,
+        );
+
+    if (!value) {
+        throw new Error(
+            "Monetary value not found",
+        );
+    }
+
+    const amount =
+        roundMoney(
+            input.amount,
+        );
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        throw new Error(
+            "Invalid restore amount",
+        );
+    }
+
+    const before =
+        value.remainingAmount;
+
+    const after =
+        roundMoney(
+            Math.min(
+                value.originalAmount,
+                before + amount,
+            ),
+        );
+
+    const restoredAmount =
+        roundMoney(
+            after - before,
+        );
+
+    const now =
+        new Date().toISOString();
+
+    const updated: MonetaryValue = {
+        ...value,
+
+        remainingAmount:
+            after,
+
+        status:
+            after > 0
+                ? "active"
+                : value.status,
+
+        updatedAt:
+            now,
+    };
+
+    saveMonetaryValue(
+        updated,
+    );
+
+    const movement: MonetaryValueMovement = {
+        id:
+            crypto.randomUUID(),
+
+        monetaryValueId:
+            value.id,
+
+        type:
+            "restore",
+
+        amount:
+            restoredAmount,
+
+        balanceBefore:
+            before,
+
+        balanceAfter:
+            after,
+
+        transactionId:
+            input.transactionId,
+
+        paymentId:
+            input.paymentId,
+
+        employeeId:
+            input.employeeId,
+
+        registerCode:
+            input.registerCode,
+
+        reason:
+            input.reason,
+
+        createdAt:
+            now,
+    };
+
+    saveMonetaryValueMovement(
+        movement,
+    );
+
+    return {
+        monetaryValue:
+            updated,
+
+        restoredAmount,
+
+        remainingAmount:
+            after,
+    };
+}
