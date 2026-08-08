@@ -18,6 +18,7 @@ import {
     createReturn,
 } from "./ReturnEngine";
 import type {
+    AppliedSaleCoupon,
     Sale,
     TransactionType,
 } from "./Sale";
@@ -27,6 +28,17 @@ import type {
 
 const SALE_SEQUENCE_KEY =
     "lumora.sale.sequence";
+
+function roundMoney(
+    value: number,
+) {
+    return (
+        Math.round(
+            (value + Number.EPSILON) *
+            100,
+        ) / 100
+    );
+}
 
 function getNextSequence() {
     const current = Number(
@@ -117,7 +129,8 @@ function registerLinkedReturns(
         >();
 
     for (
-        const line of linkedReturnLines
+        const line of
+        linkedReturnLines
     ) {
         const originalSaleId =
             line.originalSaleId;
@@ -143,7 +156,8 @@ function registerLinkedReturns(
         const [
             originalSaleId,
             lines,
-        ] of groupedByOriginalSale
+        ] of
+        groupedByOriginalSale
     ) {
         const originalSale =
             getTransaction(
@@ -154,7 +168,8 @@ function registerLinkedReturns(
             continue;
         }
 
-        const returnLines: ReturnLine[] =
+        const returnLines:
+            ReturnLine[] =
             lines.flatMap(
                 (line) => {
                     if (
@@ -217,7 +232,8 @@ function registerLinkedReturns(
             );
 
         if (
-            returnLines.length === 0
+            returnLines.length ===
+            0
         ) {
             continue;
         }
@@ -234,43 +250,80 @@ function registerLinkedReturns(
     }
 }
 
+export type CompleteSaleOptions = {
+    transactionId?: string;
+    coupon?: AppliedSaleCoupon;
+};
+
 export function completeSale(
     lines: SaleLine[],
     payments: Payment[],
     customer: Sale["customer"] = {
         name: "לקוח מזדמן",
     },
+    options: CompleteSaleOptions = {},
 ): Sale {
     const now =
         new Date().toISOString();
 
     const subtotal =
-        lines.reduce(
-            (sum, line) =>
-                sum +
-                line.grossAmount,
-            0,
+        roundMoney(
+            lines.reduce(
+                (sum, line) =>
+                    sum +
+                    line.grossAmount,
+                0,
+            ),
         );
 
-    const discount =
-        lines.reduce(
-            (sum, line) =>
-                sum +
-                line.lineDiscountAmount +
-                line.allocatedSaleDiscountAmount,
-            0,
+    const lineDiscount =
+        roundMoney(
+            lines.reduce(
+                (sum, line) =>
+                    sum +
+                    line.lineDiscountAmount +
+                    line.allocatedSaleDiscountAmount,
+                0,
+            ),
         );
+
+    const preCouponTotal =
+        roundMoney(
+            lines.reduce(
+                (sum, line) =>
+                    sum +
+                    line.netAmount,
+                0,
+            ),
+        );
+
+    const couponDiscount =
+        options.coupon
+            ? roundMoney(
+                Math.min(
+                    Math.max(
+                        0,
+                        preCouponTotal,
+                    ),
+                    Math.max(
+                        0,
+                        options.coupon
+                            .discountApplied,
+                    ),
+                ),
+            )
+            : 0;
 
     const total =
-        lines.reduce(
-            (sum, line) =>
-                sum +
-                line.netAmount,
-            0,
+        roundMoney(
+            preCouponTotal -
+            couponDiscount,
         );
 
     const sale: Sale = {
-        id: crypto.randomUUID(),
+        id:
+            options.transactionId ??
+            crypto.randomUUID(),
 
         number:
             createSaleNumber(),
@@ -288,7 +341,21 @@ export function completeSale(
         lines,
 
         subtotal,
-        discount,
+
+        discount:
+            roundMoney(
+                lineDiscount +
+                couponDiscount,
+            ),
+
+        coupon:
+            options.coupon
+                ? {
+                    ...options.coupon,
+                    discountApplied:
+                        couponDiscount,
+                }
+                : undefined,
 
         tax: 0,
 

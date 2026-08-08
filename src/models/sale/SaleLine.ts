@@ -10,6 +10,12 @@ export type ReturnSource =
     | "linked_document"
     | "without_document";
 
+export type AppliedSalePromotion = {
+    id: string;
+    name: string;
+    discountAmount: number;
+};
+
 export type SaleLine = {
     id: string;
 
@@ -40,6 +46,14 @@ export type SaleLine = {
 
     lineDiscountAmount: number;
     allocatedSaleDiscountAmount: number;
+
+    /**
+     * Promotions that actually participated in pricing this line.
+     * A promotion may appear with discountAmount=0 when the line
+     * participated in the promotion but another line carried the
+     * monetary discount (for example the paid item in 1+1).
+     */
+    appliedPromotions?: AppliedSalePromotion[];
 
     netAmount: number;
 

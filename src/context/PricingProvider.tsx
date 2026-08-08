@@ -1,11 +1,21 @@
 import {
     useCallback,
+    useEffect,
     useMemo,
     useState,
     type ReactNode,
 } from "react";
 
-import type { CartLine } from "../models/sale/CartLine";
+import type {
+    Coupon,
+} from "../models/coupon/Coupon";
+import {
+    seedCouponsIfEmpty,
+} from "../models/coupon/CouponSeed";
+import {
+    calculateCouponDiscount,
+    validateCoupon,
+} from "../models/coupon/CouponService";
 import {
     PricingEvent,
 } from "../models/pricing/PricingEvents";
@@ -15,6 +25,21 @@ import {
 import type {
     PricingRule,
 } from "../models/pricing/PricingRule";
+import type {
+    Promotion,
+} from "../models/promotion/Promotion";
+import {
+    getPromotions,
+    removePromotion as removePromotionFromRepository,
+    savePromotion,
+    savePromotions,
+} from "../models/promotion/PromotionRepository";
+import {
+    seedPromotionsIfEmpty,
+} from "../models/promotion/PromotionSeed";
+import type {
+    CartLine,
+} from "../models/sale/CartLine";
 import {
     PricingContext,
 } from "./PricingContext";
@@ -26,11 +51,47 @@ type PricingProviderProps = {
 function PricingProvider({
     children,
 }: PricingProviderProps) {
-    const [cartLines, setCartLinesState] =
+    seedCouponsIfEmpty();
+
+    const [
+        cartLines,
+        setCartLinesState,
+    ] =
         useState<CartLine[]>([]);
 
-    const [pricingRules, setPricingRulesState] =
+    const [
+        pricingRules,
+        setPricingRulesState,
+    ] =
         useState<PricingRule[]>([]);
+
+    const [
+        promotions,
+        setPromotionsState,
+    ] =
+        useState<Promotion[]>(
+            () => {
+                const existing =
+                    getPromotions();
+
+                if (
+                    existing.length >
+                    0
+                ) {
+                    return existing;
+                }
+
+                return seedPromotionsIfEmpty();
+            },
+        );
+
+    const [
+        appliedCoupon,
+        setAppliedCoupon,
+    ] =
+        useState<Coupon | null>(
+            null,
+        );
 
     const pricing = useMemo(
         () =>
@@ -38,78 +99,332 @@ function PricingProvider({
                 PricingEvent.CartChanged,
                 cartLines,
                 pricingRules,
+                promotions,
             ),
-        [cartLines, pricingRules],
+        [
+            cartLines,
+            pricingRules,
+            promotions,
+        ],
     );
 
-    const setCartLines = useCallback(
-        (lines: CartLine[]) => {
-            setCartLinesState(lines);
-        },
-        [],
-    );
+    const couponDiscountAmount =
+        useMemo(() => {
+            if (
+                !appliedCoupon ||
+                pricing.total <= 0
+            ) {
+                return 0;
+            }
 
-    const updateCartLines = useCallback(
-        (
-            updater: (
-                current: CartLine[],
-            ) => CartLine[],
-        ) => {
-            setCartLinesState((current) =>
-                updater(current),
+            const validation =
+                validateCoupon(
+                    appliedCoupon.code,
+                    {
+                        basketAmount:
+                            pricing.total,
+                    },
+                );
+
+            if (!validation.valid) {
+                return 0;
+            }
+
+            return calculateCouponDiscount(
+                validation.coupon,
+                pricing.total,
             );
-        },
-        [],
-    );
+        }, [
+            appliedCoupon,
+            pricing.total,
+        ]);
 
-    const setPricingRules = useCallback(
-        (rules: PricingRule[]) => {
-            setPricingRulesState(rules);
-        },
-        [],
-    );
-
-    const addPricingRule = useCallback(
-        (rule: PricingRule) => {
-            setPricingRulesState((current) => [
-                ...current.filter(
-                    (item) => item.id !== rule.id,
+    const totalAfterCoupon =
+        useMemo(
+            () =>
+                Math.max(
+                    0,
+                    Math.round(
+                        (
+                            pricing.total -
+                            couponDiscountAmount +
+                            Number.EPSILON
+                        ) *
+                        100,
+                    ) / 100,
                 ),
-                rule,
-            ]);
-        },
-        [],
-    );
+            [
+                pricing.total,
+                couponDiscountAmount,
+            ],
+        );
 
-    const removePricingRule = useCallback(
-        (ruleId: string) => {
-            setPricingRulesState((current) =>
-                current.filter(
-                    (rule) => rule.id !== ruleId,
-                ),
+    useEffect(() => {
+        if (!appliedCoupon) {
+            return;
+        }
+
+        const validation =
+            validateCoupon(
+                appliedCoupon.code,
+                {
+                    basketAmount:
+                        pricing.total,
+                },
             );
-        },
-        [],
-    );
+
+        if (!validation.valid) {
+            setAppliedCoupon(
+                null,
+            );
+        }
+    }, [
+        appliedCoupon,
+        pricing.total,
+    ]);
+
+    const setCartLines =
+        useCallback(
+            (
+                lines: CartLine[],
+            ) => {
+                setCartLinesState(
+                    lines,
+                );
+            },
+            [],
+        );
+
+    const updateCartLines =
+        useCallback(
+            (
+                updater: (
+                    current: CartLine[],
+                ) => CartLine[],
+            ) => {
+                setCartLinesState(
+                    (current) =>
+                        updater(
+                            current,
+                        ),
+                );
+            },
+            [],
+        );
+
+    const setPricingRules =
+        useCallback(
+            (
+                rules: PricingRule[],
+            ) => {
+                setPricingRulesState(
+                    rules,
+                );
+            },
+            [],
+        );
+
+    const addPricingRule =
+        useCallback(
+            (
+                rule: PricingRule,
+            ) => {
+                setPricingRulesState(
+                    (current) => [
+                        ...current.filter(
+                            (item) =>
+                                item.id !==
+                                rule.id,
+                        ),
+                        rule,
+                    ],
+                );
+            },
+            [],
+        );
+
+    const removePricingRule =
+        useCallback(
+            (
+                ruleId: string,
+            ) => {
+                setPricingRulesState(
+                    (current) =>
+                        current.filter(
+                            (rule) =>
+                                rule.id !==
+                                ruleId,
+                        ),
+                );
+            },
+            [],
+        );
 
     const clearPricingRules =
         useCallback(() => {
-            setPricingRulesState([]);
+            setPricingRulesState(
+                [],
+            );
         }, []);
 
-    const recalculate = useCallback(
-        () => {
-            setCartLinesState((current) => [
-                ...current,
-            ]);
-        },
-        [],
-    );
+    const setPromotions =
+        useCallback(
+            (
+                nextPromotions:
+                    Promotion[],
+            ) => {
+                savePromotions(
+                    nextPromotions,
+                );
+
+                setPromotionsState(
+                    nextPromotions,
+                );
+            },
+            [],
+        );
+
+    const addPromotion =
+        useCallback(
+            (
+                promotion:
+                    Promotion,
+            ) => {
+                savePromotion(
+                    promotion,
+                );
+
+                setPromotionsState(
+                    getPromotions(),
+                );
+            },
+            [],
+        );
+
+    const removePromotion =
+        useCallback(
+            (
+                promotionId:
+                    string,
+            ) => {
+                removePromotionFromRepository(
+                    promotionId,
+                );
+
+                setPromotionsState(
+                    getPromotions(),
+                );
+            },
+            [],
+        );
+
+    const togglePromotion =
+        useCallback(
+            (
+                promotionId:
+                    string,
+                isActive:
+                    boolean,
+            ) => {
+                const current =
+                    getPromotions();
+
+                const promotion =
+                    current.find(
+                        (item) =>
+                            item.id ===
+                            promotionId,
+                    );
+
+                if (!promotion) {
+                    return;
+                }
+
+                savePromotion({
+                    ...promotion,
+                    isActive,
+                });
+
+                setPromotionsState(
+                    getPromotions(),
+                );
+            },
+            [],
+        );
+
+    const applyCoupon =
+        useCallback(
+            (
+                code: string,
+            ) => {
+                const validation =
+                    validateCoupon(
+                        code,
+                        {
+                            basketAmount:
+                                pricing.total,
+                        },
+                    );
+
+                if (!validation.valid) {
+                    return {
+                        success: false,
+                        reason:
+                            validation.reason,
+                    };
+                }
+
+                const discount =
+                    calculateCouponDiscount(
+                        validation.coupon,
+                        pricing.total,
+                    );
+
+                if (discount <= 0) {
+                    return {
+                        success: false,
+                        reason:
+                            "zero_discount",
+                    };
+                }
+
+                setAppliedCoupon(
+                    validation.coupon,
+                );
+
+                return {
+                    success: true,
+                };
+            },
+            [pricing.total],
+        );
+
+    const removeCoupon =
+        useCallback(() => {
+            setAppliedCoupon(
+                null,
+            );
+        }, []);
+
+    const recalculate =
+        useCallback(() => {
+            setCartLinesState(
+                (current) => [
+                    ...current,
+                ],
+            );
+        }, []);
 
     const value = useMemo(
         () => ({
             cartLines,
             pricingRules,
+            promotions,
+
+            appliedCoupon,
+            couponDiscountAmount,
+            totalAfterCoupon,
+
             pricing,
 
             setCartLines,
@@ -119,12 +434,26 @@ function PricingProvider({
             addPricingRule,
             removePricingRule,
             clearPricingRules,
+
+            setPromotions,
+            addPromotion,
+            removePromotion,
+            togglePromotion,
+
+            applyCoupon,
+            removeCoupon,
 
             recalculate,
         }),
         [
             cartLines,
             pricingRules,
+            promotions,
+
+            appliedCoupon,
+            couponDiscountAmount,
+            totalAfterCoupon,
+
             pricing,
 
             setCartLines,
@@ -135,12 +464,22 @@ function PricingProvider({
             removePricingRule,
             clearPricingRules,
 
+            setPromotions,
+            addPromotion,
+            removePromotion,
+            togglePromotion,
+
+            applyCoupon,
+            removeCoupon,
+
             recalculate,
         ],
     );
 
     return (
-        <PricingContext.Provider value={value}>
+        <PricingContext.Provider
+            value={value}
+        >
             {children}
         </PricingContext.Provider>
     );

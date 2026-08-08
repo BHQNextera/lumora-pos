@@ -1,10 +1,18 @@
 import type { CartLine } from "../sale/CartLine";
 import type { PricingRule } from "./PricingRule";
 
+export type AppliedPromotion = {
+    id: string;
+    name: string;
+    discountAmount: number;
+};
+
 export type PricedCartLine = CartLine & {
     calculatedLineDiscountAmount: number;
     calculatedTransactionDiscountAmount: number;
     calculatedNetAmount: number;
+
+    appliedPromotions: AppliedPromotion[];
 };
 
 export type PricingResult = {
@@ -35,6 +43,25 @@ function isEligibleSaleLine(
     line: CartLine,
 ) {
     return line.kind === "sale";
+}
+
+function calculateRuleAmount(
+    rule: PricingRule,
+    gross: number,
+) {
+    if (
+        rule.discountType ===
+        "percentage"
+    ) {
+        return roundMoney(
+            gross *
+            (rule.value / 100),
+        );
+    }
+
+    return roundMoney(
+        rule.value,
+    );
 }
 
 export function calculatePricing(
@@ -69,11 +96,15 @@ export function calculatePricing(
 
             let lineDiscount = 0;
 
+            const appliedPromotions:
+                AppliedPromotion[] = [];
+
             if (line.kind === "sale") {
                 for (const rule of lineRules) {
                     if (
                         rule.targetLineId &&
-                        rule.targetLineId !== line.id
+                        rule.targetLineId !==
+                        line.id
                     ) {
                         continue;
                     }
@@ -85,21 +116,47 @@ export function calculatePricing(
                         continue;
                     }
 
-                    if (
-                        rule.discountType ===
-                        "percentage"
-                    ) {
-                        lineDiscount +=
-                            gross *
-                            (rule.value / 100);
-                    }
+                    const ruleAmount =
+                        calculateRuleAmount(
+                            rule,
+                            gross,
+                        );
+
+                    lineDiscount +=
+                        ruleAmount;
 
                     if (
-                        rule.discountType ===
-                        "fixed_amount"
+                        rule.source ===
+                        "promotion" &&
+                        rule.promotionId
                     ) {
-                        lineDiscount +=
-                            rule.value;
+                        const existing =
+                            appliedPromotions.find(
+                                (promotion) =>
+                                    promotion.id ===
+                                    rule.promotionId,
+                            );
+
+                        if (existing) {
+                            existing.discountAmount =
+                                roundMoney(
+                                    existing.discountAmount +
+                                    ruleAmount,
+                                );
+                        } else {
+                            appliedPromotions.push(
+                                {
+                                    id:
+                                        rule.promotionId,
+
+                                    name:
+                                        rule.name,
+
+                                    discountAmount:
+                                        ruleAmount,
+                                },
+                            );
+                        }
                     }
                 }
             }
@@ -126,6 +183,7 @@ export function calculatePricing(
                 sign,
                 gross,
                 lineDiscount,
+                appliedPromotions,
                 netBeforeTransaction,
             };
         });
@@ -256,6 +314,11 @@ export function calculatePricing(
                     roundMoney(
                         net * item.sign,
                     ),
+
+                appliedPromotions:
+                    item.line.kind === "sale"
+                        ? item.appliedPromotions
+                        : [],
             };
         });
 

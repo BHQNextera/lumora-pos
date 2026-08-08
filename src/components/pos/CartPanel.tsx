@@ -9,12 +9,28 @@ import type {
     PricedCartLine,
     PricingResult,
 } from "../../models/pricing/PricingEngine";
+import type {
+    Coupon,
+} from "../../models/coupon/Coupon";
 
 import "./cart-panel.css";
 
 type CartPanelProps = {
     lines: PricedCartLine[];
     pricing: PricingResult;
+
+    appliedCoupon: Coupon | null;
+    couponDiscountAmount: number;
+    totalAfterCoupon: number;
+
+    onApplyCoupon: (
+        code: string,
+    ) => {
+        success: boolean;
+        reason?: string;
+    };
+
+    onRemoveCoupon: () => void;
 
     selectedLineId?: string;
 
@@ -34,6 +50,11 @@ type CartPanelProps = {
 function CartPanel({
     lines,
     pricing,
+    appliedCoupon,
+    couponDiscountAmount,
+    totalAfterCoupon,
+    onApplyCoupon,
+    onRemoveCoupon,
     selectedLineId,
     onClear,
     onIncrease,
@@ -49,6 +70,18 @@ function CartPanel({
         useState<PricedCartLine | null>(null);
 
     const [descriptionValue, setDescriptionValue] =
+        useState("");
+
+    const [
+        couponCode,
+        setCouponCode,
+    ] =
+        useState("");
+
+    const [
+        couponError,
+        setCouponError,
+    ] =
         useState("");
 
     const totalQuantity = lines.reduce(
@@ -266,15 +299,56 @@ function CartPanel({
                                             </span>
                                         )}
 
-                                        {totalLineDiscount > 0 && (
+                                        {line.appliedPromotions.map(
+                                            (promotion) => (
+                                                <div
+                                                    key={promotion.id}
+                                                    className="lumora-cart-line__discount"
+                                                >
+                                                    <span>
+                                                        מבצע:{" "}
+                                                        {promotion.name}
+                                                    </span>
+
+                                                    {promotion.discountAmount >
+                                                        0 && (
+                                                            <strong>
+                                                                ‎-₪
+                                                                {promotion.discountAmount.toFixed(
+                                                                    2,
+                                                                )}
+                                                            </strong>
+                                                        )}
+                                                </div>
+                                            ),
+                                        )}
+
+                                        {totalLineDiscount > 0 &&
+                                            line.appliedPromotions.length ===
+                                            0 && (
+                                                <div className="lumora-cart-line__discount">
+                                                    <span>
+                                                        הנחה
+                                                    </span>
+
+                                                    <strong>
+                                                        ‎-₪
+                                                        {totalLineDiscount.toFixed(
+                                                            2,
+                                                        )}
+                                                    </strong>
+                                                </div>
+                                            )}
+
+                                        {transactionDiscount > 0 && (
                                             <div className="lumora-cart-line__discount">
                                                 <span>
-                                                    הנחה
+                                                    הנחת עסקה
                                                 </span>
 
                                                 <strong>
                                                     ‎-₪
-                                                    {totalLineDiscount.toFixed(
+                                                    {transactionDiscount.toFixed(
                                                         2,
                                                     )}
                                                 </strong>
@@ -336,6 +410,149 @@ function CartPanel({
                     </div>
                 )}
 
+                <div
+                    style={{
+                        padding: "10px 12px",
+                        borderTop:
+                            "1px solid #e2e4e7",
+                    }}
+                >
+                    {appliedCoupon ? (
+                        <div
+                            style={{
+                                display:
+                                    "flex",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "space-between",
+                                gap: "8px",
+                                fontSize:
+                                    "10px",
+                            }}
+                        >
+                            <span>
+                                קופון:{" "}
+                                <strong>
+                                    {appliedCoupon.code}
+                                </strong>
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onRemoveCoupon();
+                                    setCouponCode("");
+                                    setCouponError("");
+                                }}
+                            >
+                                הסר
+                            </button>
+                        </div>
+                    ) : (
+                        <div
+                            style={{
+                                display:
+                                    "flex",
+                                gap: "6px",
+                            }}
+                        >
+                            <input
+                                type="text"
+                                value={
+                                    couponCode
+                                }
+                                placeholder="קוד קופון"
+                                onChange={(
+                                    event,
+                                ) => {
+                                    setCouponCode(
+                                        event
+                                            .target
+                                            .value,
+                                    );
+                                    setCouponError(
+                                        "",
+                                    );
+                                }}
+                                onKeyDown={(
+                                    event,
+                                ) => {
+                                    if (
+                                        event.key !==
+                                        "Enter"
+                                    ) {
+                                        return;
+                                    }
+
+                                    const result =
+                                        onApplyCoupon(
+                                            couponCode,
+                                        );
+
+                                    if (
+                                        !result.success
+                                    ) {
+                                        setCouponError(
+                                            result.reason ??
+                                            "קופון לא תקף",
+                                        );
+                                    }
+                                }}
+                                style={{
+                                    flex: 1,
+                                    minWidth: 0,
+                                    height:
+                                        "34px",
+                                    padding:
+                                        "0 9px",
+                                    border:
+                                        "1px solid #d8dade",
+                                    borderRadius:
+                                        "8px",
+                                }}
+                            />
+
+                            <button
+                                type="button"
+                                disabled={
+                                    !couponCode.trim()
+                                }
+                                onClick={() => {
+                                    const result =
+                                        onApplyCoupon(
+                                            couponCode,
+                                        );
+
+                                    if (
+                                        !result.success
+                                    ) {
+                                        setCouponError(
+                                            result.reason ??
+                                            "קופון לא תקף",
+                                        );
+                                    }
+                                }}
+                            >
+                                החל
+                            </button>
+                        </div>
+                    )}
+
+                    {couponError && (
+                        <div
+                            style={{
+                                marginTop:
+                                    "5px",
+                                fontSize:
+                                    "9px",
+                            }}
+                        >
+                            {couponError}
+                        </div>
+                    )}
+                </div>
+
                 <div className="lumora-cart__summary">
                     <div>
                         <span>
@@ -393,22 +610,40 @@ function CartPanel({
                         </div>
                     )}
 
+                    {couponDiscountAmount > 0 && (
+                        <div className="lumora-cart__summary-discount">
+                            <span>
+                                קופון{" "}
+                                {appliedCoupon
+                                    ? `(${appliedCoupon.code})`
+                                    : ""}
+                            </span>
+
+                            <strong>
+                                ‎-₪
+                                {couponDiscountAmount.toFixed(
+                                    2,
+                                )}
+                            </strong>
+                        </div>
+                    )}
+
                     <div className="lumora-cart__total">
                         <span>
-                            {pricing.total < 0
+                            {totalAfterCoupon < 0
                                 ? "סה״כ לזיכוי"
-                                : pricing.total === 0
+                                : totalAfterCoupon === 0
                                     ? "יתרה"
                                     : "סה״כ לתשלום"}
                         </span>
 
                         <strong>
-                            {pricing.total < 0
+                            {totalAfterCoupon < 0
                                 ? "‎-"
                                 : ""}
                             ₪
                             {Math.abs(
-                                pricing.total,
+                                totalAfterCoupon,
                             ).toFixed(2)}
                         </strong>
                     </div>
@@ -420,26 +655,26 @@ function CartPanel({
                     disabled={lines.length === 0}
                     onClick={() =>
                         onCheckout(
-                            pricing.total,
+                            totalAfterCoupon,
                         )
                     }
                 >
                     <span>
-                        {pricing.total < 0
+                        {totalAfterCoupon < 0
                             ? "להחזר"
-                            : pricing.total === 0
+                            : totalAfterCoupon === 0
                                 ? "סיום עסקה"
                                 : "לתשלום"}
                     </span>
 
                     {lines.length > 0 && (
                         <strong>
-                            {pricing.total < 0
+                            {totalAfterCoupon < 0
                                 ? "‎-"
                                 : ""}
                             ₪
                             {Math.abs(
-                                pricing.total,
+                                totalAfterCoupon,
                             ).toFixed(2)}
                         </strong>
                     )}

@@ -1,4 +1,5 @@
 import type { Payment } from "../Payment";
+import type { CouponRedemptionPolicy, CouponValueType } from "../coupon/Coupon";
 import type { SaleLine } from "./SaleLine";
 
 export type SaleStatus =
@@ -16,6 +17,20 @@ export type SaleCustomer = {
     name: string;
 };
 
+export type AppliedSaleCoupon = {
+    couponId: string;
+    code: string;
+    name: string;
+
+    valueType: CouponValueType;
+    originalValue: number;
+
+    redemptionPolicy:
+    CouponRedemptionPolicy;
+
+    discountApplied: number;
+};
+
 export type Sale = {
     id: string;
     number: string;
@@ -29,6 +44,9 @@ export type Sale = {
 
     subtotal: number;
     discount: number;
+
+    coupon?: AppliedSaleCoupon;
+
     tax: number;
     total: number;
 

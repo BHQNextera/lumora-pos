@@ -6,6 +6,10 @@ export type PricingRuleScope =
     | "line"
     | "transaction";
 
+export type PricingRuleSource =
+    | "manual"
+    | "promotion";
+
 export type PricingRule = {
     id: string;
 
@@ -20,4 +24,10 @@ export type PricingRule = {
     saleLinesOnly: boolean;
 
     targetLineId?: string;
+
+    source?: PricingRuleSource;
+
+    promotionId?: string;
+
+    promotionParticipantLineIds?: string[];
 };

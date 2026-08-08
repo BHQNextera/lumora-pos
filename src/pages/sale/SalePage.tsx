@@ -14,10 +14,16 @@ import { usePricing } from "../../context/usePricing";
 import { products } from "../../data/products";
 import type { Payment } from "../../models/Payment";
 import {
+    redeemCoupon,
+} from "../../models/coupon/CouponService";
+import {
     DefaultPricingRules,
 } from "../../models/pricing/DefaultPricingRules";
 import type { CartLine } from "../../models/sale/CartLine";
-import type { Sale } from "../../models/sale/Sale";
+import type {
+    AppliedSaleCoupon,
+    Sale,
+} from "../../models/sale/Sale";
 import type { SaleLine } from "../../models/sale/SaleLine";
 import { completeSale } from "../../models/sale/SaleService";
 import type {
@@ -82,6 +88,12 @@ function SalePage({
         addPricingRule,
         removePricingRule,
         clearPricingRules,
+
+        appliedCoupon,
+        couponDiscountAmount,
+        totalAfterCoupon,
+        applyCoupon,
+        removeCoupon,
     } = usePricing();
 
     const [
@@ -630,6 +642,18 @@ function SalePage({
                         allocatedSaleDiscountAmount:
                             line.calculatedTransactionDiscountAmount,
 
+                        appliedPromotions:
+                            line.appliedPromotions?.map(
+                                (promotion) => ({
+                                    id:
+                                        promotion.id,
+                                    name:
+                                        promotion.name,
+                                    discountAmount:
+                                        promotion.discountAmount,
+                                }),
+                            ),
+
                         netAmount:
                             line.calculatedNetAmount,
 
@@ -654,33 +678,88 @@ function SalePage({
     const completeTransaction = (
         payments: Payment[],
     ) => {
+        const transactionId =
+            crypto.randomUUID();
+
+        let appliedSaleCoupon:
+            AppliedSaleCoupon | undefined;
+
+        if (appliedCoupon) {
+            const redemption =
+                redeemCoupon({
+                    code:
+                        appliedCoupon.code,
+
+                    basketAmount:
+                        pricing.total,
+
+                    transactionId,
+                });
+
+            appliedSaleCoupon = {
+                couponId:
+                    appliedCoupon.id,
+
+                code:
+                    appliedCoupon.code,
+
+                name:
+                    appliedCoupon.name,
+
+                valueType:
+                    appliedCoupon.valueType,
+
+                originalValue:
+                    appliedCoupon.value,
+
+                redemptionPolicy:
+                    appliedCoupon.redemptionPolicy,
+
+                discountApplied:
+                    redemption.discountApplied,
+            };
+        }
+
         const sale =
             completeSale(
                 createSaleLines(),
                 payments,
+                {
+                    name:
+                        "לקוח מזדמן",
+                },
+                {
+                    transactionId,
+                    coupon:
+                        appliedSaleCoupon,
+                },
             );
+
+        removeCoupon();
 
         setCompletedSale(sale);
         setCheckoutTotal(null);
     };
 
-    const handleCheckout = (
-        total: number,
-    ) => {
+    const handleCheckout = () => {
         if (
-            Math.abs(total) <
-            0.001
+            Math.abs(
+                totalAfterCoupon,
+            ) < 0.001
         ) {
             completeTransaction([]);
             return;
         }
 
-        setCheckoutTotal(total);
+        setCheckoutTotal(
+            totalAfterCoupon,
+        );
     };
 
     const clearSale = () => {
         setCartLines([]);
         clearPricingRules();
+        removeCoupon();
         setSelectedLineId(null);
     };
 
@@ -932,6 +1011,19 @@ function SalePage({
                         <CartPanel
                             lines={pricing.lines}
                             pricing={pricing}
+                            appliedCoupon={appliedCoupon}
+                            couponDiscountAmount={
+                                couponDiscountAmount
+                            }
+                            totalAfterCoupon={
+                                totalAfterCoupon
+                            }
+                            onApplyCoupon={
+                                applyCoupon
+                            }
+                            onRemoveCoupon={
+                                removeCoupon
+                            }
                             selectedLineId={
                                 selectedLineId ??
                                 undefined

@@ -2,18 +2,34 @@ import {
     createContext,
 } from "react";
 
-import type { CartLine } from "../models/sale/CartLine";
 import type {
     PricingResult,
 } from "../models/pricing/PricingEngine";
 import type {
     PricingRule,
 } from "../models/pricing/PricingRule";
+import type {
+    Promotion,
+} from "../models/promotion/Promotion";
+import type {
+    CartLine,
+} from "../models/sale/CartLine";
+import type {
+    Coupon,
+} from "../models/coupon/Coupon";
 
 export type PricingContextValue = {
     cartLines: CartLine[];
 
     pricingRules: PricingRule[];
+
+    promotions: Promotion[];
+
+    appliedCoupon: Coupon | null;
+
+    couponDiscountAmount: number;
+
+    totalAfterCoupon: number;
 
     pricing: PricingResult;
 
@@ -40,6 +56,32 @@ export type PricingContextValue = {
     ) => void;
 
     clearPricingRules: () => void;
+
+    setPromotions: (
+        promotions: Promotion[],
+    ) => void;
+
+    addPromotion: (
+        promotion: Promotion,
+    ) => void;
+
+    removePromotion: (
+        promotionId: string,
+    ) => void;
+
+    togglePromotion: (
+        promotionId: string,
+        isActive: boolean,
+    ) => void;
+
+    applyCoupon: (
+        code: string,
+    ) => {
+        success: boolean;
+        reason?: string;
+    };
+
+    removeCoupon: () => void;
 
     recalculate: () => void;
 };

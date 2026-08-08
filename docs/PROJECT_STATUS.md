@@ -1,141 +1,99 @@
-# Lumora POS – Project Status
+﻿# Lumora POS — Project Status
 
-## Version
-v0.2.0-alpha
+## Current checkpoint
+Date: 2026-08-08
+Branch: main
+Base commit before this checkpoint: a9601f5
 
-## Date
-2026-08-07
+## Completed in this checkpoint
 
----
+### Promotion Engine
+- Added persistent Promotion Repository.
+- Default promotions are now test seed data, not the source of truth.
+- Added Buy X Get Y.
+- Added Buy A Get B.
+- Added Mix & Match.
+- Added Bundle Price.
+- Added Quantity Discount.
+- Added Category Discount.
+- Added Fixed Amount Discount.
+- Added Basket Discount.
+- Added Basket Tier Discount.
+- Added percentage reward variants such as second item at 50%.
+- Added per-promotion allowStacking policy.
+- Promotion conflicts are resolved at unit level.
+- Best customer benefit is selected when promotions conflict.
+- Promotions never increase the customer price.
+- Fixed proportional rounding so allocated discounts reconcile exactly to the promotion amount.
+- Added promotion participation metadata so all participating lines can display the promotion, even when the monetary discount is allocated to another line.
+- Added date/time scheduling support including days of week, hours and overnight windows.
+- Added product/category exclusions.
+- Promotion details are persisted on completed sale lines.
 
-# Completed
+### Coupon Engine
+- Added Coupon model.
+- Added Coupon Repository.
+- Added Coupon Service.
+- Added coupon test seed data.
+- Added fixed amount and percentage coupons.
+- Added maximum percentage discount cap.
+- Added single-use burn policy.
+- Added partial-balance policy.
+- Added minimum basket, customer group, branch and channel conditions.
+- Added coupon redemption history.
+- Coupons are validated in the sale flow.
+- Coupon discount is included in the final transaction total.
+- Coupon is redeemed only when the transaction is completed.
+- Single-use coupon TEST100 was verified: unused value is burned and cannot be reused.
+- Coupon information is persisted on the completed sale.
 
-## Foundation
+### Sale / Pricing UI
+- Promotion name is displayed below participating cart items.
+- Monetary discount is displayed only on the line receiving the allocation.
+- Coupon entry and removal are available in the cart.
+- Hebrew encoding regression in SalePage was fixed.
 
-- Application shell
-- Navigation
-- Layout
-- Design tokens
-- Bottom navigation
+## Verified
+- npm run build passes.
+- Split payment checkpoint from previous commit remains intact.
+- Promotion calculations tested manually.
+- Mix & Match rounding verified.
+- Coupon TEST100 verified as single-use and non-reusable.
 
-## Sale
+## Current architecture
+- Lumora is the Test Version / Test Environment.
+- Demo will later be created as a stable replica for distributors/customers.
+- Lumora POS remains standalone-capable.
+- Promotion and coupon data currently persist locally.
+- Future multi-POS/network architecture will replicate master data and transactions across all tills/branches.
+- Nextera is the optional central Back Office for larger businesses.
+- Small businesses can manage supported master data directly from Lumora POS.
 
-- Product grid
-- Categories
-- Search
-- Cart
-- Quantity management
-- Running totals
+## Known gaps
+- Promotion UI/admin screens do not yet exist.
+- Customer-group conditions are modeled but not yet connected to a real customer/loyalty layer.
+- Branch/channel conditions are modeled but not yet connected to runtime branch/channel context.
+- Loyalty points engine is not yet implemented.
+- Coupon/Promotion return and exchange behavior still needs end-to-end QA.
+- Persistence is still browser local storage; production local DB is still pending.
+- Offline replication and network-wide transaction synchronization are pending.
+- Tax engine is pending.
+- Fiscal/document finalization is pending.
+- Inventory commit is pending.
+- Shift/permissions are pending.
+- Hardware/printing integrations are pending.
 
-## Checkout
+## Exact next task
+Complete the remaining Promotion Engine integration:
+1. Customer groups / club conditions.
+2. Branch and sales-channel runtime conditions.
+3. Promotion/coupon behavior on returns and exchanges.
+4. Promotion and coupon test matrix.
+5. Mark Promotion Engine Alpha Complete.
 
-- Cash
-- Partial payment
-- Split payment engine
-- Change calculation
-- Payment summary
-- Multiple payments
+Then continue to:
+Tax Engine -> Documents -> Inventory -> Shift/Permissions -> Local DB -> Offline/Replication -> Hardware/Printing -> QA/Packaging.
 
-## Sale Engine
-
-- Sale model
-- Sale lines
-- Payment model
-- Complete sale flow
-
-## Receipt
-
-- Receipt preview
-- Receipt model
-- Print placeholder
-
-## Transactions
-
-- Repository
-- History page
-- Search
-- Transaction model
-- Transaction details foundation
-
----
-
-# Build
-
-✅ npm run build
-
----
-
-# Known Issues
-
-- Receipt layout is temporary
-- No real printing engine
-- No persistence (memory only)
-- No database
-- No tax engine
-- No promotion engine
-- No stock deduction
-- No permissions
-
----
-
-# Next Sprint
-
-Returns / Refunds
-
-- Open transaction
-- Partial return
-- Credit invoice
-- Inventory movement
-- Audit log
-
----
-
-# Roadmap
-
-Phase 1
-✔ Foundation
-
-Phase 2
-✔ Sale
-
-Phase 3
-✔ Checkout
-
-Phase 4
-✔ Sale Engine
-
-Phase 5
-✔ Receipt
-
-Phase 6
-✔ Transaction History
-
-Phase 7
-⬜ Returns
-
-Phase 8
-⬜ Promotions
-
-Phase 9
-⬜ Tax Engine
-
-Phase 10
-⬜ Inventory
-
-Phase 11
-⬜ Customers
-
-Phase 12
-⬜ Integrations
-
-Phase 13
-⬜ Reports
-
-Phase 14
-⬜ Permissions
-
-Phase 15
-⬜ Offline
-
-Phase 16
-⬜ Production
+## Product rule locked today
+A promotion may never make the transaction more expensive.
+When multiple eligible promotion combinations conflict, Lumora must select the best valid benefit for the customer.
