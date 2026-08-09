@@ -11,6 +11,10 @@ import {
     buildMixAndMatchGroups,
 } from "./MixAndMatchPromotion";
 
+export type PromotionEvaluationContext = {
+    customerGroupIds?: string[];
+};
+
 type Unit = {
     id: string;
     lineId: string;
@@ -216,9 +220,32 @@ function isInsideRecurringSchedule(
 
 function isPromotionActive(
     promotion: Promotion,
+    context: PromotionEvaluationContext,
 ) {
     if (!promotion.isActive) {
         return false;
+    }
+
+    const requiredGroups =
+        promotion.allowedCustomerGroupIds ??
+        [];
+
+    if (requiredGroups.length > 0) {
+        const customerGroups =
+            context.customerGroupIds ??
+            [];
+
+        const matchesCustomerGroup =
+            requiredGroups.some(
+                (groupId) =>
+                    customerGroups.includes(
+                        groupId,
+                    ),
+            );
+
+        if (!matchesCustomerGroup) {
+            return false;
+        }
     }
 
     const now =
@@ -1981,11 +2008,16 @@ function applicationsToRules(
 export function evaluatePromotions(
     lines: CartLine[],
     promotions: Promotion[],
+    context: PromotionEvaluationContext = {},
 ): PricingRule[] {
     const applications =
         promotions
             .filter(
-                isPromotionActive,
+                (promotion) =>
+                    isPromotionActive(
+                        promotion,
+                        context,
+                    ),
             )
             .sort(
                 (a, b) =>

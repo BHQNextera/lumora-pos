@@ -12,6 +12,9 @@ import ProductGrid from "../../components/pos/ProductGrid";
 import { posCapabilities } from "../../config/posCapabilities";
 import { usePricing } from "../../context/usePricing";
 import { products } from "../../data/products";
+import {
+    testCustomers,
+} from "../../models/customer/CustomerSeed";
 import type { Payment } from "../../models/Payment";
 import {
     redeemCoupon,
@@ -88,6 +91,9 @@ function SalePage({
         addPricingRule,
         removePricingRule,
         clearPricingRules,
+
+        selectedCustomer,
+        setSelectedCustomer,
 
         appliedCoupon,
         couponDiscountAmount,
@@ -694,6 +700,9 @@ function SalePage({
                         pricing.total,
 
                     transactionId,
+
+                    customerGroupId:
+                        selectedCustomer.groupIds[0],
                 });
 
             appliedSaleCoupon = {
@@ -725,8 +734,16 @@ function SalePage({
                 createSaleLines(),
                 payments,
                 {
+                    id:
+                        selectedCustomer.id,
                     name:
-                        "לקוח מזדמן",
+                        selectedCustomer.name,
+                    phone:
+                        selectedCustomer.phone,
+                    groupIds:
+                        selectedCustomer.groupIds,
+                    isClubMember:
+                        selectedCustomer.isClubMember,
                 },
                 {
                     transactionId,
@@ -760,6 +777,9 @@ function SalePage({
         setCartLines([]);
         clearPricingRules();
         removeCoupon();
+        setSelectedCustomer(
+            testCustomers[0],
+        );
         setSelectedLineId(null);
     };
 
@@ -1011,6 +1031,15 @@ function SalePage({
                         <CartPanel
                             lines={pricing.lines}
                             pricing={pricing}
+                            selectedCustomer={
+                                selectedCustomer
+                            }
+                            customers={
+                                testCustomers
+                            }
+                            onCustomerChange={
+                                setSelectedCustomer
+                            }
                             appliedCoupon={appliedCoupon}
                             couponDiscountAmount={
                                 couponDiscountAmount

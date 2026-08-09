@@ -17,6 +17,9 @@ import type {
 import type {
     Coupon,
 } from "../models/coupon/Coupon";
+import type {
+    Customer,
+} from "../models/customer/Customer";
 
 export type PricingContextValue = {
     cartLines: CartLine[];
@@ -24,6 +27,8 @@ export type PricingContextValue = {
     pricingRules: PricingRule[];
 
     promotions: Promotion[];
+
+    selectedCustomer: Customer;
 
     appliedCoupon: Coupon | null;
 
@@ -72,6 +77,10 @@ export type PricingContextValue = {
     togglePromotion: (
         promotionId: string,
         isActive: boolean,
+    ) => void;
+
+    setSelectedCustomer: (
+        customer: Customer,
     ) => void;
 
     applyCoupon: (

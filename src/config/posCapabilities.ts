@@ -13,6 +13,10 @@ export type PosCapabilities = {
     requireManagerForDescriptionOverride: boolean;
 
     allowReturnWithoutDocument: boolean;
+
+    showProductCostPrice: boolean;
+    showProductGrossMargin: boolean;
+    showNetworkStock: boolean;
 };
 
 export const posCapabilities: PosCapabilities = {
@@ -25,4 +29,8 @@ export const posCapabilities: PosCapabilities = {
     requireManagerForDescriptionOverride: false,
 
     allowReturnWithoutDocument: true,
+
+    showProductCostPrice: true,
+    showProductGrossMargin: true,
+    showNetworkStock: false,
 };

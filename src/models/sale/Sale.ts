@@ -15,6 +15,9 @@ export type TransactionType =
 export type SaleCustomer = {
     id?: string;
     name: string;
+    phone?: string;
+    groupIds?: string[];
+    isClubMember?: boolean;
 };
 
 export type AppliedSaleCoupon = {

@@ -1,4 +1,7 @@
 import type { Promotion } from "../promotion/Promotion";
+import type {
+    PromotionEvaluationContext,
+} from "../promotion/PromotionEngine";
 import {
     evaluatePromotions,
 } from "../promotion/PromotionEngine";
@@ -18,11 +21,14 @@ export function reprice(
     cart: CartLine[],
     rules: PricingRule[],
     promotions: Promotion[] = [],
+    promotionContext:
+        PromotionEvaluationContext = {},
 ) {
     const promotionRules =
         evaluatePromotions(
             cart,
             promotions,
+            promotionContext,
         );
 
     return calculatePricing(

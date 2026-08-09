@@ -97,3 +97,37 @@ Tax Engine -> Documents -> Inventory -> Shift/Permissions -> Local DB -> Offline
 ## Product rule locked today
 A promotion may never make the transaction more expensive.
 When multiple eligible promotion combinations conflict, Lumora must select the best valid benefit for the customer.
+
+## Checkpoint — 2026-08-09
+
+### Completed
+- Lumora connected to Vercel production.
+- Product Info added to catalog items.
+- Product Info includes selling price, cost price, gross profit, gross margin, supplier, hierarchy, stock and active promotions.
+- Product commercial visibility capabilities added.
+- Customer foundation added.
+- Test customer groups added: club / VIP.
+- Promotion Engine now supports customer-group eligibility.
+- Customer selection is connected to pricing.
+- Club promotion was verified: walk-in customer receives regular price; club customer receives eligible club promotion.
+- Existing pricing, promotion, coupon and payment foundations still build successfully.
+
+### Current build
+- npm run build: PASS
+
+### Exact next work
+1. Finish Promotion Engine runtime conditions: branch + sales channel.
+2. Returns/exchanges with promotions and coupons.
+3. Promotion regression test matrix.
+4. Mark Promotion Engine Alpha Complete.
+5. Tax Engine.
+6. Fiscal/Documents finalization.
+7. Inventory commit.
+8. Employees / permissions / shifts.
+9. Local DB.
+10. Offline replication and multi-register / multi-branch synchronization.
+11. Nextera integration.
+12. Echo integration.
+13. Hardware / printing.
+14. QA and release packaging.
+15. Sales Coach on top of real transaction data.

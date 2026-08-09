@@ -16,6 +16,12 @@ import {
     calculateCouponDiscount,
     validateCoupon,
 } from "../models/coupon/CouponService";
+import type {
+    Customer,
+} from "../models/customer/Customer";
+import {
+    testCustomers,
+} from "../models/customer/CustomerSeed";
 import {
     PricingEvent,
 } from "../models/pricing/PricingEvents";
@@ -70,19 +76,8 @@ function PricingProvider({
         setPromotionsState,
     ] =
         useState<Promotion[]>(
-            () => {
-                const existing =
-                    getPromotions();
-
-                if (
-                    existing.length >
-                    0
-                ) {
-                    return existing;
-                }
-
-                return seedPromotionsIfEmpty();
-            },
+            () =>
+                seedPromotionsIfEmpty(),
         );
 
     const [
@@ -93,6 +88,14 @@ function PricingProvider({
             null,
         );
 
+    const [
+        selectedCustomer,
+        setSelectedCustomerState,
+    ] =
+        useState<Customer>(
+            testCustomers[0],
+        );
+
     const pricing = useMemo(
         () =>
             reprice(
@@ -100,11 +103,16 @@ function PricingProvider({
                 cartLines,
                 pricingRules,
                 promotions,
+                {
+                    customerGroupIds:
+                        selectedCustomer.groupIds,
+                },
             ),
         [
             cartLines,
             pricingRules,
             promotions,
+            selectedCustomer,
         ],
     );
 
@@ -123,6 +131,8 @@ function PricingProvider({
                     {
                         basketAmount:
                             pricing.total,
+                        customerGroupId:
+                            selectedCustomer.groupIds[0],
                     },
                 );
 
@@ -137,6 +147,7 @@ function PricingProvider({
         }, [
             appliedCoupon,
             pricing.total,
+            selectedCustomer,
         ]);
 
     const totalAfterCoupon =
@@ -170,6 +181,8 @@ function PricingProvider({
                 {
                     basketAmount:
                         pricing.total,
+                    customerGroupId:
+                        selectedCustomer.groupIds[0],
                 },
             );
 
@@ -181,6 +194,7 @@ function PricingProvider({
     }, [
         appliedCoupon,
         pricing.total,
+        selectedCustomer,
     ]);
 
     const setCartLines =
@@ -363,6 +377,8 @@ function PricingProvider({
                         {
                             basketAmount:
                                 pricing.total,
+                            customerGroupId:
+                                selectedCustomer.groupIds[0],
                         },
                     );
 
@@ -396,7 +412,20 @@ function PricingProvider({
                     success: true,
                 };
             },
-            [pricing.total],
+            [
+                pricing.total,
+                selectedCustomer,
+            ],
+        );
+
+    const setSelectedCustomer =
+        useCallback(
+            (customer: Customer) => {
+                setSelectedCustomerState(
+                    customer,
+                );
+            },
+            [],
         );
 
     const removeCoupon =
@@ -421,6 +450,8 @@ function PricingProvider({
             pricingRules,
             promotions,
 
+            selectedCustomer,
+
             appliedCoupon,
             couponDiscountAmount,
             totalAfterCoupon,
@@ -439,6 +470,8 @@ function PricingProvider({
             addPromotion,
             removePromotion,
             togglePromotion,
+
+            setSelectedCustomer,
 
             applyCoupon,
             removeCoupon,
@@ -450,6 +483,8 @@ function PricingProvider({
             pricingRules,
             promotions,
 
+            selectedCustomer,
+
             appliedCoupon,
             couponDiscountAmount,
             totalAfterCoupon,
@@ -468,6 +503,8 @@ function PricingProvider({
             addPromotion,
             removePromotion,
             togglePromotion,
+
+            setSelectedCustomer,
 
             applyCoupon,
             removeCoupon,

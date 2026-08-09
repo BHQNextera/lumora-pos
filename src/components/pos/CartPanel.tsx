@@ -12,12 +12,21 @@ import type {
 import type {
     Coupon,
 } from "../../models/coupon/Coupon";
+import type {
+    Customer,
+} from "../../models/customer/Customer";
 
 import "./cart-panel.css";
 
 type CartPanelProps = {
     lines: PricedCartLine[];
     pricing: PricingResult;
+
+    selectedCustomer: Customer;
+    customers: Customer[];
+    onCustomerChange: (
+        customer: Customer,
+    ) => void;
 
     appliedCoupon: Coupon | null;
     couponDiscountAmount: number;
@@ -50,6 +59,9 @@ type CartPanelProps = {
 function CartPanel({
     lines,
     pricing,
+    selectedCustomer,
+    customers,
+    onCustomerChange,
     appliedCoupon,
     couponDiscountAmount,
     totalAfterCoupon,
@@ -215,8 +227,8 @@ function CartPanel({
                                         onSelectLine(line.id)
                                     }
                                     className={`lumora-cart-line ${line.kind === "return"
-                                            ? "lumora-cart-line--return"
-                                            : ""
+                                        ? "lumora-cart-line--return"
+                                        : ""
                                         } ${selected
                                             ? "lumora-cart-line--selected"
                                             : ""
@@ -391,8 +403,8 @@ function CartPanel({
 
                                         <strong
                                             className={`lumora-cart-line__total ${line.calculatedNetAmount < 0
-                                                    ? "lumora-cart-line__total--return"
-                                                    : ""
+                                                ? "lumora-cart-line__total--return"
+                                                : ""
                                                 }`}
                                         >
                                             {line.calculatedNetAmount < 0
@@ -409,6 +421,62 @@ function CartPanel({
                         })}
                     </div>
                 )}
+
+                <div
+                    style={{
+                        padding: "10px 12px",
+                        borderTop:
+                            "1px solid #e2e4e7",
+                    }}
+                >
+                    <label
+                        style={{
+                            display: "grid",
+                            gap: "5px",
+                            fontSize: "10px",
+                        }}
+                    >
+                        <span>לקוח בעסקה</span>
+
+                        <select
+                            value={
+                                selectedCustomer.id
+                            }
+                            onChange={(event) => {
+                                const customer =
+                                    customers.find(
+                                        (item) =>
+                                            item.id ===
+                                            event.target.value,
+                                    );
+
+                                if (customer) {
+                                    onCustomerChange(
+                                        customer,
+                                    );
+                                }
+                            }}
+                            style={{
+                                height: "34px",
+                                padding: "0 8px",
+                                border: "1px solid #d8dade",
+                                borderRadius: "8px",
+                                background: "#fff",
+                            }}
+                        >
+                            {customers.map(
+                                (customer) => (
+                                    <option
+                                        key={customer.id}
+                                        value={customer.id}
+                                    >
+                                        {customer.name}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    </label>
+                </div>
 
                 <div
                     style={{

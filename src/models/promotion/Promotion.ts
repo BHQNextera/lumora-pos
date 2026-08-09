@@ -86,6 +86,12 @@ export type Promotion = {
 
     excludedCategoryIds?: string[];
 
+    /**
+     * When present, the promotion applies only when the current customer
+     * belongs to at least one of these groups.
+     */
+    allowedCustomerGroupIds?: string[];
+
     buyQuantity?: number;
     getQuantity?: number;
 
