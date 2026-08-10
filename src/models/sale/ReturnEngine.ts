@@ -1,3 +1,4 @@
+import { calculateIncludedTax } from "../tax/TaxPolicy";
 import type { Sale } from "./Sale";
 import type {
     ReturnDocument,
@@ -156,7 +157,7 @@ export function createReturn(
         subtotal,
         discount,
 
-        tax: 0,
+        tax: calculateIncludedTax(total),
 
         total,
 

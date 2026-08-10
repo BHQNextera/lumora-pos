@@ -1,0 +1,230 @@
+.stored-value-management {
+    height: 100%;
+    overflow: auto;
+    padding: 26px 28px 34px;
+    background: #f6f7f8;
+    color: #20242a;
+}
+
+.stored-value-management__header,
+.stored-value-management__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.stored-value-management__header {
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.stored-value-management__header p {
+    margin: 0 0 5px;
+    color: #7b848f;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: .14em;
+}
+
+.stored-value-management__header h1 {
+    margin: 0;
+    font-size: 26px;
+}
+
+.stored-value-management__header span {
+    display: block;
+    margin-top: 7px;
+    color: #747d87;
+    font-size: 12px;
+}
+
+.stored-value-management__primary {
+    min-height: 39px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.stored-value-management__toolbar {
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid #e1e5e9;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.stored-value-management__toolbar input {
+    width: min(360px, 48vw);
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #d9dee3;
+    border-radius: 9px;
+}
+
+.stored-value-management__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 14px;
+}
+
+.stored-value-management__table-wrap,
+.stored-value-management__details {
+    border: 1px solid #e0e4e8;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.stored-value-management table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.stored-value-management th,
+.stored-value-management td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #edf0f2;
+    text-align: right;
+}
+
+.stored-value-management th {
+    background: #fafbfb;
+    color: #68717b;
+    font-size: 10px;
+}
+
+.stored-value-management tbody tr {
+    cursor: pointer;
+}
+
+.stored-value-management td button {
+    min-height: 29px;
+    padding: 0 9px;
+    border: 1px solid #dce1e5;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.stored-value-management__details {
+    padding: 16px;
+}
+
+.stored-value-management__details h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.stored-value-management__details h3 {
+    margin: 20px 0 8px;
+    font-size: 12px;
+}
+
+.stored-value-management__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background: #f7f8f9;
+}
+
+.stored-value-management__movements {
+    display: grid;
+    gap: 7px;
+}
+
+.stored-value-management__movements>div {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3px 8px;
+    padding: 9px;
+    border: 1px solid #edf0f2;
+    border-radius: 9px;
+}
+
+.stored-value-management__movements small {
+    grid-column: 1 / -1;
+    color: #858e98;
+}
+
+.stored-value-management__empty {
+    color: #828b95;
+    font-size: 11px;
+}
+
+.stored-value-management__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 4800;
+    display: grid;
+    place-items: center;
+    background: rgb(17 24 39 / 34%);
+}
+
+.stored-value-management__dialog {
+    width: min(560px, 92vw);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgb(15 23 42 / 18%);
+}
+
+.stored-value-management__dialog header,
+.stored-value-management__dialog footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f2;
+}
+
+.stored-value-management__dialog footer {
+    justify-content: flex-start;
+    gap: 8px;
+    border-top: 1px solid #edf0f2;
+    border-bottom: 0;
+}
+
+.stored-value-management__form {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+}
+
+.stored-value-management__form label {
+    display: grid;
+    gap: 5px;
+    color: #59626c;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.stored-value-management__form input,
+.stored-value-management__form select {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #d9dee3;
+    border-radius: 9px;
+}
+
+.stored-value-management__error {
+    padding: 9px 11px;
+    border: 1px solid #f0d0d0;
+    border-radius: 9px;
+    background: #fff5f5;
+    color: #a33d3d;
+    font-size: 10px;
+}
+
+@media (max-width: 1100px) {
+    .stored-value-management__layout {
+        grid-template-columns: 1fr;
+    }
+}

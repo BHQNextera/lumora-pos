@@ -1,3 +1,4 @@
+import { calculateIncludedTax } from "../tax/TaxPolicy";
 import {
     createAccountingDocument,
 } from "../document/DocumentFactory";
@@ -357,7 +358,7 @@ export function completeSale(
                 }
                 : undefined,
 
-        tax: 0,
+        tax: calculateIncludedTax(total),
 
         total,
 

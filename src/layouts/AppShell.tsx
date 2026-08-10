@@ -6,6 +6,7 @@ import type { CartLine } from "../models/sale/CartLine";
 import SalePage from "../pages/sale/SalePage";
 import TransactionsPage from "../pages/transactions/TransactionsPage";
 import ProductManagementPage from "../pages/products/ProductManagementPage";
+import StoredValueManagementPage from "../pages/stored-value/StoredValueManagementPage";
 import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
 import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
 
@@ -14,7 +15,8 @@ export type AppView =
   | "transactions"
     | "products"
     | "customers"
-    | "promotions";
+    | "promotions"
+    | "stored-value";
 
 function AppShell() {
   const [
@@ -58,6 +60,9 @@ function AppShell() {
 
       {activeView === "promotions" && (
         <PromotionManagementPage />
+      )}
+      {activeView === "stored-value" && (
+        <StoredValueManagementPage />
       )}
 {activeView === "products" && (
         <ProductManagementPage />
