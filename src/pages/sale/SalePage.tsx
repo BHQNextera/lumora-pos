@@ -12,6 +12,8 @@ import ProductGrid from "../../components/pos/ProductGrid";
 import { posCapabilities } from "../../config/posCapabilities";
 import { usePricing } from "../../context/usePricing";
 import { products } from "../../data/products";
+import { translate } from "../../i18n";
+import { categorySeed } from "../../models/catalog/Category";
 import {
     testCustomers,
 } from "../../models/customer/CustomerSeed";
@@ -29,10 +31,7 @@ import type {
 } from "../../models/sale/Sale";
 import type { SaleLine } from "../../models/sale/SaleLine";
 import { completeSale } from "../../models/sale/SaleService";
-import type {
-    Product,
-    ProductCategory,
-} from "../../types/product";
+import type { Product } from "../../types/product";
 import PaymentPage from "../payment/PaymentPage";
 import RefundPage from "../payment/RefundPage";
 import ReturnItemPage from "../return-item/ReturnItemPage";
@@ -48,35 +47,29 @@ type SaleMode =
     | "return-item";
 
 type CategoryOption = {
-    id: ProductCategory;
+    id: string;
     label: string;
 };
 
 const categories: CategoryOption[] = [
     {
         id: "all",
-        label: "הכול",
+        label: translate("common.all"),
     },
-    {
-        id: "hot-drinks",
-        label: "שתייה חמה",
-    },
-    {
-        id: "cold-drinks",
-        label: "שתייה קרה",
-    },
-    {
-        id: "pastries",
-        label: "מאפים",
-    },
-    {
-        id: "sandwiches",
-        label: "כריכים",
-    },
-    {
-        id: "desserts",
-        label: "קינוחים",
-    },
+    ...categorySeed
+        .filter(
+            (category) =>
+                category.level === "category" &&
+                category.isActive,
+        )
+        .sort(
+            (a, b) =>
+                a.sortOrder - b.sortOrder,
+        )
+        .map((category) => ({
+            id: category.id,
+            label: category.name,
+        })),
 ];
 
 function SalePage({
@@ -112,7 +105,7 @@ function SalePage({
         selectedCategory,
         setSelectedCategory,
     ] =
-        useState<ProductCategory>("all");
+        useState<string>("all");
 
     const [
         searchTerm,
