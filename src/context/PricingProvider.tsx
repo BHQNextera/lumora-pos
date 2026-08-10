@@ -1,4 +1,4 @@
-import {
+﻿import {
     useCallback,
     useEffect,
     useMemo,
@@ -49,6 +49,8 @@ import type {
 import {
     PricingContext,
 } from "./PricingContext";
+
+import SalesCoach from "../components/sales-coach/SalesCoach";
 
 type PricingProviderProps = {
     children: ReactNode;
@@ -518,6 +520,7 @@ function PricingProvider({
             value={value}
         >
             {children}
+            <SalesCoach />
         </PricingContext.Provider>
     );
 }
