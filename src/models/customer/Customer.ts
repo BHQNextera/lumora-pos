@@ -1,8 +1,7 @@
 export type CustomerGroupId =
     | "club"
     | "vip"
-    | "employee"
-    | string;
+    | "employee";
 
 export type Customer = {
     id: string;
@@ -10,8 +9,19 @@ export type Customer = {
     name: string;
 
     phone?: string;
+    email?: string;
+
+    externalId?: string;
+
+    address?: string;
+    notes?: string;
 
     groupIds: CustomerGroupId[];
 
     isClubMember: boolean;
+
+    isActive?: boolean;
+
+    createdAt?: string;
+    updatedAt?: string;
 };
