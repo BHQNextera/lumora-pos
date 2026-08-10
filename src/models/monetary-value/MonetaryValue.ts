@@ -27,6 +27,9 @@ export type MonetaryValue = {
     originTransactionId?: string;
     originDocumentId?: string;
 
+    previousMonetaryValueId?: string;
+    replacementMonetaryValueId?: string;
+
     issuedAt: string;
     expiresAt?: string;
 

@@ -1,14 +1,12 @@
-type AppView =
-  | "sale"
-  | "transactions"
-    | "products"
-    | "customers"
-    | "promotions"
-    | "stored-value";
+import type {
+  AppView,
+} from "../../layouts/AppShell";
 
 type SidebarProps = {
   activeView: AppView;
-  onNavigate: (view: AppView) => void;
+  onNavigate: (
+    view: AppView,
+  ) => void;
 };
 
 type SidebarItem = {
@@ -52,9 +50,15 @@ const navigationItems: SidebarItem[] = [
     id: "credits",
     label: "זיכויים",
     icon: "₪",
-    view: "stored-value",
-},
-{
+    view: "credits",
+  },
+  {
+    id: "gift-cards",
+    label: "Gift Cards",
+    icon: "G",
+    view: "gift-cards",
+  },
+  {
     id: "reports",
     label: "דוחות",
     icon: "▥",
@@ -86,45 +90,72 @@ function Sidebar({
         </div>
 
         <div className="pos-sidebar__business-details">
-          <strong>Coffee Time</strong>
-          <span>סניף רחובות</span>
+          <strong>
+            Coffee Time
+          </strong>
+
+          <span>
+            סניף רחובות
+          </span>
         </div>
       </div>
 
       <nav className="pos-sidebar__navigation">
-        {navigationItems.map((item) => {
-          const isActive =
-            item.view === activeView;
+        {navigationItems.map(
+          (
+            item,
+          ) => {
+            const isActive =
+              item.view ===
+              activeView;
 
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={`pos-sidebar__item ${isActive
-                ? "pos-sidebar__item--active"
-                : ""
-                }`}
-              aria-current={
-                isActive ? "page" : undefined
-              }
-              disabled={!item.view}
-              onClick={() => {
-                if (item.view) {
-                  onNavigate(item.view);
+            return (
+              <button
+                key={
+                  item.id
                 }
-              }}
-            >
-              <span
-                className="pos-sidebar__item-icon"
-                aria-hidden="true"
+                type="button"
+                className={`pos-sidebar__item ${
+                  isActive
+                    ? "pos-sidebar__item--active"
+                    : ""
+                }`}
+                aria-current={
+                  isActive
+                    ? "page"
+                    : undefined
+                }
+                disabled={
+                  !item.view
+                }
+                onClick={() => {
+                  if (
+                    item.view
+                  ) {
+                    onNavigate(
+                      item.view,
+                    );
+                  }
+                }}
               >
-                {item.icon}
-              </span>
+                <span
+                  className="pos-sidebar__item-icon"
+                  aria-hidden="true"
+                >
+                  {
+                    item.icon
+                  }
+                </span>
 
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+                <span>
+                  {
+                    item.label
+                  }
+                </span>
+              </button>
+            );
+          },
+        )}
       </nav>
 
       <div className="pos-sidebar__footer">
@@ -132,12 +163,18 @@ function Sidebar({
           type="button"
           className="pos-sidebar__drawer-button"
         >
-          <span aria-hidden="true">▱</span>
+          <span
+            aria-hidden="true"
+          >
+            ▱
+          </span>
           פתיחת מגירה
         </button>
 
         <div className="pos-sidebar__shift-status">
-          <span aria-hidden="true" />
+          <span
+            aria-hidden="true"
+          />
           משמרת פתוחה
         </div>
       </div>

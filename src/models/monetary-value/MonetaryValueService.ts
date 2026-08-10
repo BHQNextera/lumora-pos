@@ -4,6 +4,7 @@ import type {
     MonetaryValueType,
 } from "./MonetaryValue";
 import {
+    getMonetaryValue,
     getMonetaryValueByNumber,
     saveMonetaryValue,
     saveMonetaryValueMovement,
@@ -55,6 +56,8 @@ export type IssueMonetaryValueInput = {
     originTransactionId?: string;
     originDocumentId?: string;
 
+    previousMonetaryValueId?: string;
+
     expiresAt?: string;
 
     employeeId?: string;
@@ -65,10 +68,14 @@ export function issueMonetaryValue(
     input: IssueMonetaryValueInput,
 ) {
     const amount =
-        roundMoney(input.amount);
+        roundMoney(
+            input.amount,
+        );
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isFinite(
+            amount,
+        ) ||
         amount <= 0
     ) {
         throw new Error(
@@ -109,6 +116,9 @@ export function issueMonetaryValue(
         originDocumentId:
             input.originDocumentId,
 
+        previousMonetaryValueId:
+            input.previousMonetaryValueId,
+
         issuedAt:
             now,
 
@@ -119,7 +129,9 @@ export function issueMonetaryValue(
             now,
     };
 
-    saveMonetaryValue(value);
+    saveMonetaryValue(
+        value,
+    );
 
     const movement: MonetaryValueMovement = {
         id:
@@ -133,7 +145,9 @@ export function issueMonetaryValue(
 
         amount,
 
-        balanceBefore: 0,
+        balanceBefore:
+            0,
+
         balanceAfter:
             amount,
 
@@ -145,6 +159,11 @@ export function issueMonetaryValue(
 
         registerCode:
             input.registerCode,
+
+        reason:
+            input.previousMonetaryValueId
+                ? `rollover_from:${input.previousMonetaryValueId}`
+                : undefined,
 
         createdAt:
             now,
@@ -167,17 +186,20 @@ export function validateMonetaryValueForPayment(
 
     if (!value) {
         return {
-            valid: false as const,
+            valid:
+                false as const,
             reason:
                 "not_found" as const,
         };
     }
 
     if (
-        value.status !== "active"
+        value.status !==
+        "active"
     ) {
         return {
-            valid: false as const,
+            valid:
+                false as const,
             reason:
                 "not_active" as const,
             value,
@@ -192,7 +214,8 @@ export function validateMonetaryValueForPayment(
         Date.now()
     ) {
         return {
-            valid: false as const,
+            valid:
+                false as const,
             reason:
                 "expired" as const,
             value,
@@ -200,10 +223,12 @@ export function validateMonetaryValueForPayment(
     }
 
     if (
-        value.remainingAmount <= 0
+        value.remainingAmount <=
+        0
     ) {
         return {
-            valid: false as const,
+            valid:
+                false as const,
             reason:
                 "empty" as const,
             value,
@@ -211,7 +236,8 @@ export function validateMonetaryValueForPayment(
     }
 
     return {
-        valid: true as const,
+        valid:
+            true as const,
         value,
     };
 }
@@ -236,7 +262,9 @@ export function redeemMonetaryValue(
             input.number,
         );
 
-    if (!validation.valid) {
+    if (
+        !validation.valid
+    ) {
         throw new Error(
             `Monetary value cannot be redeemed: ${validation.reason}`,
         );
@@ -281,6 +309,138 @@ export function redeemMonetaryValue(
     const now =
         new Date().toISOString();
 
+    /*
+     * Credit voucher policy:
+     * A voucher number is single-use.
+     *
+     * If only part of the voucher is used, the original voucher is
+     * depleted and a brand-new voucher is issued for the remaining
+     * balance. Gift cards and store credit keep their existing number.
+     */
+    if (
+        value.type ===
+        "credit_voucher"
+    ) {
+        const depleted: MonetaryValue = {
+            ...value,
+
+            remainingAmount:
+                0,
+
+            status:
+                "depleted",
+
+            updatedAt:
+                now,
+        };
+
+        saveMonetaryValue(
+            depleted,
+        );
+
+        saveMonetaryValueMovement({
+            id:
+                crypto.randomUUID(),
+
+            monetaryValueId:
+                value.id,
+
+            type:
+                "redeem",
+
+            amount:
+                -redeemedAmount,
+
+            balanceBefore:
+                before,
+
+            balanceAfter:
+                0,
+
+            transactionId:
+                input.transactionId,
+
+            paymentId:
+                input.paymentId,
+
+            employeeId:
+                input.employeeId,
+
+            registerCode:
+                input.registerCode,
+
+            reason:
+                after > 0
+                    ? "partial_redemption_rollover"
+                    : undefined,
+
+            createdAt:
+                now,
+        });
+
+        const replacement =
+            after > 0
+                ? issueMonetaryValue({
+                      type:
+                          "credit_voucher",
+
+                      amount:
+                          after,
+
+                      customerId:
+                          value.customerId,
+
+                      originTransactionId:
+                          input.transactionId,
+
+                      originDocumentId:
+                          value.originDocumentId,
+
+                      previousMonetaryValueId:
+                          value.id,
+
+                      expiresAt:
+                          value.expiresAt,
+
+                      employeeId:
+                          input.employeeId,
+
+                      registerCode:
+                          input.registerCode,
+                  })
+                : undefined;
+
+        const finalOriginal =
+            replacement
+                ? {
+                      ...depleted,
+                      replacementMonetaryValueId:
+                          replacement.id,
+                  }
+                : depleted;
+
+        if (
+            replacement
+        ) {
+            saveMonetaryValue(
+                finalOriginal,
+            );
+        }
+
+        return {
+            monetaryValue:
+                finalOriginal,
+
+            redeemedAmount,
+
+            remainingAmount:
+                after,
+
+            replacementMonetaryValue:
+                replacement,
+        };
+    }
+
     const updated: MonetaryValue = {
         ...value,
 
@@ -300,7 +460,7 @@ export function redeemMonetaryValue(
         updated,
     );
 
-    const movement: MonetaryValueMovement = {
+    saveMonetaryValueMovement({
         id:
             crypto.randomUUID(),
 
@@ -333,11 +493,7 @@ export function redeemMonetaryValue(
 
         createdAt:
             now,
-    };
-
-    saveMonetaryValueMovement(
-        movement,
-    );
+    });
 
     return {
         monetaryValue:
@@ -347,7 +503,76 @@ export function redeemMonetaryValue(
 
         remainingAmount:
             after,
+
+        replacementMonetaryValue:
+            undefined,
     };
+}
+
+function cancelReplacementVoucher(
+    original: MonetaryValue,
+    now: string,
+    paymentId?: string,
+) {
+    if (
+        !original.replacementMonetaryValueId
+    ) {
+        return;
+    }
+
+    const replacement =
+        getMonetaryValue(
+            original.replacementMonetaryValueId,
+        );
+
+    if (
+        !replacement ||
+        replacement.status ===
+            "cancelled"
+    ) {
+        return;
+    }
+
+    saveMonetaryValue({
+        ...replacement,
+
+        remainingAmount:
+            0,
+
+        status:
+            "cancelled",
+
+        updatedAt:
+            now,
+    });
+
+    saveMonetaryValueMovement({
+        id:
+            crypto.randomUUID(),
+
+        monetaryValueId:
+            replacement.id,
+
+        type:
+            "cancel",
+
+        amount:
+            -replacement.remainingAmount,
+
+        balanceBefore:
+            replacement.remainingAmount,
+
+        balanceAfter:
+            0,
+
+        paymentId,
+
+        reason:
+            `rollback_of:${original.id}`,
+
+        createdAt:
+            now,
+    });
 }
 
 export type RestoreMonetaryValueInput = {
@@ -384,12 +609,105 @@ export function restoreMonetaryValue(
         );
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isFinite(
+            amount,
+        ) ||
         amount <= 0
     ) {
         throw new Error(
             "Invalid restore amount",
         );
+    }
+
+    const now =
+        new Date().toISOString();
+
+    /*
+     * A partially redeemed credit voucher created a replacement voucher.
+     * If the payment is removed before the sale completes, cancel that
+     * replacement and reactivate the original voucher at its pre-redeem
+     * balance. With single-use voucher numbers, originalAmount is the
+     * pre-redeem balance for that voucher generation.
+     */
+    if (
+        value.type ===
+            "credit_voucher" &&
+        value.replacementMonetaryValueId
+    ) {
+        cancelReplacementVoucher(
+            value,
+            now,
+            input.paymentId,
+        );
+
+        const restored: MonetaryValue = {
+            ...value,
+
+            remainingAmount:
+                value.originalAmount,
+
+            status:
+                "active",
+
+            replacementMonetaryValueId:
+                undefined,
+
+            updatedAt:
+                now,
+        };
+
+        saveMonetaryValue(
+            restored,
+        );
+
+        saveMonetaryValueMovement({
+            id:
+                crypto.randomUUID(),
+
+            monetaryValueId:
+                value.id,
+
+            type:
+                "restore",
+
+            amount:
+                value.originalAmount,
+
+            balanceBefore:
+                0,
+
+            balanceAfter:
+                value.originalAmount,
+
+            transactionId:
+                input.transactionId,
+
+            paymentId:
+                input.paymentId,
+
+            employeeId:
+                input.employeeId,
+
+            registerCode:
+                input.registerCode,
+
+            reason:
+                input.reason,
+
+            createdAt:
+                now,
+        });
+
+        return {
+            monetaryValue:
+                restored,
+
+            restoredAmount:
+                amount,
+
+            remainingAmount:
+                restored.remainingAmount,
+        };
     }
 
     const before =
@@ -405,11 +723,9 @@ export function restoreMonetaryValue(
 
     const restoredAmount =
         roundMoney(
-            after - before,
+            after -
+            before,
         );
-
-    const now =
-        new Date().toISOString();
 
     const updated: MonetaryValue = {
         ...value,
@@ -430,7 +746,7 @@ export function restoreMonetaryValue(
         updated,
     );
 
-    const movement: MonetaryValueMovement = {
+    saveMonetaryValueMovement({
         id:
             crypto.randomUUID(),
 
@@ -466,11 +782,7 @@ export function restoreMonetaryValue(
 
         createdAt:
             now,
-    };
-
-    saveMonetaryValueMovement(
-        movement,
-    );
+    });
 
     return {
         monetaryValue:

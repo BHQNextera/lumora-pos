@@ -5,7 +5,6 @@ import {
 
 import type {
     MonetaryValue,
-    MonetaryValueType,
 } from "../../models/monetary-value/MonetaryValue";
 import {
     getMonetaryValues,
@@ -29,47 +28,90 @@ type IssueDraft = {
 };
 
 const emptyDraft: IssueDraft = {
-    type: "credit_voucher",
-    amount: "",
-    customerId: "",
-    expiresAt: "",
+    type:
+        "credit_voucher",
+    amount:
+        "",
+    customerId:
+        "",
+    expiresAt:
+        "",
 };
 
-const typeLabels:
-    Record<MonetaryValueType, string> = {
-        credit_voucher: "זיכוי",
-        gift_card: "Gift Card",
-        store_credit: "יתרת לקוח",
-    };
+const typeLabels = {
+    credit_voucher:
+        "זיכוי",
+    store_credit:
+        "יתרת לקוח",
+} as const;
 
 const statusLabels:
-    Record<MonetaryValue["status"], string> = {
-        active: "פעיל",
-        depleted: "מומש",
-        expired: "פג תוקף",
-        blocked: "חסום",
-        cancelled: "מבוטל",
+    Record<
+        MonetaryValue["status"],
+        string
+    > = {
+        active:
+            "פעיל",
+        depleted:
+            "מומש",
+        expired:
+            "פג תוקף",
+        blocked:
+            "חסום",
+        cancelled:
+            "מבוטל",
     };
 
 function StoredValueManagementPage() {
-    const [values, setValues] =
+    const [
+        values,
+        setValues,
+    ] =
         useState<MonetaryValue[]>(
-            () => getMonetaryValues(),
+            () =>
+                getMonetaryValues(),
         );
-    const [query, setQuery] = useState("");
-    const [selectedId, setSelectedId] =
-        useState<string | null>(null);
-    const [showIssue, setShowIssue] =
+
+    const [
+        query,
+        setQuery,
+    ] = useState("");
+
+    const [
+        selectedId,
+        setSelectedId,
+    ] =
+        useState<string | null>(
+            null,
+        );
+
+    const [
+        showIssue,
+        setShowIssue,
+    ] =
         useState(false);
-    const [draft, setDraft] =
-        useState<IssueDraft>(emptyDraft);
-    const [error, setError] =
-        useState<string | null>(null);
+
+    const [
+        draft,
+        setDraft,
+    ] =
+        useState<IssueDraft>(
+            emptyDraft,
+        );
+
+    const [
+        error,
+        setError,
+    ] =
+        useState<string | null>(
+            null,
+        );
 
     const selected =
         values.find(
             (value) =>
-                value.id === selectedId,
+                value.id ===
+                selectedId,
         ) ?? null;
 
     const movements =
@@ -83,47 +125,84 @@ function StoredValueManagementPage() {
             [selected],
         );
 
-    const visible = useMemo(() => {
-        const normalized =
-            query.trim().toLowerCase();
+    const visible =
+        useMemo(() => {
+            const normalized =
+                query
+                    .trim()
+                    .toLowerCase();
 
-        return values.filter(
-            (value) =>
-                !normalized ||
-                value.number
-                    .toLowerCase()
-                    .includes(normalized) ||
-                (value.customerId ?? "")
-                    .toLowerCase()
-                    .includes(normalized) ||
-                typeLabels[value.type]
-                    .toLowerCase()
-                    .includes(normalized),
-        );
-    }, [values, query]);
+            return values
+                .filter(
+                    (value) =>
+                        value.type !==
+                        "gift_card",
+                )
+                .filter(
+                    (value) =>
+                        !normalized ||
+                        value.number
+                            .toLowerCase()
+                            .includes(
+                                normalized,
+                            ) ||
+                        (
+                            value.customerId ??
+                            ""
+                        )
+                            .toLowerCase()
+                            .includes(
+                                normalized,
+                            ) ||
+                        typeLabels[
+                            value.type as
+                                | "credit_voucher"
+                                | "store_credit"
+                        ]
+                            .toLowerCase()
+                            .includes(
+                                normalized,
+                            ),
+                );
+        }, [
+            values,
+            query,
+        ]);
 
     const refresh = () => {
-        setValues(getMonetaryValues());
+        setValues(
+            getMonetaryValues(),
+        );
     };
 
     const issue = () => {
         const amount =
-            Number(draft.amount);
+            Number(
+                draft.amount,
+            );
 
         if (
-            !Number.isFinite(amount) ||
+            !Number.isFinite(
+                amount,
+            ) ||
             amount <= 0
         ) {
-            setError("יש להזין סכום תקין.");
+            setError(
+                "יש להזין סכום תקין.",
+            );
             return;
         }
 
         issueMonetaryValue({
-            type: draft.type,
+            type:
+                draft.type,
+
             amount,
+
             customerId:
                 draft.customerId.trim() ||
                 undefined,
+
             expiresAt:
                 draft.expiresAt
                     ? new Date(
@@ -133,51 +212,66 @@ function StoredValueManagementPage() {
         });
 
         refresh();
-        setDraft(emptyDraft);
-        setError(null);
-        setShowIssue(false);
+        setDraft(
+            emptyDraft,
+        );
+        setError(
+            null,
+        );
+        setShowIssue(
+            false,
+        );
     };
 
     const toggleBlock = (
         value: MonetaryValue,
     ) => {
         if (
-            value.type === "gift_card" ||
-            (
-                value.status !== "active" &&
-                value.status !== "blocked"
-            )
+            value.status !==
+                "active" &&
+            value.status !==
+                "blocked"
         ) {
             return;
         }
 
         const now =
             new Date().toISOString();
+
         const nextStatus =
-            value.status === "blocked"
+            value.status ===
+            "blocked"
                 ? "active"
                 : "blocked";
 
         saveMonetaryValue({
             ...value,
-            status: nextStatus,
-            updatedAt: now,
+            status:
+                nextStatus,
+            updatedAt:
+                now,
         });
 
         saveMonetaryValueMovement({
-            id: crypto.randomUUID(),
-            monetaryValueId: value.id,
-            type: "adjustment",
-            amount: 0,
+            id:
+                crypto.randomUUID(),
+            monetaryValueId:
+                value.id,
+            type:
+                "adjustment",
+            amount:
+                0,
             balanceBefore:
                 value.remainingAmount,
             balanceAfter:
                 value.remainingAmount,
             reason:
-                nextStatus === "blocked"
+                nextStatus ===
+                "blocked"
                     ? "blocked from Lumora"
                     : "unblocked from Lumora",
-            createdAt: now,
+            createdAt:
+                now,
         });
 
         refresh();
@@ -190,10 +284,16 @@ function StoredValueManagementPage() {
         >
             <header className="stored-value-management__header">
                 <div>
-                    <p>STORED VALUE</p>
-                    <h1>זיכויים ויתרות</h1>
+                    <p>
+                        CREDIT
+                    </p>
+
+                    <h1>
+                        זיכויים ויתרות לקוח
+                    </h1>
+
                     <span>
-                        צפייה וניהול זיכויים ויתרות לקוח. Gift Cards מוצגים לצפייה בלבד.
+                        זיכויים ויתרות לקוח מנוהלים כאן. Gift Cards נמצאים במסך נפרד.
                     </span>
                 </div>
 
@@ -201,9 +301,15 @@ function StoredValueManagementPage() {
                     type="button"
                     className="stored-value-management__primary"
                     onClick={() => {
-                        setDraft(emptyDraft);
-                        setError(null);
-                        setShowIssue(true);
+                        setDraft(
+                            emptyDraft,
+                        );
+                        setError(
+                            null,
+                        );
+                        setShowIssue(
+                            true,
+                        );
                     }}
                 >
                     + זיכוי חדש
@@ -214,12 +320,26 @@ function StoredValueManagementPage() {
                 <input
                     type="search"
                     placeholder="חיפוש לפי מספר, לקוח או סוג"
-                    value={query}
-                    onChange={(event) =>
-                        setQuery(event.target.value)
+                    value={
+                        query
+                    }
+                    onChange={(
+                        event,
+                    ) =>
+                        setQuery(
+                            event
+                                .target
+                                .value,
+                        )
                     }
                 />
-                <strong>{visible.length} רשומות</strong>
+
+                <strong>
+                    {
+                        visible.length
+                    }{" "}
+                    רשומות
+                </strong>
             </div>
 
             <div className="stored-value-management__layout">
@@ -227,68 +347,120 @@ function StoredValueManagementPage() {
                     <table>
                         <thead>
                             <tr>
-                                <th>מספר</th>
-                                <th>סוג</th>
-                                <th>סכום מקורי</th>
-                                <th>יתרה</th>
-                                <th>לקוח</th>
-                                <th>סטטוס</th>
-                                <th>פעולות</th>
+                                <th>
+                                    מספר
+                                </th>
+                                <th>
+                                    סוג
+                                </th>
+                                <th>
+                                    סכום מקורי
+                                </th>
+                                <th>
+                                    יתרה
+                                </th>
+                                <th>
+                                    לקוח
+                                </th>
+                                <th>
+                                    סטטוס
+                                </th>
+                                <th>
+                                    פעולות
+                                </th>
                             </tr>
                         </thead>
+
                         <tbody>
-                            {visible.map((value) => (
-                                <tr
-                                    key={value.id}
-                                    onClick={() =>
-                                        setSelectedId(
-                                            value.id,
-                                        )
-                                    }
-                                >
-                                    <td>
-                                        <strong>
-                                            {value.number}
-                                        </strong>
-                                    </td>
-                                    <td>
-                                        {typeLabels[value.type]}
-                                    </td>
-                                    <td>
-                                        ₪{value.originalAmount.toFixed(2)}
-                                    </td>
-                                    <td>
-                                        ₪{value.remainingAmount.toFixed(2)}
-                                    </td>
-                                    <td>
-                                        {value.customerId ?? "—"}
-                                    </td>
-                                    <td>
-                                        {statusLabels[value.status]}
-                                    </td>
-                                    <td>
-                                        {value.type !== "gift_card" &&
-                                        (
-                                            value.status === "active" ||
-                                            value.status === "blocked"
-                                        ) ? (
-                                            <button
-                                                type="button"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    toggleBlock(value);
-                                                }}
-                                            >
-                                                {value.status === "blocked"
-                                                    ? "שחרור"
-                                                    : "חסימה"}
-                                            </button>
-                                        ) : (
-                                            <span>צפייה</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                            {visible.map(
+                                (
+                                    value,
+                                ) => (
+                                    <tr
+                                        key={
+                                            value.id
+                                        }
+                                        onClick={() =>
+                                            setSelectedId(
+                                                value.id,
+                                            )
+                                        }
+                                    >
+                                        <td>
+                                            <strong>
+                                                {
+                                                    value.number
+                                                }
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            {
+                                                typeLabels[
+                                                    value.type as
+                                                        | "credit_voucher"
+                                                        | "store_credit"
+                                                ]
+                                            }
+                                        </td>
+
+                                        <td>
+                                            ₪
+                                            {value.originalAmount.toFixed(
+                                                2,
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            ₪
+                                            {value.remainingAmount.toFixed(
+                                                2,
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            {value.customerId ??
+                                                "—"}
+                                        </td>
+
+                                        <td>
+                                            {
+                                                statusLabels[
+                                                    value.status
+                                                ]
+                                            }
+                                        </td>
+
+                                        <td>
+                                            {value.status ===
+                                                "active" ||
+                                            value.status ===
+                                                "blocked" ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={(
+                                                        event,
+                                                    ) => {
+                                                        event.stopPropagation();
+                                                        toggleBlock(
+                                                            value,
+                                                        );
+                                                    }}
+                                                >
+                                                    {value.status ===
+                                                    "blocked"
+                                                        ? "שחרור"
+                                                        : "חסימה"}
+                                                </button>
+                                            ) : (
+                                                <span>
+                                                    צפייה
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ),
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -300,42 +472,87 @@ function StoredValueManagementPage() {
                         </div>
                     ) : (
                         <>
-                            <h2>{selected.number}</h2>
+                            <h2>
+                                {
+                                    selected.number
+                                }
+                            </h2>
+
                             <div className="stored-value-management__summary">
                                 <span>
-                                    {typeLabels[selected.type]}
+                                    {selected.type ===
+                                    "credit_voucher"
+                                        ? "זיכוי"
+                                        : "יתרת לקוח"}
                                 </span>
+
                                 <strong>
-                                    ₪{selected.remainingAmount.toFixed(2)}
+                                    ₪
+                                    {selected.remainingAmount.toFixed(
+                                        2,
+                                    )}
                                 </strong>
                             </div>
 
-                            <h3>תנועות</h3>
+                            {selected.replacementMonetaryValueId && (
+                                <p>
+                                    לזיכוי זה הונפק זיכוי המשך לאחר מימוש חלקי.
+                                </p>
+                            )}
+
+                            {selected.previousMonetaryValueId && (
+                                <p>
+                                    זיכוי זה נוצר מיתרה של זיכוי קודם.
+                                </p>
+                            )}
+
+                            <h3>
+                                תנועות
+                            </h3>
 
                             <div className="stored-value-management__movements">
-                                {movements.length === 0 ? (
-                                    <span>אין תנועות.</span>
+                                {movements.length ===
+                                0 ? (
+                                    <span>
+                                        אין תנועות.
+                                    </span>
                                 ) : (
-                                    movements.map((movement) => (
-                                        <div key={movement.id}>
-                                            <strong>
-                                                {movement.type}
-                                            </strong>
-                                            <span>
-                                                {movement.amount > 0
-                                                    ? "+"
-                                                    : ""}
-                                                ₪{movement.amount.toFixed(2)}
-                                            </span>
-                                            <small>
-                                                {new Date(
-                                                    movement.createdAt,
-                                                ).toLocaleString(
-                                                    "he-IL",
-                                                )}
-                                            </small>
-                                        </div>
-                                    ))
+                                    movements.map(
+                                        (
+                                            movement,
+                                        ) => (
+                                            <div
+                                                key={
+                                                    movement.id
+                                                }
+                                            >
+                                                <strong>
+                                                    {
+                                                        movement.type
+                                                    }
+                                                </strong>
+
+                                                <span>
+                                                    {movement.amount >
+                                                    0
+                                                        ? "+"
+                                                        : ""}
+                                                    ₪
+                                                    {movement.amount.toFixed(
+                                                        2,
+                                                    )}
+                                                </span>
+
+                                                <small>
+                                                    {new Date(
+                                                        movement.createdAt,
+                                                    ).toLocaleString(
+                                                        "he-IL",
+                                                    )}
+                                                </small>
+                                            </div>
+                                        ),
+                                    )
                                 )}
                             </div>
                         </>
@@ -347,11 +564,16 @@ function StoredValueManagementPage() {
                 <div className="stored-value-management__overlay">
                     <div className="stored-value-management__dialog">
                         <header>
-                            <h2>זיכוי חדש</h2>
+                            <h2>
+                                זיכוי חדש
+                            </h2>
+
                             <button
                                 type="button"
                                 onClick={() =>
-                                    setShowIssue(false)
+                                    setShowIssue(
+                                        false,
+                                    )
                                 }
                             >
                                 ×
@@ -362,19 +584,29 @@ function StoredValueManagementPage() {
                             <label>
                                 סוג
                                 <select
-                                    value={draft.type}
-                                    onChange={(event) =>
-                                        setDraft((current) => ({
-                                            ...current,
-                                            type:
-                                                event.target
-                                                    .value as IssueDraft["type"],
-                                        }))
+                                    value={
+                                        draft.type
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setDraft(
+                                            (
+                                                current,
+                                            ) => ({
+                                                ...current,
+                                                type:
+                                                    event
+                                                        .target
+                                                        .value as IssueDraft["type"],
+                                            }),
+                                        )
                                     }
                                 >
                                     <option value="credit_voucher">
                                         זיכוי
                                     </option>
+
                                     <option value="store_credit">
                                         יתרת לקוח
                                     </option>
@@ -387,13 +619,23 @@ function StoredValueManagementPage() {
                                     type="number"
                                     min="0.01"
                                     step="0.01"
-                                    value={draft.amount}
-                                    onChange={(event) =>
-                                        setDraft((current) => ({
-                                            ...current,
-                                            amount:
-                                                event.target.value,
-                                        }))
+                                    value={
+                                        draft.amount
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setDraft(
+                                            (
+                                                current,
+                                            ) => ({
+                                                ...current,
+                                                amount:
+                                                    event
+                                                        .target
+                                                        .value,
+                                            }),
+                                        )
                                     }
                                 />
                             </label>
@@ -401,13 +643,23 @@ function StoredValueManagementPage() {
                             <label>
                                 מזהה לקוח
                                 <input
-                                    value={draft.customerId}
-                                    onChange={(event) =>
-                                        setDraft((current) => ({
-                                            ...current,
-                                            customerId:
-                                                event.target.value,
-                                        }))
+                                    value={
+                                        draft.customerId
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setDraft(
+                                            (
+                                                current,
+                                            ) => ({
+                                                ...current,
+                                                customerId:
+                                                    event
+                                                        .target
+                                                        .value,
+                                            }),
+                                        )
                                     }
                                 />
                             </label>
@@ -416,20 +668,32 @@ function StoredValueManagementPage() {
                                 תוקף
                                 <input
                                     type="datetime-local"
-                                    value={draft.expiresAt}
-                                    onChange={(event) =>
-                                        setDraft((current) => ({
-                                            ...current,
-                                            expiresAt:
-                                                event.target.value,
-                                        }))
+                                    value={
+                                        draft.expiresAt
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setDraft(
+                                            (
+                                                current,
+                                            ) => ({
+                                                ...current,
+                                                expiresAt:
+                                                    event
+                                                        .target
+                                                        .value,
+                                            }),
+                                        )
                                     }
                                 />
                             </label>
 
                             {error && (
                                 <div className="stored-value-management__error">
-                                    {error}
+                                    {
+                                        error
+                                    }
                                 </div>
                             )}
                         </div>
@@ -438,15 +702,20 @@ function StoredValueManagementPage() {
                             <button
                                 type="button"
                                 onClick={() =>
-                                    setShowIssue(false)
+                                    setShowIssue(
+                                        false,
+                                    )
                                 }
                             >
                                 ביטול
                             </button>
+
                             <button
                                 type="button"
                                 className="stored-value-management__primary"
-                                onClick={issue}
+                                onClick={
+                                    issue
+                                }
                             >
                                 הנפקה
                             </button>

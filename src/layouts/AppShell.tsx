@@ -1,34 +1,45 @@
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
 import Sidebar from "../components/layout/Sidebar";
 import StatusBar from "../components/layout/StatusBar";
-import type { CartLine } from "../models/sale/CartLine";
-import SalePage from "../pages/sale/SalePage";
-import TransactionsPage from "../pages/transactions/TransactionsPage";
-import ProductManagementPage from "../pages/products/ProductManagementPage";
-import StoredValueManagementPage from "../pages/stored-value/StoredValueManagementPage";
+import type {
+  CartLine,
+} from "../models/sale/CartLine";
 import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
+import ProductManagementPage from "../pages/products/ProductManagementPage";
 import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
+import SalePage from "../pages/sale/SalePage";
+import GiftCardManagementPage from "../pages/stored-value/GiftCardManagementPage";
+import StoredValueManagementPage from "../pages/stored-value/StoredValueManagementPage";
+import TransactionsPage from "../pages/transactions/TransactionsPage";
 
 export type AppView =
   | "sale"
   | "transactions"
-    | "products"
-    | "customers"
-    | "promotions"
-    | "stored-value";
+  | "products"
+  | "customers"
+  | "promotions"
+  | "credits"
+  | "gift-cards";
 
 function AppShell() {
   const [
     activeView,
     setActiveView,
   ] =
-    useState<AppView>("sale");
+    useState<AppView>(
+      "sale",
+    );
 
   const [
     pendingReturnLines,
     setPendingReturnLines,
-  ] = useState<CartLine[]>([]);
+  ] =
+    useState<CartLine[]>(
+      [],
+    );
 
   const handleReturnToSale = (
     lines: CartLine[],
@@ -37,13 +48,17 @@ function AppShell() {
       lines,
     );
 
-    setActiveView("sale");
+    setActiveView(
+      "sale",
+    );
   };
 
   return (
     <div className="pos-app-shell">
       <Sidebar
-        activeView={activeView}
+        activeView={
+          activeView
+        }
         onNavigate={
           setActiveView
         }
@@ -54,20 +69,8 @@ function AppShell() {
         dir="rtl"
       >
         <main className="pos-app-shell__workspace">
-                      {activeView === "customers" && (
-        <CustomerManagementPage />
-      )}
-
-      {activeView === "promotions" && (
-        <PromotionManagementPage />
-      )}
-      {activeView === "stored-value" && (
-        <StoredValueManagementPage />
-      )}
-{activeView === "products" && (
-        <ProductManagementPage />
-      )}
-{activeView === "sale" && (
+          {activeView ===
+            "sale" && (
             <SalePage
               incomingReturnLines={
                 pendingReturnLines
@@ -82,12 +85,37 @@ function AppShell() {
 
           {activeView ===
             "transactions" && (
-              <TransactionsPage
-                onReturnToSale={
-                  handleReturnToSale
-                }
-              />
-            )}
+            <TransactionsPage
+              onReturnToSale={
+                handleReturnToSale
+              }
+            />
+          )}
+
+          {activeView ===
+            "customers" && (
+            <CustomerManagementPage />
+          )}
+
+          {activeView ===
+            "products" && (
+            <ProductManagementPage />
+          )}
+
+          {activeView ===
+            "promotions" && (
+            <PromotionManagementPage />
+          )}
+
+          {activeView ===
+            "credits" && (
+            <StoredValueManagementPage />
+          )}
+
+          {activeView ===
+            "gift-cards" && (
+            <GiftCardManagementPage />
+          )}
         </main>
 
         <StatusBar />
