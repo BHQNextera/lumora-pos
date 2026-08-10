@@ -5,10 +5,16 @@ import StatusBar from "../components/layout/StatusBar";
 import type { CartLine } from "../models/sale/CartLine";
 import SalePage from "../pages/sale/SalePage";
 import TransactionsPage from "../pages/transactions/TransactionsPage";
+import ProductManagementPage from "../pages/products/ProductManagementPage";
+import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
+import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
 
 export type AppView =
   | "sale"
-  | "transactions";
+  | "transactions"
+    | "products"
+    | "customers"
+    | "promotions";
 
 function AppShell() {
   const [
@@ -46,7 +52,17 @@ function AppShell() {
         dir="rtl"
       >
         <main className="pos-app-shell__workspace">
-          {activeView === "sale" && (
+                      {activeView === "customers" && (
+        <CustomerManagementPage />
+      )}
+
+      {activeView === "promotions" && (
+        <PromotionManagementPage />
+      )}
+{activeView === "products" && (
+        <ProductManagementPage />
+      )}
+{activeView === "sale" && (
             <SalePage
               incomingReturnLines={
                 pendingReturnLines

@@ -1,4 +1,4 @@
-﻿import {
+import {
     useMemo,
     useState,
 } from "react";
@@ -6,14 +6,13 @@
 import {
     usePricing,
 } from "../../context/usePricing";
-import {
-    products,
-} from "../../data/products";
+import { useCatalog } from "../../context/useCatalog";
 import {
     getSalesCoachSuggestion,
 } from "../../models/sales-coach/SalesCoachEngine";
 
 function SalesCoach() {
+    const { products } = useCatalog();
     const {
         cartLines,
         updateCartLines,

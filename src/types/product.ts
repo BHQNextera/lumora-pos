@@ -1,4 +1,4 @@
-﻿export type ProductCategory =
+export type ProductCategory =
     | "all"
     | "hot-drinks"
     | "cold-drinks"
@@ -18,9 +18,24 @@ export type ProductSupplier = {
     supplierSku?: string;
 };
 
+export type ProductLocalizedNames = {
+    he?: string;
+    en?: string;
+    el?: string;
+};
+
 export type Product = {
     id: string;
+
+    /*
+     * name remains the current display/fallback value so existing
+     * sale flows remain backward compatible.
+     *
+     * names carries the multilingual master-data values.
+     */
     name: string;
+    names?: ProductLocalizedNames;
+
     price: number;
 
     costPrice?: number;

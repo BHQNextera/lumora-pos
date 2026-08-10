@@ -11,7 +11,7 @@ import CartPanel from "../../components/pos/CartPanel";
 import ProductGrid from "../../components/pos/ProductGrid";
 import { posCapabilities } from "../../config/posCapabilities";
 import { usePricing } from "../../context/usePricing";
-import { products } from "../../data/products";
+import { useCatalog } from "../../context/useCatalog";
 import { translate } from "../../i18n";
 import { categorySeed } from "../../models/catalog/Category";
 import {
@@ -76,6 +76,8 @@ function SalePage({
     incomingReturnLines = [],
     onReturnLinesConsumed,
 }: SalePageProps) {
+    const { products } = useCatalog();
+
     const {
         pricingRules,
         pricing,

@@ -1,6 +1,9 @@
 type AppView =
   | "sale"
-  | "transactions";
+  | "transactions"
+    | "products"
+    | "customers"
+    | "promotions";
 
 type SidebarProps = {
   activeView: AppView;
@@ -36,11 +39,13 @@ const navigationItems: SidebarItem[] = [
     id: "customers",
     label: "לקוחות",
     icon: "♙",
+    view: "customers",
   },
   {
     id: "inventory",
     label: "מלאי",
     icon: "◇",
+    view: "products",
   },
   {
     id: "reports",
@@ -51,6 +56,7 @@ const navigationItems: SidebarItem[] = [
     id: "settings",
     label: "הגדרות",
     icon: "⚙",
+    view: "promotions",
   },
 ];
 
