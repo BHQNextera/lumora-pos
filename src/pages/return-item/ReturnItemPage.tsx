@@ -37,6 +37,11 @@ function ReturnItemPage({
     ] = useState(1);
 
     const [
+        returnUnitPrice,
+        setReturnUnitPrice,
+    ] = useState("");
+
+    const [
         reason,
         setReason,
     ] =
@@ -83,6 +88,12 @@ function ReturnItemPage({
         );
 
         setQuantity(1);
+
+        setReturnUnitPrice(
+            product.price.toFixed(
+                2,
+            ),
+        );
     };
 
     const continueToSale =
@@ -106,7 +117,9 @@ function ReturnItemPage({
                 quantity,
 
                 unitPrice:
-                    selectedProduct.price,
+                    Number(
+                        returnUnitPrice,
+                    ),
 
                 originalUnitPrice:
                     selectedProduct.price,
@@ -216,8 +229,7 @@ function ReturnItemPage({
 
                 <aside className="return-item-page__summary">
                     {!selectedProduct ? (
-                        <div className="return-item-page__empty">
-                            בחר פריט
+                        <div className="return-item-page__empty">                            בחר פריט
                         </div>
                     ) : (
                         <>
@@ -237,6 +249,30 @@ function ReturnItemPage({
                                 </span>
                             </div>
 
+                            <label className="return-item-page__reason">
+                                <span>
+                                    מחיר ליחידה לזיכוי
+                                </span>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    inputMode="decimal"
+                                    value={
+                                        returnUnitPrice
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setReturnUnitPrice(
+                                            event.target
+                                                .value,
+                                        )
+                                    }
+                                />
+                            </label>
+
                             <div className="return-item-page__quantity">
                                 <span>
                                     כמות להחזרה
@@ -255,8 +291,7 @@ function ReturnItemPage({
                                                 ) =>
                                                     Math.max(
                                                         1,
-                                                        current -
-                                                        1,
+                                                        current -                                                        1,
                                                     ),
                                             )
                                         }
@@ -312,7 +347,11 @@ function ReturnItemPage({
                                 <strong>
                                     ‎-₪
                                     {(
-                                        selectedProduct.price *
+                                        (
+                                            Number(
+                                                returnUnitPrice,
+                                            ) || 0
+                                        ) *
                                         quantity
                                     ).toFixed(
                                         2,

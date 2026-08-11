@@ -17,6 +17,8 @@ import { categorySeed } from "../../models/catalog/Category";
 import {
     testCustomers,
 } from "../../models/customer/CustomerSeed";
+import { getDocumentsForTransaction } from "../../models/document/DocumentRepository";
+import { issueMonetaryValue } from "../../models/monetary-value/MonetaryValueService";
 import type { Payment } from "../../models/Payment";
 import {
     redeemCoupon,
@@ -125,6 +127,17 @@ function SalePage({
         setCompletedSale,
     ] =
         useState<Sale | null>(null);
+    const [
+        issuedRefundVoucher,
+        setIssuedRefundVoucher,
+    ] =
+        useState<{
+            number: string;
+            amount: number;
+        } | null>(
+            null,
+        );
+
 
     const [
         showTransactionDiscount,
@@ -747,16 +760,72 @@ function SalePage({
                 },
             );
 
-        removeCoupon();
+        
+        const refundVoucherPayment =
+            payments.find(
+                (payment) =>
+                    payment.method ===
+                        "credit_voucher" &&
+                    payment.amount < 0,
+            );
+
+        if (refundVoucherPayment) {
+            const documents =
+                getDocumentsForTransaction(
+                    sale.id,
+                );
+
+            const voucher =
+                issueMonetaryValue({
+                    type:
+                        "credit_voucher",
+
+                    amount:
+                        Math.abs(
+                            refundVoucherPayment.amount,
+                        ),
+
+                    customerId:
+                        selectedCustomer.id,
+
+                    originTransactionId:
+                        sale.id,
+
+                    originDocumentId:
+                        documents[0]?.id,
+                });
+
+            setIssuedRefundVoucher({
+                number:
+                    voucher.number,
+                amount:
+                    voucher.originalAmount,
+            });
+        }
+
+removeCoupon();
 
         setCompletedSale(sale);
         setCheckoutTotal(null);
     };
 
+        const transactionTotal =
+        appliedCoupon
+            ? totalAfterCoupon
+            : createSaleLines().reduce(
+                  (
+                      sum,
+                      line,
+                  ) =>
+                      sum +
+                      line.netAmount,
+                  0,
+              );
+
     const handleCheckout = () => {
         if (
             Math.abs(
-                totalAfterCoupon,
+                transactionTotal,
             ) < 0.001
         ) {
             completeTransaction([]);
@@ -764,7 +833,7 @@ function SalePage({
         }
 
         setCheckoutTotal(
-            totalAfterCoupon,
+            transactionTotal,
         );
     };
 
@@ -782,6 +851,7 @@ function SalePage({
         setMode("sale");
 
         setCompletedSale(null);
+        setIssuedRefundVoucher(null);
         setCheckoutTotal(null);
 
         clearSale();
@@ -792,12 +862,182 @@ function SalePage({
 
     if (completedSale) {
         return (
-            <SaleCompletePage
-                sale={completedSale}
-                onNewSale={
-                    startNewSale
-                }
-            />
+            <>
+                <SaleCompletePage
+                    sale={completedSale}
+                    onNewSale={
+                        startNewSale
+                    }
+                />
+
+                {issuedRefundVoucher && (
+                    <div
+                        role="presentation"
+                        style={{
+                            position:
+                                "fixed",
+                            inset:
+                                0,
+                            zIndex:
+                                6000,
+                            display:
+                                "grid",
+                            placeItems:
+                                "center",
+                            padding:
+                                "24px",
+                            background:
+                                "rgba(17, 24, 39, 0.34)",
+                        }}
+                    >
+                        <div
+                            dir="rtl"
+                            role="dialog"
+                            aria-modal="true"
+                            style={{
+                                width:
+                                    "min(460px, 100%)",
+                                padding:
+                                    "22px",
+                                border:
+                                    "1px solid #dde4e1",
+                                borderRadius:
+                                    "18px",
+                                background:
+                                    "#ffffff",
+                                boxShadow:
+                                    "0 24px 70px rgba(15, 23, 42, 0.20)",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    color:
+                                        "#7a8580",
+                                    fontSize:
+                                        "10px",
+                                    fontWeight:
+                                        800,
+                                    letterSpacing:
+                                        "0.08em",
+                                }}
+                            >
+                                החזרה הושלמה
+                            </div>
+
+                            <h2
+                                style={{
+                                    margin:
+                                        "8px 0 6px",
+                                    fontSize:
+                                        "22px",
+                                }}
+                            >
+                                שובר זיכוי הונפק
+                            </h2>
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        "14px",
+                                    padding:
+                                        "14px",
+                                    borderRadius:
+                                        "12px",
+                                    background:
+                                        "#f5f8f6",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize:
+                                            "11px",
+                                        color:
+                                            "#68736f",
+                                    }}
+                                >
+                                    מספר שובר
+                                </div>
+
+                                <div
+                                    dir="ltr"
+                                    style={{
+                                        marginTop:
+                                            "3px",
+                                        fontSize:
+                                            "18px",
+                                        fontWeight:
+                                            850,
+                                    }}
+                                >
+                                    {
+                                        issuedRefundVoucher.number
+                                    }
+                                </div>
+
+                                <div
+                                    style={{
+                                        marginTop:
+                                            "12px",
+                                        fontSize:
+                                            "11px",
+                                        color:
+                                            "#68736f",
+                                    }}
+                                >
+                                    סכום הזיכוי
+                                </div>
+
+                                <div
+                                    style={{
+                                        marginTop:
+                                            "3px",
+                                        fontSize:
+                                            "28px",
+                                        fontWeight:
+                                            850,
+                                    }}
+                                >
+                                    ₪
+                                    {issuedRefundVoucher.amount.toFixed(
+                                        2,
+                                    )}
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setIssuedRefundVoucher(
+                                        null,
+                                    )
+                                }
+                                style={{
+                                    width:
+                                        "100%",
+                                    minHeight:
+                                        "42px",
+                                    marginTop:
+                                        "16px",
+                                    border:
+                                        0,
+                                    borderRadius:
+                                        "10px",
+                                    background:
+                                        "var(--primary)",
+                                    color:
+                                        "#fff",
+                                    fontWeight:
+                                        750,
+                                    cursor:
+                                        "pointer",
+                                }}
+                            >
+                                אישור
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </>
         );
     }
 
@@ -1039,9 +1279,7 @@ function SalePage({
                             couponDiscountAmount={
                                 couponDiscountAmount
                             }
-                            totalAfterCoupon={
-                                totalAfterCoupon
-                            }
+                            totalAfterCoupon={transactionTotal}
                             onApplyCoupon={
                                 applyCoupon
                             }

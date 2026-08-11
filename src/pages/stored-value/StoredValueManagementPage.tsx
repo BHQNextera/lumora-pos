@@ -1,4 +1,7 @@
 import {
+    testCustomers,
+} from "../../models/customer/CustomerSeed";
+import {
     useMemo,
     useState,
 } from "react";
@@ -7,6 +10,7 @@ import type {
     MonetaryValue,
 } from "../../models/monetary-value/MonetaryValue";
 import {
+    getMonetaryValue,
     getMonetaryValues,
     getMovementsForMonetaryValue,
     saveMonetaryValue,
@@ -28,38 +32,22 @@ type IssueDraft = {
 };
 
 const emptyDraft: IssueDraft = {
-    type:
-        "credit_voucher",
-    amount:
-        "",
-    customerId:
-        "",
-    expiresAt:
-        "",
+    type: "credit_voucher",
+    amount: "",
+    customerId: "",
+    expiresAt: "",
 };
-
-const typeLabels = {
-    credit_voucher:
-        "זיכוי",
-    store_credit:
-        "יתרת לקוח",
-} as const;
 
 const statusLabels:
     Record<
         MonetaryValue["status"],
         string
     > = {
-        active:
-            "פעיל",
-        depleted:
-            "מומש",
-        expired:
-            "פג תוקף",
-        blocked:
-            "חסום",
-        cancelled:
-            "מבוטל",
+        active: "פעיל",
+        depleted: "מומש",
+        expired: "פג תוקף",
+        blocked: "חסום",
+        cancelled: "מבוטל",
     };
 
 function StoredValueManagementPage() {
@@ -125,6 +113,20 @@ function StoredValueManagementPage() {
             [selected],
         );
 
+    const previousVoucher =
+        selected?.previousMonetaryValueId
+            ? getMonetaryValue(
+                  selected.previousMonetaryValueId,
+              )
+            : undefined;
+
+    const replacementVoucher =
+        selected?.replacementMonetaryValueId
+            ? getMonetaryValue(
+                  selected.replacementMonetaryValueId,
+              )
+            : undefined;
+
     const visible =
         useMemo(() => {
             const normalized =
@@ -150,15 +152,6 @@ function StoredValueManagementPage() {
                             value.customerId ??
                             ""
                         )
-                            .toLowerCase()
-                            .includes(
-                                normalized,
-                            ) ||
-                        typeLabels[
-                            value.type as
-                                | "credit_voucher"
-                                | "store_credit"
-                        ]
                             .toLowerCase()
                             .includes(
                                 normalized,
@@ -196,13 +189,10 @@ function StoredValueManagementPage() {
         issueMonetaryValue({
             type:
                 draft.type,
-
             amount,
-
             customerId:
                 draft.customerId.trim() ||
                 undefined,
-
             expiresAt:
                 draft.expiresAt
                     ? new Date(
@@ -319,7 +309,7 @@ function StoredValueManagementPage() {
             <div className="stored-value-management__toolbar">
                 <input
                     type="search"
-                    placeholder="חיפוש לפי מספר, לקוח או סוג"
+                    placeholder="חיפוש לפי מספר או לקוח"
                     value={
                         query
                     }
@@ -395,13 +385,10 @@ function StoredValueManagementPage() {
                                         </td>
 
                                         <td>
-                                            {
-                                                typeLabels[
-                                                    value.type as
-                                                        | "credit_voucher"
-                                                        | "store_credit"
-                                                ]
-                                            }
+                                            {value.type ===
+                                            "credit_voucher"
+                                                ? "זיכוי"
+                                                : "יתרת לקוח"}
                                         </td>
 
                                         <td>
@@ -419,8 +406,16 @@ function StoredValueManagementPage() {
                                         </td>
 
                                         <td>
-                                            {value.customerId ??
-                                                "—"}
+                                            {value.customerId
+    ? (
+          testCustomers.find(
+              (customer) =>
+                  customer.id ===
+                  value.customerId,
+          )?.name ??
+          value.customerId
+      )
+    : "—"}
                                         </td>
 
                                         <td>
@@ -494,15 +489,39 @@ function StoredValueManagementPage() {
                                 </strong>
                             </div>
 
-                            {selected.replacementMonetaryValueId && (
+                            {replacementVoucher && (
                                 <p>
-                                    לזיכוי זה הונפק זיכוי המשך לאחר מימוש חלקי.
+                                    זיכוי המשך:{" "}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectedId(
+                                                replacementVoucher.id,
+                                            )
+                                        }
+                                    >
+                                        {
+                                            replacementVoucher.number
+                                        }
+                                    </button>
                                 </p>
                             )}
 
-                            {selected.previousMonetaryValueId && (
+                            {previousVoucher && (
                                 <p>
-                                    זיכוי זה נוצר מיתרה של זיכוי קודם.
+                                    זיכוי מקור:{" "}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectedId(
+                                                previousVoucher.id,
+                                            )
+                                        }
+                                    >
+                                        {
+                                            previousVoucher.number
+                                        }
+                                    </button>
                                 </p>
                             )}
 

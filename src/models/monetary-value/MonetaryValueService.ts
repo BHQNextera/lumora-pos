@@ -1,3 +1,6 @@
+import {
+    storedValuePolicy,
+} from "../../config/storedValuePolicy";
 import type {
     MonetaryValue,
     MonetaryValueMovement,
@@ -48,18 +51,12 @@ function createNumber(
 
 export type IssueMonetaryValueInput = {
     type: MonetaryValueType;
-
     amount: number;
-
     customerId?: string;
-
     originTransactionId?: string;
     originDocumentId?: string;
-
     previousMonetaryValueId?: string;
-
     expiresAt?: string;
-
     employeeId?: string;
     registerCode?: string;
 };
@@ -73,9 +70,7 @@ export function issueMonetaryValue(
         );
 
     if (
-        !Number.isFinite(
-            amount,
-        ) ||
+        !Number.isFinite(amount) ||
         amount <= 0
     ) {
         throw new Error(
@@ -87,46 +82,22 @@ export function issueMonetaryValue(
         new Date().toISOString();
 
     const value: MonetaryValue = {
-        id:
-            crypto.randomUUID(),
-
-        number:
-            createNumber(
-                input.type,
-            ),
-
-        type:
-            input.type,
-
-        status:
-            "active",
-
-        originalAmount:
-            amount,
-
-        remainingAmount:
-            amount,
-
-        customerId:
-            input.customerId,
-
+        id: crypto.randomUUID(),
+        number: createNumber(input.type),
+        type: input.type,
+        status: "active",
+        originalAmount: amount,
+        remainingAmount: amount,
+        customerId: input.customerId,
         originTransactionId:
             input.originTransactionId,
-
         originDocumentId:
             input.originDocumentId,
-
         previousMonetaryValueId:
             input.previousMonetaryValueId,
-
-        issuedAt:
-            now,
-
-        expiresAt:
-            input.expiresAt,
-
-        updatedAt:
-            now,
+        issuedAt: now,
+        expiresAt: input.expiresAt,
+        updatedAt: now,
     };
 
     saveMonetaryValue(
@@ -134,39 +105,24 @@ export function issueMonetaryValue(
     );
 
     const movement: MonetaryValueMovement = {
-        id:
-            crypto.randomUUID(),
-
+        id: crypto.randomUUID(),
         monetaryValueId:
             value.id,
-
-        type:
-            "issue",
-
+        type: "issue",
         amount,
-
-        balanceBefore:
-            0,
-
-        balanceAfter:
-            amount,
-
+        balanceBefore: 0,
+        balanceAfter: amount,
         transactionId:
             input.originTransactionId,
-
         employeeId:
             input.employeeId,
-
         registerCode:
             input.registerCode,
-
         reason:
             input.previousMonetaryValueId
                 ? `rollover_from:${input.previousMonetaryValueId}`
                 : undefined,
-
-        createdAt:
-            now,
+        createdAt: now,
     };
 
     saveMonetaryValueMovement(
@@ -186,10 +142,8 @@ export function validateMonetaryValueForPayment(
 
     if (!value) {
         return {
-            valid:
-                false as const,
-            reason:
-                "not_found" as const,
+            valid: false as const,
+            reason: "not_found" as const,
         };
     }
 
@@ -198,10 +152,8 @@ export function validateMonetaryValueForPayment(
         "active"
     ) {
         return {
-            valid:
-                false as const,
-            reason:
-                "not_active" as const,
+            valid: false as const,
+            reason: "not_active" as const,
             value,
         };
     }
@@ -214,10 +166,8 @@ export function validateMonetaryValueForPayment(
         Date.now()
     ) {
         return {
-            valid:
-                false as const,
-            reason:
-                "expired" as const,
+            valid: false as const,
+            reason: "expired" as const,
             value,
         };
     }
@@ -227,29 +177,23 @@ export function validateMonetaryValueForPayment(
         0
     ) {
         return {
-            valid:
-                false as const,
-            reason:
-                "empty" as const,
+            valid: false as const,
+            reason: "empty" as const,
             value,
         };
     }
 
     return {
-        valid:
-            true as const,
+        valid: true as const,
         value,
     };
 }
 
 export type RedeemMonetaryValueInput = {
     number: string;
-
     requestedAmount: number;
-
     transactionId?: string;
     paymentId?: string;
-
     employeeId?: string;
     registerCode?: string;
 };
@@ -262,9 +206,7 @@ export function redeemMonetaryValue(
             input.number,
         );
 
-    if (
-        !validation.valid
-    ) {
+    if (!validation.valid) {
         throw new Error(
             `Monetary value cannot be redeemed: ${validation.reason}`,
         );
@@ -309,29 +251,45 @@ export function redeemMonetaryValue(
     const now =
         new Date().toISOString();
 
-    /*
-     * Credit voucher policy:
-     * A voucher number is single-use.
-     *
-     * If only part of the voucher is used, the original voucher is
-     * depleted and a brand-new voucher is issued for the remaining
-     * balance. Gift cards and store credit keep their existing number.
-     */
     if (
         value.type ===
         "credit_voucher"
     ) {
+        const threshold =
+            Math.max(
+                0,
+                storedValuePolicy
+                    .creditVoucherCashRemainderThreshold,
+            );
+
+        const cashChangeAmount =
+            after > 0 &&
+            after <= threshold
+                ? after
+                : 0;
+
+        const rolloverAmount =
+            after > threshold
+                ? after
+                : 0;
+
+        const consumedAmount =
+            roundMoney(
+                redeemedAmount +
+                cashChangeAmount,
+            );
+
         const depleted: MonetaryValue = {
             ...value,
-
-            remainingAmount:
-                0,
-
-            status:
-                "depleted",
-
-            updatedAt:
-                now,
+            remainingAmount: 0,
+            status: "depleted",
+            lastRedemptionPaymentId:
+                input.paymentId,
+            lastCashChangeAmount:
+                cashChangeAmount > 0
+                    ? cashChangeAmount
+                    : undefined,
+            updatedAt: now,
         };
 
         saveMonetaryValue(
@@ -339,72 +297,51 @@ export function redeemMonetaryValue(
         );
 
         saveMonetaryValueMovement({
-            id:
-                crypto.randomUUID(),
-
+            id: crypto.randomUUID(),
             monetaryValueId:
                 value.id,
-
-            type:
-                "redeem",
-
+            type: "redeem",
             amount:
-                -redeemedAmount,
-
+                -consumedAmount,
             balanceBefore:
                 before,
-
-            balanceAfter:
-                0,
-
+            balanceAfter: 0,
             transactionId:
                 input.transactionId,
-
             paymentId:
                 input.paymentId,
-
             employeeId:
                 input.employeeId,
-
             registerCode:
                 input.registerCode,
-
             reason:
-                after > 0
-                    ? "partial_redemption_rollover"
-                    : undefined,
-
-            createdAt:
-                now,
+                cashChangeAmount > 0
+                    ? "small_balance_cash_change"
+                    : rolloverAmount > 0
+                        ? "partial_redemption_rollover"
+                        : undefined,
+            createdAt: now,
         });
 
         const replacement =
-            after > 0
+            rolloverAmount > 0
                 ? issueMonetaryValue({
                       type:
                           "credit_voucher",
-
                       amount:
-                          after,
-
+                          rolloverAmount,
                       customerId:
                           value.customerId,
-
                       originTransactionId:
                           input.transactionId,
-
                       originDocumentId:
                           value.originDocumentId,
-
                       previousMonetaryValueId:
                           value.id,
-
                       expiresAt:
                           value.expiresAt,
-
                       employeeId:
                           input.employeeId,
-
                       registerCode:
                           input.registerCode,
                   })
@@ -419,9 +356,7 @@ export function redeemMonetaryValue(
                   }
                 : depleted;
 
-        if (
-            replacement
-        ) {
+        if (replacement) {
             saveMonetaryValue(
                 finalOriginal,
             );
@@ -430,30 +365,26 @@ export function redeemMonetaryValue(
         return {
             monetaryValue:
                 finalOriginal,
-
             redeemedAmount,
-
             remainingAmount:
-                after,
-
+                rolloverAmount,
             replacementMonetaryValue:
                 replacement,
+            cashChangeAmount,
         };
     }
 
     const updated: MonetaryValue = {
         ...value,
-
         remainingAmount:
             after,
-
         status:
             after <= 0
                 ? "depleted"
                 : "active",
-
-        updatedAt:
-            now,
+        lastRedemptionPaymentId:
+            input.paymentId,
+        updatedAt: now,
     };
 
     saveMonetaryValue(
@@ -461,51 +392,37 @@ export function redeemMonetaryValue(
     );
 
     saveMonetaryValueMovement({
-        id:
-            crypto.randomUUID(),
-
+        id: crypto.randomUUID(),
         monetaryValueId:
             value.id,
-
-        type:
-            "redeem",
-
+        type: "redeem",
         amount:
             -redeemedAmount,
-
         balanceBefore:
             before,
-
         balanceAfter:
             after,
-
         transactionId:
             input.transactionId,
-
         paymentId:
             input.paymentId,
-
         employeeId:
             input.employeeId,
-
         registerCode:
             input.registerCode,
-
-        createdAt:
-            now,
+        createdAt: now,
     });
 
     return {
         monetaryValue:
             updated,
-
         redeemedAmount,
-
         remainingAmount:
             after,
-
         replacementMonetaryValue:
             undefined,
+        cashChangeAmount:
+            0,
     };
 }
 
@@ -535,57 +452,35 @@ function cancelReplacementVoucher(
 
     saveMonetaryValue({
         ...replacement,
-
-        remainingAmount:
-            0,
-
-        status:
-            "cancelled",
-
-        updatedAt:
-            now,
+        remainingAmount: 0,
+        status: "cancelled",
+        updatedAt: now,
     });
 
     saveMonetaryValueMovement({
-        id:
-            crypto.randomUUID(),
-
+        id: crypto.randomUUID(),
         monetaryValueId:
             replacement.id,
-
-        type:
-            "cancel",
-
+        type: "cancel",
         amount:
             -replacement.remainingAmount,
-
         balanceBefore:
             replacement.remainingAmount,
-
-        balanceAfter:
-            0,
-
+        balanceAfter: 0,
         paymentId,
-
         reason:
             `rollback_of:${original.id}`,
-
-        createdAt:
-            now,
+        createdAt: now,
     });
 }
 
 export type RestoreMonetaryValueInput = {
     number: string;
-
     amount: number;
-
     transactionId?: string;
     paymentId?: string;
-
     employeeId?: string;
     registerCode?: string;
-
     reason?: string;
 };
 
@@ -622,17 +517,13 @@ export function restoreMonetaryValue(
     const now =
         new Date().toISOString();
 
-    /*
-     * A partially redeemed credit voucher created a replacement voucher.
-     * If the payment is removed before the sale completes, cancel that
-     * replacement and reactivate the original voucher at its pre-redeem
-     * balance. With single-use voucher numbers, originalAmount is the
-     * pre-redeem balance for that voucher generation.
-     */
     if (
         value.type ===
             "credit_voucher" &&
-        value.replacementMonetaryValueId
+        value.status ===
+            "depleted" &&
+        value.lastRedemptionPaymentId ===
+            input.paymentId
     ) {
         cancelReplacementVoucher(
             value,
@@ -642,18 +533,16 @@ export function restoreMonetaryValue(
 
         const restored: MonetaryValue = {
             ...value,
-
             remainingAmount:
                 value.originalAmount,
-
-            status:
-                "active",
-
+            status: "active",
             replacementMonetaryValueId:
                 undefined,
-
-            updatedAt:
-                now,
+            lastRedemptionPaymentId:
+                undefined,
+            lastCashChangeAmount:
+                undefined,
+            updatedAt: now,
         };
 
         saveMonetaryValue(
@@ -661,50 +550,33 @@ export function restoreMonetaryValue(
         );
 
         saveMonetaryValueMovement({
-            id:
-                crypto.randomUUID(),
-
+            id: crypto.randomUUID(),
             monetaryValueId:
                 value.id,
-
-            type:
-                "restore",
-
+            type: "restore",
             amount:
                 value.originalAmount,
-
-            balanceBefore:
-                0,
-
+            balanceBefore: 0,
             balanceAfter:
                 value.originalAmount,
-
             transactionId:
                 input.transactionId,
-
             paymentId:
                 input.paymentId,
-
             employeeId:
                 input.employeeId,
-
             registerCode:
                 input.registerCode,
-
             reason:
                 input.reason,
-
-            createdAt:
-                now,
+            createdAt: now,
         });
 
         return {
             monetaryValue:
                 restored,
-
             restoredAmount:
-                amount,
-
+                value.originalAmount,
             remainingAmount:
                 restored.remainingAmount,
         };
@@ -723,23 +595,20 @@ export function restoreMonetaryValue(
 
     const restoredAmount =
         roundMoney(
-            after -
-            before,
+            after - before,
         );
 
     const updated: MonetaryValue = {
         ...value,
-
         remainingAmount:
             after,
-
         status:
             after > 0
                 ? "active"
                 : value.status,
-
-        updatedAt:
-            now,
+        lastRedemptionPaymentId:
+            undefined,
+        updatedAt: now,
     };
 
     saveMonetaryValue(
@@ -747,49 +616,33 @@ export function restoreMonetaryValue(
     );
 
     saveMonetaryValueMovement({
-        id:
-            crypto.randomUUID(),
-
+        id: crypto.randomUUID(),
         monetaryValueId:
             value.id,
-
-        type:
-            "restore",
-
+        type: "restore",
         amount:
             restoredAmount,
-
         balanceBefore:
             before,
-
         balanceAfter:
             after,
-
         transactionId:
             input.transactionId,
-
         paymentId:
             input.paymentId,
-
         employeeId:
             input.employeeId,
-
         registerCode:
             input.registerCode,
-
         reason:
             input.reason,
-
-        createdAt:
-            now,
+        createdAt: now,
     });
 
     return {
         monetaryValue:
             updated,
-
         restoredAmount,
-
         remainingAmount:
             after,
     };

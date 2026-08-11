@@ -30,6 +30,9 @@ export type MonetaryValue = {
     previousMonetaryValueId?: string;
     replacementMonetaryValueId?: string;
 
+    lastRedemptionPaymentId?: string;
+    lastCashChangeAmount?: number;
+
     issuedAt: string;
     expiresAt?: string;
 
