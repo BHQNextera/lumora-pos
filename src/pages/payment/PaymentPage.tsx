@@ -6,6 +6,9 @@ import {
 import PaymentMethodRenderer from "../../components/payment/PaymentMethodRenderer";
 import PaymentSummary from "../../components/payment/PaymentSummary";
 import {
+    getMonetaryValue,
+} from "../../models/monetary-value/MonetaryValueRepository";
+import {
     redeemMonetaryValue,
     restoreMonetaryValue,
 } from "../../models/monetary-value/MonetaryValueService";
@@ -243,7 +246,18 @@ function PaymentPage({
 
         const replacement =
             redemption
-                .replacementMonetaryValue;
+                .replacementMonetaryValue ??
+            (
+                redemption
+                    .monetaryValue
+                    .replacementMonetaryValueId
+                    ? getMonetaryValue(
+                          redemption
+                              .monetaryValue
+                              .replacementMonetaryValueId,
+                      )
+                    : undefined
+            );
 
         if (
             method === "credit_voucher" &&
