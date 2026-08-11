@@ -21,12 +21,8 @@ import "./payment-page.css";
 
 type PaymentPageProps = {
     total: number;
-
     onBack: () => void;
-
-    onComplete: (
-        payments: Payment[],
-    ) => void;
+    onComplete: (payments: Payment[]) => void;
 };
 
 type PrimaryPaymentMethod = {
@@ -36,43 +32,18 @@ type PrimaryPaymentMethod = {
     description: string;
 };
 
+type VoucherNotice = {
+    number: string;
+    amount: number;
+};
+
 const primaryPaymentMethods: PrimaryPaymentMethod[] = [
-    {
-        code: "cash",
-        icon: "₪",
-        title: "מזומן",
-        description: "תשלום מלא או חלקי",
-    },
-    {
-        code: "card_terminal",
-        icon: "▤",
-        title: "אשראי",
-        description: "תשלום דרך מסופון",
-    },
-    {
-        code: "echo",
-        icon: "◉",
-        title: "Echo",
-        description: "בקשת תשלום דיגיטלית",
-    },
-    {
-        code: "credit_voucher",
-        icon: "₪",
-        title: "שובר זיכוי",
-        description: "מימוש מלא או חלקי",
-    },
-    {
-        code: "gift_card",
-        icon: "G",
-        title: "Gift Card",
-        description: "מימוש יתרה קיימת",
-    },
-    {
-        code: "custom",
-        icon: "+",
-        title: "אמצעי נוסף",
-        description: "Bit, העברה, המחאה ועוד",
-    },
+    { code: "cash", icon: "₪", title: "מזומן", description: "תשלום מלא או חלקי" },
+    { code: "card_terminal", icon: "▤", title: "אשראי", description: "תשלום דרך מסופון" },
+    { code: "echo", icon: "◉", title: "Echo", description: "בקשת תשלום דיגיטלית" },
+    { code: "credit_voucher", icon: "₪", title: "שובר זיכוי", description: "מימוש מלא או חלקי" },
+    { code: "gift_card", icon: "G", title: "Gift Card", description: "מימוש יתרה קיימת" },
+    { code: "custom", icon: "+", title: "אמצעי נוסף", description: "Bit, העברה, המחאה ועוד" },
 ];
 
 function PaymentPage({
@@ -80,43 +51,20 @@ function PaymentPage({
     onBack,
     onComplete,
 }: PaymentPageProps) {
-    const [
-        selectedMethod,
-        setSelectedMethod,
-    ] =
-        useState<PaymentMethodCode | null>(
-            null,
-        );
-
-    const [
-        payments,
-        setPayments,
-    ] =
+    const [selectedMethod, setSelectedMethod] =
+        useState<PaymentMethodCode | null>(null);
+    const [payments, setPayments] =
         useState<Payment[]>([]);
-
-    const [
-        cashChangeNotice,
-        setCashChangeNotice,
-    ] =
-        useState<number | null>(
-            null,
-        );
-
-    const [
-        pendingCompletionPayments,
-        setPendingCompletionPayments,
-    ] =
-        useState<Payment[] | null>(
-            null,
-        );
+    const [cashChangeNotice, setCashChangeNotice] =
+        useState<number | null>(null);
+    const [replacementVoucherNotice, setReplacementVoucherNotice] =
+        useState<VoucherNotice | null>(null);
+    const [pendingCompletionPayments, setPendingCompletionPayments] =
+        useState<Payment[] | null>(null);
 
     const paymentTotals =
         useMemo(
-            () =>
-                calculatePaymentTotals(
-                    total,
-                    payments,
-                ),
+            () => calculatePaymentTotals(total, payments),
             [total, payments],
         );
 
@@ -132,21 +80,13 @@ function PaymentPage({
                 nextPayments,
             );
 
-        if (
-            nextTotals.isFullyPaid
-        ) {
-            onComplete(
-                nextPayments,
-            );
+        if (nextTotals.isFullyPaid) {
+            onComplete(nextPayments);
             return;
         }
 
-        setPayments(
-            nextPayments,
-        );
-        setSelectedMethod(
-            null,
-        );
+        setPayments(nextPayments);
+        setSelectedMethod(null);
     };
 
     const addCashPayment = (
@@ -164,14 +104,10 @@ function PaymentPage({
         }
 
         const payment: Payment = {
-            id:
-                crypto.randomUUID(),
-            method:
-                "cash",
-            status:
-                "approved",
-            amount:
-                cashPayment.amount,
+            id: crypto.randomUUID(),
+            method: "cash",
+            status: "approved",
+            amount: cashPayment.amount,
             tenderedAmount:
                 cashPayment.tenderedAmount,
             changeAmount:
@@ -187,9 +123,7 @@ function PaymentPage({
     };
 
     const addElectronicPayment = (
-        method:
-            | "card_terminal"
-            | "echo",
+        method: "card_terminal" | "echo",
         amount: number,
         providerReference: string,
     ) => {
@@ -201,16 +135,13 @@ function PaymentPage({
         }
 
         const payment: Payment = {
-            id:
-                crypto.randomUUID(),
+            id: crypto.randomUUID(),
             method,
-            status:
-                "approved",
-            amount:
-                Math.min(
-                    amount,
-                    remainingAmount,
-                ),
+            status: "approved",
+            amount: Math.min(
+                amount,
+                remainingAmount,
+            ),
             providerReference,
             createdAt:
                 new Date().toISOString(),
@@ -223,9 +154,7 @@ function PaymentPage({
     };
 
     const redeemStoredValue = (
-        method:
-            | "credit_voucher"
-            | "gift_card",
+        method: "credit_voucher" | "gift_card",
         number: string,
         amount: number,
     ) => {
@@ -251,22 +180,18 @@ function PaymentPage({
             });
 
         const cashChangeAmount =
-            method ===
-                "credit_voucher"
+            method === "credit_voucher"
                 ? redemption.cashChangeAmount
                 : 0;
 
         const voucherPayment: Payment = {
-            id:
-                paymentId,
+            id: paymentId,
             method,
-            status:
-                "approved",
+            status: "approved",
             amount:
                 redemption.redeemedAmount +
                 cashChangeAmount,
-            externalReference:
-                number,
+            externalReference: number,
             providerReference:
                 redemption.monetaryValue.id,
             createdAt:
@@ -277,14 +202,10 @@ function PaymentPage({
             Payment | null =
             cashChangeAmount > 0
                 ? {
-                      id:
-                          crypto.randomUUID(),
-                      method:
-                          "cash",
-                      status:
-                          "approved",
-                      amount:
-                          -cashChangeAmount,
+                      id: crypto.randomUUID(),
+                      method: "cash",
+                      status: "approved",
+                      amount: -cashChangeAmount,
                       externalReference:
                           `change-for:${number}`,
                       createdAt:
@@ -296,33 +217,55 @@ function PaymentPage({
             ...payments,
             voucherPayment,
             ...(cashChangePayment
-                ? [
-                      cashChangePayment,
-                  ]
+                ? [cashChangePayment]
                 : []),
         ];
 
-        if (
-            cashChangeAmount > 0
-        ) {
-            setPayments(
+        const nextTotals =
+            calculatePaymentTotals(
+                total,
                 nextPayments,
             );
+
+        if (cashChangeAmount > 0) {
+            setPayments(nextPayments);
             setPendingCompletionPayments(
-                nextPayments,
+                nextTotals.isFullyPaid
+                    ? nextPayments
+                    : null,
             );
             setCashChangeNotice(
                 cashChangeAmount,
             );
-            setSelectedMethod(
-                null,
-            );
+            setSelectedMethod(null);
             return;
         }
 
-        finalizeOrStore(
-            nextPayments,
-        );
+        const replacement =
+            redemption
+                .replacementMonetaryValue;
+
+        if (
+            method === "credit_voucher" &&
+            replacement
+        ) {
+            setPayments(nextPayments);
+            setPendingCompletionPayments(
+                nextTotals.isFullyPaid
+                    ? nextPayments
+                    : null,
+            );
+            setReplacementVoucherNotice({
+                number:
+                    replacement.number,
+                amount:
+                    replacement.originalAmount,
+            });
+            setSelectedMethod(null);
+            return;
+        }
+
+        finalizeOrStore(nextPayments);
     };
 
     const restoreStoredValuePayment = (
@@ -330,10 +273,8 @@ function PaymentPage({
     ) => {
         if (
             (
-                payment.method !==
-                    "credit_voucher" &&
-                payment.method !==
-                    "gift_card"
+                payment.method !== "credit_voucher" &&
+                payment.method !== "gift_card"
             ) ||
             !payment.externalReference
         ) {
@@ -344,11 +285,7 @@ function PaymentPage({
             number:
                 payment.externalReference,
             amount:
-                payment.amount -
-                (
-                    payment.changeAmount ??
-                    0
-                ),
+                payment.amount,
             paymentId:
                 payment.id,
             reason:
@@ -362,13 +299,10 @@ function PaymentPage({
         const payment =
             payments.find(
                 (item) =>
-                    item.id ===
-                    paymentId,
+                    item.id === paymentId,
             );
 
-        if (
-            payment
-        ) {
+        if (payment) {
             restoreStoredValuePayment(
                 payment,
             );
@@ -397,25 +331,87 @@ function PaymentPage({
         onBack();
     };
 
-    const confirmCashChange = () => {
-        const next =
-            pendingCompletionPayments;
+    const finishPendingCompletion =
+        () => {
+            const next =
+                pendingCompletionPayments;
 
-        setCashChangeNotice(
-            null,
-        );
-        setPendingCompletionPayments(
-            null,
-        );
-
-        if (
-            next
-        ) {
-            onComplete(
-                next,
+            setPendingCompletionPayments(
+                null,
             );
-        }
-    };
+
+            if (next) {
+                onComplete(next);
+            }
+        };
+
+    const noticeShell = (
+        title: string,
+        body: React.ReactNode,
+        onConfirm: () => void,
+    ) => (
+        <div
+            role="presentation"
+            style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 6000,
+                display: "grid",
+                placeItems: "center",
+                padding: "24px",
+                background:
+                    "rgba(17, 24, 39, 0.32)",
+            }}
+        >
+            <div
+                dir="rtl"
+                role="dialog"
+                aria-modal="true"
+                style={{
+                    width:
+                        "min(420px, 100%)",
+                    padding: "20px",
+                    border:
+                        "1px solid #e0e4e2",
+                    borderRadius: "14px",
+                    background: "#fff",
+                    boxShadow:
+                        "0 18px 50px rgba(15, 23, 42, 0.16)",
+                }}
+            >
+                <h2
+                    style={{
+                        margin: "0 0 12px",
+                        fontSize: "18px",
+                        fontWeight: 700,
+                    }}
+                >
+                    {title}
+                </h2>
+
+                {body}
+
+                <button
+                    type="button"
+                    onClick={onConfirm}
+                    style={{
+                        width: "100%",
+                        minHeight: "40px",
+                        marginTop: "14px",
+                        border: 0,
+                        borderRadius: "9px",
+                        background:
+                            "var(--primary)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                    }}
+                >
+                    אישור והמשך
+                </button>
+            </div>
+        </div>
+    );
 
     return (
         <section
@@ -426,9 +422,7 @@ function PaymentPage({
                 <button
                     type="button"
                     className="payment-page__back"
-                    onClick={
-                        handleBack
-                    }
+                    onClick={handleBack}
                 >
                     חזרה למכירה
                 </button>
@@ -447,13 +441,9 @@ function PaymentPage({
             <div className="payment-page__layout">
                 <section className="payment-page__methods">
                     {primaryPaymentMethods.map(
-                        (
-                            method,
-                        ) => (
+                        (method) => (
                             <button
-                                key={
-                                    method.code
-                                }
+                                key={method.code}
                                 type="button"
                                 className={`payment-method-card ${
                                     selectedMethod ===
@@ -462,8 +452,7 @@ function PaymentPage({
                                         : ""
                                 }`}
                                 disabled={
-                                    remainingAmount <=
-                                    0
+                                    remainingAmount <= 0
                                 }
                                 onClick={() =>
                                     setSelectedMethod(
@@ -472,21 +461,15 @@ function PaymentPage({
                                 }
                             >
                                 <span className="payment-method-card__icon">
-                                    {
-                                        method.icon
-                                    }
+                                    {method.icon}
                                 </span>
 
                                 <strong>
-                                    {
-                                        method.title
-                                    }
+                                    {method.title}
                                 </strong>
 
                                 <span>
-                                    {
-                                        method.description
-                                    }
+                                    {method.description}
                                 </span>
                             </button>
                         ),
@@ -495,12 +478,8 @@ function PaymentPage({
 
                 <aside className="payment-page__summary">
                     <PaymentSummary
-                        saleTotal={
-                            total
-                        }
-                        payments={
-                            payments
-                        }
+                        saleTotal={total}
+                        payments={payments}
                         remainingAmount={
                             remainingAmount
                         }
@@ -529,142 +508,100 @@ function PaymentPage({
                 </aside>
             </div>
 
-            {cashChangeNotice !== null && (
-                <div
-                    role="presentation"
-                    style={{
-                        position:
-                            "fixed",
-                        inset:
-                            0,
-                        zIndex:
-                            6000,
-                        display:
-                            "grid",
-                        placeItems:
-                            "center",
-                        padding:
-                            "24px",
-                        background:
-                            "rgba(17, 24, 39, 0.34)",
-                    }}
-                >
+            {cashChangeNotice !== null &&
+                noticeShell(
+                    "החזר במזומן",
                     <div
-                        dir="rtl"
-                        role="dialog"
-                        aria-modal="true"
                         style={{
-                            width:
-                                "min(430px, 100%)",
+                            display: "flex",
+                            justifyContent:
+                                "space-between",
                             padding:
-                                "22px",
-                            border:
-                                "1px solid #dde4e1",
-                            borderRadius:
-                                "18px",
-                            background:
-                                "#ffffff",
-                            boxShadow:
-                                "0 24px 70px rgba(15, 23, 42, 0.20)",
+                                "12px 0",
+                            borderTop:
+                                "1px solid #ecefed",
+                            borderBottom:
+                                "1px solid #ecefed",
                         }}
                     >
-                        <div
-                            style={{
-                                color:
-                                    "#7a8580",
-                                fontSize:
-                                    "10px",
-                                fontWeight:
-                                    800,
-                                letterSpacing:
-                                    "0.08em",
-                            }}
-                        >
-                            יתרה קטנה
-                        </div>
+                        <span>
+                            סכום להחזרה
+                        </span>
 
-                        <h2
-                            style={{
-                                margin:
-                                    "8px 0 6px",
-                                fontSize:
-                                    "22px",
-                            }}
-                        >
-                            החזר במזומן
-                        </h2>
-
-                        <p
-                            style={{
-                                margin:
-                                    0,
-                                color:
-                                    "#5f6964",
-                                fontSize:
-                                    "13px",
-                                lineHeight:
-                                    1.6,
-                            }}
-                        >
-                            יתרת השובר נמוכה מסף ההנפקה.
-                            יש להחזיר ללקוח במזומן:
-                        </p>
-
-                        <div
-                            style={{
-                                marginTop:
-                                    "16px",
-                                padding:
-                                    "14px",
-                                borderRadius:
-                                    "12px",
-                                background:
-                                    "#f5f8f6",
-                                fontSize:
-                                    "28px",
-                                fontWeight:
-                                    850,
-                                textAlign:
-                                    "center",
-                            }}
-                        >
+                        <strong>
                             ₪
                             {cashChangeNotice.toFixed(
                                 2,
                             )}
-                        </div>
+                        </strong>
+                    </div>,
+                    () => {
+                        setCashChangeNotice(
+                            null,
+                        );
+                        finishPendingCompletion();
+                    },
+                )}
 
-                        <button
-                            type="button"
-                            onClick={
-                                confirmCashChange
-                            }
+            {replacementVoucherNotice &&
+                noticeShell(
+                    "הונפק זיכוי חדש",
+                    <div
+                        style={{
+                            display: "grid",
+                            gap: "10px",
+                            padding:
+                                "12px 0",
+                            borderTop:
+                                "1px solid #ecefed",
+                            borderBottom:
+                                "1px solid #ecefed",
+                        }}
+                    >
+                        <div
                             style={{
-                                width:
-                                    "100%",
-                                minHeight:
-                                    "42px",
-                                marginTop:
-                                    "16px",
-                                border:
-                                    0,
-                                borderRadius:
-                                    "10px",
-                                background:
-                                    "var(--primary)",
-                                color:
-                                    "#fff",
-                                fontWeight:
-                                    750,
-                                cursor:
-                                    "pointer",
+                                display: "flex",
+                                justifyContent:
+                                    "space-between",
                             }}
                         >
-                            אישור והמשך
-                        </button>
-                    </div>
-                </div>
-            )}
+                            <span>
+                                מספר זיכוי
+                            </span>
+
+                            <strong dir="ltr">
+                                {
+                                    replacementVoucherNotice.number
+                                }
+                            </strong>
+                        </div>
+
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent:
+                                    "space-between",
+                            }}
+                        >
+                            <span>
+                                יתרה חדשה
+                            </span>
+
+                            <strong>
+                                ₪
+                                {replacementVoucherNotice.amount.toFixed(
+                                    2,
+                                )}
+                            </strong>
+                        </div>
+                    </div>,
+                    () => {
+                        setReplacementVoucherNotice(
+                            null,
+                        );
+                        finishPendingCompletion();
+                    },
+                )}
         </section>
     );
 }

@@ -805,6 +805,9 @@ function SalePage({
 
 removeCoupon();
 
+        setCartLines([]);
+        clearPricingRules();
+        setSelectedLineId(null);
         setCompletedSale(sale);
         setCheckoutTotal(null);
     };
