@@ -1,133 +1,222 @@
 ﻿# Lumora POS — Project Status
 
 ## Current checkpoint
-Date: 2026-08-08
+
+Date: 2026-08-11
 Branch: main
-Base commit before this checkpoint: a9601f5
+Current HEAD: b74cd25
+Current release: v0.3.0-alpha
+Release checkpoint tag: v0.3.0-alpha
 
 ## Completed in this checkpoint
 
-### Promotion Engine
-- Added persistent Promotion Repository.
-- Default promotions are now test seed data, not the source of truth.
-- Added Buy X Get Y.
-- Added Buy A Get B.
-- Added Mix & Match.
-- Added Bundle Price.
-- Added Quantity Discount.
-- Added Category Discount.
-- Added Fixed Amount Discount.
-- Added Basket Discount.
-- Added Basket Tier Discount.
-- Added percentage reward variants such as second item at 50%.
-- Added per-promotion allowStacking policy.
-- Promotion conflicts are resolved at unit level.
-- Best customer benefit is selected when promotions conflict.
-- Promotions never increase the customer price.
-- Fixed proportional rounding so allocated discounts reconcile exactly to the promotion amount.
-- Added promotion participation metadata so all participating lines can display the promotion, even when the monetary discount is allocated to another line.
-- Added date/time scheduling support including days of week, hours and overnight windows.
-- Added product/category exclusions.
-- Promotion details are persisted on completed sale lines.
+### Returns / Refunds
 
-### Coupon Engine
-- Added Coupon model.
-- Added Coupon Repository.
-- Added Coupon Service.
-- Added coupon test seed data.
-- Added fixed amount and percentage coupons.
-- Added maximum percentage discount cap.
-- Added single-use burn policy.
-- Added partial-balance policy.
-- Added minimum basket, customer group, branch and channel conditions.
-- Added coupon redemption history.
-- Coupons are validated in the sale flow.
-- Coupon discount is included in the final transaction total.
-- Coupon is redeemed only when the transaction is completed.
-- Single-use coupon TEST100 was verified: unused value is burned and cannot be reused.
-- Coupon information is persisted on the completed sale.
+- Return flow from an original transaction/document is operational.
+- Return flow without an original document is operational.
+- Return quantity can be selected.
+- Return price can be changed when returning an item without an original document.
+- Returns correctly enter the refund/payment flow instead of silently completing the transaction.
+- Small refunds up to the configured threshold can be returned in cash.
 
-### Sale / Pricing UI
-- Promotion name is displayed below participating cart items.
-- Monetary discount is displayed only on the line receiving the allocation.
-- Coupon entry and removal are available in the cart.
-- Hebrew encoding regression in SalePage was fixed.
+### Credit Vouchers
 
-## Verified
-- npm run build passes.
-- Split payment checkpoint from previous commit remains intact.
-- Promotion calculations tested manually.
-- Mix & Match rounding verified.
-- Coupon TEST100 verified as single-use and non-reusable.
+- Credit vouchers can be issued from returns.
+- Credit vouchers can be redeemed as a payment method.
+- Partial redemption is supported.
+- When a partial redemption leaves more than the configured ₪5 threshold, the original voucher is depleted and a replacement voucher is issued for the remaining balance.
+- The replacement voucher number and amount are shown to the cashier before transaction completion.
+- When the remaining voucher balance is up to ₪5, it is returned as cash instead of issuing another voucher.
+- Cash remainder is represented in the transaction/payment data.
+- Walk-in customers are displayed correctly in stored-value management.
+- Voucher lifecycle and replacement linkage are persisted.
 
-## Current architecture
-- Lumora is the Test Version / Test Environment.
-- Demo will later be created as a stable replica for distributors/customers.
-- Lumora POS remains standalone-capable.
-- Promotion and coupon data currently persist locally.
-- Future multi-POS/network architecture will replicate master data and transactions across all tills/branches.
-- Nextera is the optional central Back Office for larger businesses.
-- Small businesses can manage supported master data directly from Lumora POS.
+### Sale / Payment completion
 
-## Known gaps
-- Promotion UI/admin screens do not yet exist.
-- Customer-group conditions are modeled but not yet connected to a real customer/loyalty layer.
-- Branch/channel conditions are modeled but not yet connected to runtime branch/channel context.
-- Loyalty points engine is not yet implemented.
-- Coupon/Promotion return and exchange behavior still needs end-to-end QA.
-- Persistence is still browser local storage; production local DB is still pending.
-- Offline replication and network-wide transaction synchronization are pending.
-- Tax engine is pending.
-- Fiscal/document finalization is pending.
-- Inventory commit is pending.
-- Shift/permissions are pending.
-- Hardware/printing integrations are pending.
+- Completed transactions clear the working cart.
+- Refund and payment completion flows were stabilized.
+- Lumora-native notices are used for the completed refund/voucher flows implemented in this checkpoint.
 
-## Exact next task
-Complete the remaining Promotion Engine integration:
-1. Customer groups / club conditions.
-2. Branch and sales-channel runtime conditions.
-3. Promotion/coupon behavior on returns and exchanges.
-4. Promotion and coupon test matrix.
-5. Mark Promotion Engine Alpha Complete.
+## Production verification
 
-Then continue to:
-Tax Engine -> Documents -> Inventory -> Shift/Permissions -> Local DB -> Offline/Replication -> Hardware/Printing -> QA/Packaging.
+Verified manually in the deployed production environment:
 
-## Product rule locked today
-A promotion may never make the transaction more expensive.
-When multiple eligible promotion combinations conflict, Lumora must select the best valid benefit for the customer.
+- Return from original transaction.
+- Return without original document.
+- Editable return price without original document.
+- Credit voucher issuance.
+- Credit voucher redemption.
+- Partial voucher redemption.
+- Replacement voucher issuance when remaining balance is above ₪5.
+- Replacement voucher notification with new voucher number and amount.
+- Cash refund behavior for balances up to ₪5.
+- Completed transaction cart reset.
 
-## Checkpoint — 2026-08-09
+## Validation
 
-### Completed
-- Lumora connected to Vercel production.
-- Product Info added to catalog items.
-- Product Info includes selling price, cost price, gross profit, gross margin, supplier, hierarchy, stock and active promotions.
-- Product commercial visibility capabilities added.
-- Customer foundation added.
-- Test customer groups added: club / VIP.
-- Promotion Engine now supports customer-group eligibility.
-- Customer selection is connected to pricing.
-- Club promotion was verified: walk-in customer receives regular price; club customer receives eligible club promotion.
-- Existing pricing, promotion, coupon and payment foundations still build successfully.
+- TypeScript check: PASS
+- Vite production build: PASS
+- Production deployment: PASS
+- Production smoke tests: PASS
 
-### Current build
-- npm run build: PASS
+## Release
 
-### Exact next work
-1. Finish Promotion Engine runtime conditions: branch + sales channel.
-2. Returns/exchanges with promotions and coupons.
-3. Promotion regression test matrix.
-4. Mark Promotion Engine Alpha Complete.
-5. Tax Engine.
-6. Fiscal/Documents finalization.
-7. Inventory commit.
-8. Employees / permissions / shifts.
-9. Local DB.
-10. Offline replication and multi-register / multi-branch synchronization.
-11. Nextera integration.
-12. Echo integration.
-13. Hardware / printing.
-14. QA and release packaging.
-15. Sales Coach on top of real transaction data.
+Release: v0.3.0-alpha
+
+Functional implementation checkpoint:
+0db0f12 — fix: show rollover voucher notice
+
+Release documentation commits:
+45472c8 — docs: add v0.3.0-alpha release notes
+b74cd25 — docs: fix v0.3.0-alpha release formatting
+
+## Architecture baseline
+
+- Lumora is an operational POS and must remain standalone-capable.
+- Core POS operation must not depend on an internet connection.
+- Each terminal must remain capable of operating independently.
+- Operational data will move toward local-first persistence.
+- Synchronization/replication must occur without making the till dependent on the central system.
+- Nextera is the optional central Back Office / management layer for larger or more complex businesses.
+- Lumora must also remain usable without Nextera.
+- Echo is the payment integration layer and must not become a prerequisite for core POS operation.
+- Integration architecture must remain system-agnostic and extensible.
+
+## Current known gaps
+
+- Browser localStorage is still used in areas where a production local database is ultimately required.
+- Full offline replication is not yet implemented.
+- Multi-register / multi-branch synchronization is not yet implemented.
+- Nextera integration is not yet implemented.
+- Fiscal/document flows require finalization and full QA.
+- Remaining payment methods require completion/integration.
+- Inventory transaction commit and synchronization require completion.
+- Employees / permissions / shifts require completion.
+- Hardware and printing integrations are pending.
+- Promotion/coupon regression coverage still requires completion.
+- Branch and sales-channel runtime promotion conditions remain incomplete.
+- Echo integration remains pending.
+- Production-wide UX/responsive/RTL/LTR polish remains pending.
+
+## Exact next milestone
+
+### Lumora ↔ Nextera Integration Foundation
+
+The next development phase starts with an evidence-based audit of both systems before changing code.
+
+The integration foundation must define:
+
+1. Integration boundary between Lumora and Nextera.
+2. Tenant / branch / register identity.
+3. API and replication contracts.
+4. Authentication and authorization between systems.
+5. Product/catalog synchronization.
+6. Customer synchronization.
+7. Inventory synchronization and movement ownership.
+8. Completed transaction synchronization.
+9. Document synchronization.
+10. Idempotency and duplicate protection.
+11. Offline outbox / retry behavior.
+12. Conflict handling.
+13. Sync health/status visibility.
+14. Versioning of integration contracts.
+
+Lumora must continue selling while Nextera or the internet is unavailable.
+
+## Remaining roadmap to delivery
+
+### Phase 1 — Lumora ↔ Nextera Integration Foundation
+- Audit both repositories.
+- Define ownership of master and transactional data.
+- Define contracts and identifiers.
+- Implement first test-to-test connection.
+- Implement safe sync/outbox foundation.
+- Verify offline independence.
+
+### Phase 2 — Fiscal / Documents
+- Finalize invoice/receipt behavior.
+- Finalize credit documents.
+- Original vs duplicate rules.
+- Link returns/credits to source documents.
+- Printing and digital-send flow.
+- Complete document numbering rules.
+- Full document/payment reconciliation.
+
+### Phase 3 — Payments
+- Complete remaining payment methods.
+- Validate split payments.
+- Echo integration.
+- Failure/retry/cancellation behavior.
+- Payment reconciliation.
+
+### Phase 4 — Recent Transactions
+- Complete transaction search and details.
+- Reprint / duplicate documents.
+- Return/refund entry points.
+- Payment and document visibility.
+
+### Phase 5 — Inventory
+- Commit stock movements from sales.
+- Commit physical returns according to policy.
+- Inventory audit trail.
+- Nextera inventory synchronization.
+- Conflict/discrepancy handling.
+
+### Phase 6 — Customers / Catalog
+- Complete customer/loyalty runtime layer.
+- Complete product/catalog management.
+- Nextera master-data synchronization.
+- Price lists and customer groups.
+
+### Phase 7 — Promotions / Pricing
+- Complete branch/channel runtime conditions.
+- Complete promotion/coupon return behavior.
+- Regression test matrix.
+- Finalize promotion administration.
+- Price-list synchronization.
+
+### Phase 8 — Employees / Permissions / Shifts
+- Employee authentication.
+- Roles and permissions.
+- Manager approvals.
+- Shift lifecycle and cash accountability.
+
+### Phase 9 — Local DB / Offline / Replication
+- Replace production-critical browser persistence with local database storage.
+- Durable outbox.
+- Retry and recovery.
+- Multi-register synchronization.
+- Multi-branch synchronization.
+- Connectivity and replication health indicators.
+
+### Phase 10 — Hardware / Printing
+- Receipt/document printers.
+- Barcode scanners.
+- Cash drawer.
+- Payment terminal integration.
+- Hardware failure handling.
+
+### Phase 11 — Production Polish
+- Consistent Lumora dialogs/modals.
+- Responsive/resolution consistency.
+- RTL/LTR.
+- Hebrew/English/Greek readiness.
+- Keyboard/scanner workflow.
+- Empty/error/loading states.
+- Remove browser-native UI where inappropriate.
+
+### Phase 12 — QA / Release
+- End-to-end regression.
+- Offline tests.
+- Recovery tests.
+- Multi-register tests.
+- Integration tests.
+- Production packaging.
+- Stable distributor/customer demo.
+- Release documentation and rollback checkpoint.
+
+## Exact next action
+
+Run a consolidated read-only audit of Lumora's existing integration/API/sync/persistence architecture.
+
+Do not modify application code until the audit findings and proposed Lumora ↔ Nextera contract are reviewed.
