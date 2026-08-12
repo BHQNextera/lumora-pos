@@ -1,56 +1,107 @@
 import type {
+    DocumentType,
     SaleDocument,
 } from "./Document";
 import {
     allocateDocumentNumber,
 } from "./DocumentNumbering";
 import {
-    documentPolicy,
+    resolveDocumentTypes,
 } from "./DocumentPolicy";
 import {
+    getDocumentsForTransaction,
     saveDocument,
 } from "./DocumentRepository";
 import type {
     Sale,
 } from "../sale/Sale";
 
-function getDocumentTypeForTransaction(
+function buildRuleContext(
     sale: Sale,
 ) {
-    if (sale.total < 0) {
-        return documentPolicy
-            .creditDocumentType;
-    }
-
-    return documentPolicy
-        .salesDocumentType;
+    return {
+        transactionType:
+            sale.transactionType,
+        total:
+            sale.total,
+        hasPositiveLines:
+            sale.lines.some(
+                (line) =>
+                    line.netAmount > 0,
+            ),
+        hasNegativeLines:
+            sale.lines.some(
+                (line) =>
+                    line.netAmount < 0,
+            ),
+    };
 }
 
-export function createAccountingDocument(
+function resolveOriginalDocument(
     sale: Sale,
 ): SaleDocument | null {
+    const originalSaleIds =
+        Array.from(
+            new Set(
+                sale.lines
+                    .filter(
+                        (line) =>
+                            line.kind === "return" &&
+                            line.returnSource ===
+                            "linked_document" &&
+                            Boolean(
+                                line.originalSaleId,
+                            ),
+                    )
+                    .map(
+                        (line) =>
+                            line.originalSaleId!,
+                    ),
+            ),
+        );
+
+    /*
+     * SaleDocument currently supports one original document link.
+     * A linked return created from one source transaction can therefore
+     * be linked safely. If a future transaction contains returns from
+     * multiple source transactions, we intentionally do not guess.
+     * That case will require a multi-source document-reference model.
+     */
     if (
-        Math.abs(sale.total) <
-        0.001
+        originalSaleIds.length !== 1
     ) {
         return null;
     }
 
-    const type =
-        getDocumentTypeForTransaction(
-            sale,
+    const sourceDocuments =
+        getDocumentsForTransaction(
+            originalSaleIds[0],
         );
 
+    return (
+        sourceDocuments[0] ??
+        null
+    );
+}
+
+function createDocument(
+    sale: Sale,
+    type: DocumentType,
+): SaleDocument {
     const allocation =
-        allocateDocumentNumber(
-            type,
-        );
+        allocateDocumentNumber(type);
 
     const now =
         new Date().toISOString();
 
-    const document: SaleDocument = {
-        id: crypto.randomUUID(),
+    const originalDocument =
+        resolveOriginalDocument(
+            sale,
+        );
+
+    return saveDocument({
+        id:
+            crypto.randomUUID(),
 
         transactionId:
             sale.id,
@@ -78,15 +129,76 @@ export function createAccountingDocument(
         status:
             "issued_original",
 
+        originalDocumentId:
+            originalDocument?.id,
+
+        originalDocumentNumber:
+            originalDocument?.number,
+
         originalIssueAt:
             now,
 
-        outputCount: 1,
+        outputCount:
+            0,
 
-        createdAt: now,
-    };
+        createdAt:
+            now,
+    });
+}
 
-    saveDocument(document);
+export function createAccountingDocuments(
+    sale: Sale,
+): SaleDocument[] {
+    const existing =
+        getDocumentsForTransaction(
+            sale.id,
+        );
 
-    return document;
+    const requiredTypes =
+        resolveDocumentTypes(
+            buildRuleContext(
+                sale,
+            ),
+        );
+
+    const result = [
+        ...existing,
+    ];
+
+    for (
+        const type of
+        requiredTypes
+    ) {
+        if (
+            result.some(
+                (document) =>
+                    document.type ===
+                    type,
+            )
+        ) {
+            continue;
+        }
+
+        result.push(
+            createDocument(
+                sale,
+                type,
+            ),
+        );
+    }
+
+    return result;
+}
+
+// Compatibility wrapper for the current sale flow.
+// New document-aware flows should use createAccountingDocuments().
+export function createAccountingDocument(
+    sale: Sale,
+): SaleDocument | null {
+    return (
+        createAccountingDocuments(
+            sale,
+        )[0] ??
+        null
+    );
 }

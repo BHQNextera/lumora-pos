@@ -1,3 +1,6 @@
+import { useState } from "react";
+
+import type { SaleDocument } from "../../models/document/Document";
 import type { Sale } from "../../models/sale/Sale";
 import {
     getDocumentsForTransaction,
@@ -5,6 +8,8 @@ import {
 import {
     getReturnsForSale,
 } from "../../models/transaction/ReturnRepository";
+
+import ReceiptPage from "../receipt/ReceiptPage";
 
 import "./transaction-details-page.css";
 
@@ -91,6 +96,9 @@ function TransactionDetailsPage({
     onBack,
     onOpenReturn,
 }: TransactionDetailsPageProps) {
+    const [selectedDocument, setSelectedDocument] =
+        useState<SaleDocument | null>(null);
+
     const documents =
         getDocumentsForTransaction(sale.id);
 
@@ -134,6 +142,18 @@ function TransactionDetailsPage({
     const canReturn =
         totalSoldQuantity > 0 &&
         totalReturnableQuantity > 0;
+
+    if (selectedDocument) {
+        return (
+            <ReceiptPage
+                sale={sale}
+                document={selectedDocument}
+                onBack={() =>
+                    setSelectedDocument(null)
+                }
+            />
+        );
+    }
 
     return (
         <section className="transaction-details-page">
@@ -229,8 +249,8 @@ function TransactionDetailsPage({
                                 return (
                                     <article
                                         className={`transaction-details-line ${line.kind === "return"
-                                                ? "transaction-details-line--return"
-                                                : ""
+                                            ? "transaction-details-line--return"
+                                            : ""
                                             }`}
                                         key={line.id}
                                     >
@@ -277,8 +297,8 @@ function TransactionDetailsPage({
 
                                         <strong
                                             className={`transaction-details-line__amount ${line.netAmount < 0
-                                                    ? "transaction-details-line__amount--negative"
-                                                    : ""
+                                                ? "transaction-details-line__amount--negative"
+                                                : ""
                                                 }`}
                                         >
                                             {line.netAmount < 0
@@ -346,7 +366,14 @@ function TransactionDetailsPage({
                                             </span>
                                         </div>
 
-                                        <button type="button">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setSelectedDocument(
+                                                    document,
+                                                )
+                                            }
+                                        >
                                             פתח
                                         </button>
                                     </article>

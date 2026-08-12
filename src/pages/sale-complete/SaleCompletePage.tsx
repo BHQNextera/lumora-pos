@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import {
+    getDocumentsForTransaction,
+} from "../../models/document/DocumentRepository";
 import type { Sale } from "../../models/sale/Sale";
 import ReceiptPage from "../receipt/ReceiptPage";
 
@@ -17,11 +20,25 @@ function SaleCompletePage({
     const [showReceipt, setShowReceipt] =
         useState(false);
 
+    const accountingDocument =
+        useMemo(
+            () =>
+                getDocumentsForTransaction(
+                    sale.id,
+                )[0] ?? null,
+            [sale.id],
+        );
+
     if (showReceipt) {
         return (
             <ReceiptPage
                 sale={sale}
-                onBack={() => setShowReceipt(false)}
+                document={
+                    accountingDocument
+                }
+                onBack={() =>
+                    setShowReceipt(false)
+                }
             />
         );
     }
@@ -37,16 +54,38 @@ function SaleCompletePage({
 
                 <div className="sale-complete-card__meta">
                     <div>
-                        <span>מספר עסקה</span>
-                        <strong>{sale.number}</strong>
+                        <span>
+                            מספר עסקה
+                        </span>
+                        <strong>
+                            {sale.number}
+                        </strong>
                     </div>
 
                     <div>
-                        <span>סה״כ</span>
+                        <span>
+                            סה״כ
+                        </span>
                         <strong>
-                            ₪{sale.total.toFixed(2)}
+                            ₪
+                            {sale.total.toFixed(
+                                2,
+                            )}
                         </strong>
                     </div>
+
+                    {accountingDocument && (
+                        <div>
+                            <span>
+                                מספר מסמך
+                            </span>
+                            <strong>
+                                {
+                                    accountingDocument.number
+                                }
+                            </strong>
+                        </div>
+                    )}
                 </div>
 
                 <div className="sale-complete-card__actions">
@@ -60,20 +99,39 @@ function SaleCompletePage({
 
                     <button
                         type="button"
-                        onClick={() => window.print()}
+                        onClick={() =>
+                            setShowReceipt(
+                                true,
+                            )
+                        }
+                        disabled={
+                            !accountingDocument
+                        }
                     >
-                        הדפס קבלה
-                    </button>
-
-                    <button type="button">
-                        שלח קבלה
+                        הצג מסמך
                     </button>
 
                     <button
                         type="button"
-                        onClick={() => setShowReceipt(true)}
+                        onClick={() => {
+                            setShowReceipt(
+                                true,
+                            );
+                        }}
+                        disabled={
+                            !accountingDocument
+                        }
                     >
-                        הצג חשבונית
+                        הדפס מסמך
+                    </button>
+
+                    <button
+                        type="button"
+                        disabled={
+                            !accountingDocument
+                        }
+                    >
+                        שלח מסמך
                     </button>
                 </div>
             </div>

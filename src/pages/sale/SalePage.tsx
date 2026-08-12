@@ -1,4 +1,4 @@
-import {
+﻿import {
     useEffect,
     useMemo,
     useState,
@@ -17,7 +17,7 @@ import { categorySeed } from "../../models/catalog/Category";
 import {
     testCustomers,
 } from "../../models/customer/CustomerSeed";
-import { getDocumentsForTransaction } from "../../models/document/DocumentRepository";
+import { createAccountingDocument } from "../../models/document/DocumentFactory";
 import { issueMonetaryValue } from "../../models/monetary-value/MonetaryValueService";
 import type { Payment } from "../../models/Payment";
 import {
@@ -761,6 +761,11 @@ function SalePage({
             );
 
         
+        const accountingDocument =
+            createAccountingDocument(
+                sale,
+            );
+
         const refundVoucherPayment =
             payments.find(
                 (payment) =>
@@ -770,10 +775,6 @@ function SalePage({
             );
 
         if (refundVoucherPayment) {
-            const documents =
-                getDocumentsForTransaction(
-                    sale.id,
-                );
 
             const voucher =
                 issueMonetaryValue({
@@ -792,7 +793,7 @@ function SalePage({
                         sale.id,
 
                     originDocumentId:
-                        documents[0]?.id,
+                        accountingDocument?.id,
                 });
 
             setIssuedRefundVoucher({
@@ -1419,3 +1420,4 @@ removeCoupon();
 }
 
 export default SalePage;
+

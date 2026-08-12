@@ -220,3 +220,52 @@ Lumora must continue selling while Nextera or the internet is unavailable.
 Run a consolidated read-only audit of Lumora's existing integration/API/sync/persistence architecture.
 
 Do not modify application code until the audit findings and proposed Lumora ↔ Nextera contract are reviewed.
+
+## Checkpoint — 2026-08-12 — Documents Foundation
+
+### Completed
+
+- Added configurable Document Policy V2.
+- Document policy is no longer treated as a universal hard-coded invoice/credit model.
+- Current tenant behavior is preserved while the engine supports policy-driven document selection.
+- DocumentFactory can now resolve zero, one or multiple required document types.
+- Accounting documents are created at transaction completion.
+- Document creation is idempotent per transaction/document type.
+- Sale completion now exposes the real accounting document number.
+- Receipt/document view uses the real SaleDocument instead of a static receipt title.
+- Transaction Details document "Open" action now opens the actual document.
+- Credit documents created from linked returns can preserve original document ID and number.
+- Source document linkage was manually verified on a credit document.
+- Current document numbering remains independent by store + register + document type.
+
+### Verified
+
+- TypeScript check: PASS
+- Vite production build: PASS
+- Normal sale creates current configured sales document.
+- Negative return creates current configured credit document.
+- Document number is consistent between completion screen and document view.
+- Previous Transactions can open the persisted accounting document.
+- Linked credit document displays the original document number.
+
+### Remaining Documents Work
+
+1. Exchange document outcomes:
+   - positive net
+   - negative net
+   - zero balance
+2. Multi-document transaction behavior where policy requires it.
+3. Original / Copy lifecycle.
+4. DocumentOutputEvent for print/send/reprint.
+5. Reprint and resend from Previous Transactions.
+6. Full linked-return reference behavior for multiple source documents.
+7. Gift Card issuance accounting flow.
+8. Additional configurable/country-specific document types.
+9. Final document/payment reconciliation.
+10. Production document UI/print polish.
+
+### Exact next action
+
+Implement and verify policy-driven document outcomes for exchange transactions:
+positive net, negative net and zero balance.
+
