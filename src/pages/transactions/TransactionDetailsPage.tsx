@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { flushSync } from "react-dom";
 
 import type { SaleDocument } from "../../models/document/Document";
+import {
+    registerDocumentOutput,
+} from "../../models/document/DocumentOutputService";
 import type { Sale } from "../../models/sale/Sale";
 import {
     getDocumentsForTransaction,
@@ -249,8 +253,8 @@ function TransactionDetailsPage({
                                 return (
                                     <article
                                         className={`transaction-details-line ${line.kind === "return"
-                                            ? "transaction-details-line--return"
-                                            : ""
+                                                ? "transaction-details-line--return"
+                                                : ""
                                             }`}
                                         key={line.id}
                                     >
@@ -297,8 +301,8 @@ function TransactionDetailsPage({
 
                                         <strong
                                             className={`transaction-details-line__amount ${line.netAmount < 0
-                                                ? "transaction-details-line__amount--negative"
-                                                : ""
+                                                    ? "transaction-details-line__amount--negative"
+                                                    : ""
                                                 }`}
                                         >
                                             {line.netAmount < 0
@@ -507,7 +511,33 @@ function TransactionDetailsPage({
                     </section>
 
                     <section className="transaction-details-actions">
-                        <button type="button">
+                        <button
+                            type="button"
+                            disabled={
+                                documents.length === 0
+                            }
+                            onClick={() => {
+                                const document =
+                                    documents[0];
+
+                                if (!document) {
+                                    return;
+                                }
+
+                                flushSync(() => {
+                                    setSelectedDocument(
+                                        document,
+                                    );
+                                });
+
+                                window.print();
+
+                                registerDocumentOutput(
+                                    document.id,
+                                    "print",
+                                );
+                            }}
+                        >
                             הדפס מסמך
                         </button>
 

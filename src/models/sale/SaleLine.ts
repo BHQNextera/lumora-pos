@@ -63,4 +63,7 @@ export type SaleLine = {
     originalSaleId?: string;
     originalSaleNumber?: string;
     originalSaleLineId?: string;
+
+    originalDocumentId?: string;
+    originalDocumentNumber?: string;
 };

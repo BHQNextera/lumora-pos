@@ -1,6 +1,17 @@
+import {
+    useEffect,
+    useState,
+} from "react";
+
 import type {
+    DocumentCopyType,
     SaleDocument,
 } from "../../models/document/Document";
+import {
+    getNextDocumentCopyType,
+    recordDocumentScreenView,
+    registerDocumentOutput,
+} from "../../models/document/DocumentOutputService";
 import type { Payment } from "../../models/Payment";
 import type { Sale } from "../../models/sale/Sale";
 
@@ -84,6 +95,19 @@ function getPaymentLabel(
     }
 }
 
+function formatMoney(
+    value: number,
+) {
+    const sign =
+        value < 0
+            ? "−"
+            : "";
+
+    return `${sign}₪${Math.abs(
+        value,
+    ).toFixed(2)}`;
+}
+
 function ReceiptPage({
     sale,
     document,
@@ -96,6 +120,70 @@ function ReceiptPage({
         document?.originalIssueAt ??
         sale.completedAt ??
         sale.createdAt;
+
+    const [
+        displayCopyType,
+        setDisplayCopyType,
+    ] = useState<DocumentCopyType>(
+        document
+            ? getNextDocumentCopyType(
+                document.id,
+            )
+            : "original",
+    );
+
+    useEffect(() => {
+        if (!document) {
+            return;
+        }
+
+        recordDocumentScreenView(
+            document.id,
+        );
+
+        setDisplayCopyType(
+            getNextDocumentCopyType(
+                document.id,
+            ),
+        );
+    }, [document]);
+
+    const printDocument = () => {
+        if (!document) {
+            return;
+        }
+
+        const output =
+            registerDocumentOutput(
+                document.id,
+                "print",
+            );
+
+        setDisplayCopyType(
+            output.copyType,
+        );
+
+        window.setTimeout(() => {
+            window.print();
+
+            setDisplayCopyType(
+                getNextDocumentCopyType(
+                    document.id,
+                ),
+            );
+        }, 0);
+    };
+
+    const taxBase =
+        sale.total - sale.tax;
+
+    const hasIdentifiedCustomer =
+        Boolean(
+            sale.customer.id ||
+            sale.customer.phone ||
+            sale.customer.name !==
+            "לקוח מזדמן",
+        );
 
     return (
         <section className="receipt-page">
@@ -110,8 +198,9 @@ function ReceiptPage({
 
                 <div>
                     <span>
-                        מסמך עסקה
+                        מסמך חשבונאי
                     </span>
+
                     <h1>
                         {documentTitle}
                     </h1>
@@ -121,53 +210,61 @@ function ReceiptPage({
             <div className="receipt-page__workspace">
                 <article className="receipt">
                     <header className="receipt__business">
-                        <strong>
-                            Coffee Time
-                        </strong>
-                        <span>
-                            סניף רחובות
-                        </span>
+                        <div className="receipt__business-mark">
+                            CT
+                        </div>
+
+                        <div>
+                            <strong>
+                                Coffee Time
+                            </strong>
+
+                            <span>
+                                סניף רחובות
+                            </span>
+                        </div>
                     </header>
 
-                    <div className="receipt__document-title">
-                        <strong>
-                            {documentTitle}
-                        </strong>
-                        <span>
-                            {document?.status ===
-                            "reissued_copy"
+                    <section className="receipt__identity">
+                        <div className="receipt__identity-main">
+                            <h2>
+                                {documentTitle}
+                            </h2>
+
+                            {document && (
+                                <strong
+                                    className="receipt__document-number"
+                                    dir="ltr"
+                                >
+                                    {document.number}
+                                </strong>
+                            )}
+                        </div>
+
+                        <span className="receipt__copy-badge">
+                            {displayCopyType ===
+                                "copy"
                                 ? "העתק"
                                 : "מקור"}
                         </span>
-                    </div>
+                    </section>
 
-                    <div className="receipt__meta">
-                        {document && (
-                            <div>
-                                <span>
-                                    מספר מסמך
-                                </span>
-                                <strong>
-                                    {
-                                        document.number
-                                    }
-                                </strong>
-                            </div>
-                        )}
-
+                    <section className="receipt__meta">
                         <div>
                             <span>
                                 מספר עסקה
                             </span>
-                            <strong>
+
+                            <strong dir="ltr">
                                 {sale.number}
                             </strong>
                         </div>
 
                         <div>
                             <span>
-                                תאריך
+                                תאריך ושעה
                             </span>
+
                             <strong>
                                 {new Date(
                                     issueDate,
@@ -177,80 +274,207 @@ function ReceiptPage({
                             </strong>
                         </div>
 
-                        {document
-                            ?.originalDocumentNumber && (
-                            <div>
-                                <span>
-                                    מסמך מקור
-                                </span>
-                                <strong>
-                                    {
-                                        document
-                                            .originalDocumentNumber
-                                    }
-                                </strong>
-                            </div>
-                        )}
-                    </div>
+                        {document && (
+                            <>
+                                <div>
+                                    <span>
+                                        קופה
+                                    </span>
 
-                    <div className="receipt__lines">
-                        {sale.lines.map(
-                            (line) => (
-                                <div
-                                    className="receipt-line"
-                                    key={
-                                        line.id
-                                    }
-                                >
-                                    <div className="receipt-line__main">
-                                        <strong>
-                                            {
-                                                line.productName
-                                            }
-                                        </strong>
-
-                                        <span>
-                                            {
-                                                line.quantity
-                                            }{" "}
-                                            × ₪
-                                            {line.unitPrice.toFixed(
-                                                2,
-                                            )}
-                                        </span>
-                                    </div>
-
-                                    <strong>
-                                        ₪
-                                        {line.netAmount.toFixed(
-                                            2,
-                                        )}
+                                    <strong dir="ltr">
+                                        {
+                                            document.registerCode
+                                        }
                                     </strong>
                                 </div>
-                            ),
-                        )}
-                    </div>
 
-                    <div className="receipt__totals">
+                                <div>
+                                    <span>
+                                        חנות
+                                    </span>
+
+                                    <strong dir="ltr">
+                                        {
+                                            document.storeCode
+                                        }
+                                    </strong>
+                                </div>
+                            </>
+                        )}
+
+                        {sale.transactionType !==
+                            "exchange" &&
+                            document
+                                ?.originalDocumentNumber && (
+                                <div className="receipt__meta--wide">
+                                    <span>
+                                        מסמך מקור
+                                    </span>
+
+                                    <strong dir="ltr">
+                                        {
+                                            document
+                                                .originalDocumentNumber
+                                        }
+                                    </strong>
+                                </div>
+                            )}
+                    </section>
+
+                    {hasIdentifiedCustomer && (
+                        <section className="receipt__customer">
+                            <div className="receipt__section-heading">
+                                <span>
+                                    לקוח
+                                </span>
+                            </div>
+
+                            <div className="receipt__customer-grid">
+                                <div>
+                                    <span>
+                                        שם
+                                    </span>
+
+                                    <strong>
+                                        {
+                                            sale.customer.name
+                                        }
+                                    </strong>
+                                </div>
+
+                                {sale.customer.phone && (
+                                    <div>
+                                        <span>
+                                            טלפון
+                                        </span>
+
+                                        <strong dir="ltr">
+                                            {
+                                                sale.customer.phone
+                                            }
+                                        </strong>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    )}
+
+                    <section className="receipt__items">
+                        <div className="receipt__section-heading">
+                            <span>
+                                פריטים
+                            </span>
+
+                            <span>
+                                {sale.lines.length}
+                            </span>
+                        </div>
+
+                        <div className="receipt__lines">
+                            {sale.lines.map(
+                                (line) => (
+                                    <div
+                                        className={`receipt-line ${line.kind ===
+                                            "return"
+                                            ? "receipt-line--return"
+                                            : ""
+                                            }`}
+                                        key={
+                                            line.id
+                                        }
+                                    >
+                                        <div className="receipt-line__main">
+                                            <strong>
+                                                {
+                                                    line.productName
+                                                }
+                                            </strong>
+
+                                            {line.descriptionOverride && (
+                                                <span className="receipt-line__description">
+                                                    {
+                                                        line.descriptionOverride
+                                                    }
+                                                </span>
+                                            )}
+
+                                            <span>
+                                                {
+                                                    line.quantity
+                                                }{" "}
+                                                ×{" "}
+                                                {formatMoney(
+                                                    line.unitPrice,
+                                                )}
+                                            </span>
+
+                                            {line.kind ===
+                                                "return" &&
+                                                line.originalDocumentNumber && (
+                                                    <span className="receipt-line__origin">
+                                                        הוחזר ממסמך{" "}
+                                                        <strong dir="ltr">
+                                                            {
+                                                                line.originalDocumentNumber
+                                                            }
+                                                        </strong>
+                                                    </span>
+                                                )}
+
+                                            {line.appliedPromotions &&
+                                                line
+                                                    .appliedPromotions
+                                                    .length >
+                                                0 && (
+                                                    <span className="receipt-line__promotion">
+                                                        {
+                                                            line.appliedPromotions
+                                                                .map(
+                                                                    (
+                                                                        promotion,
+                                                                    ) =>
+                                                                        promotion.name,
+                                                                )
+                                                                .join(
+                                                                    " · ",
+                                                                )
+                                                        }
+                                                    </span>
+                                                )}
+                                        </div>
+
+                                        <strong className="receipt-line__amount">
+                                            {formatMoney(
+                                                line.netAmount,
+                                            )}
+                                        </strong>
+                                    </div>
+                                ),
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="receipt__summary">
                         <div>
                             <span>
                                 סכום ביניים
                             </span>
+
                             <strong>
-                                ₪
-                                {sale.subtotal.toFixed(
-                                    2,
+                                {formatMoney(
+                                    sale.subtotal,
                                 )}
                             </strong>
                         </div>
 
                         {sale.discount > 0 && (
-                            <div className="receipt__discount">
+                            <div>
                                 <span>
                                     הנחות
                                 </span>
+
                                 <strong>
-                                    ‎-₪
+                                    −₪
                                     {sale.discount.toFixed(
                                         2,
                                     )}
@@ -258,67 +482,164 @@ function ReceiptPage({
                             </div>
                         )}
 
+                        <div>
+                            <span>
+                                לפני מע״מ
+                            </span>
+
+                            <strong>
+                                {formatMoney(
+                                    taxBase,
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                מע״מ
+                            </span>
+
+                            <strong>
+                                {formatMoney(
+                                    sale.tax,
+                                )}
+                            </strong>
+                        </div>
+
                         <div className="receipt__grand-total">
                             <span>
                                 סה״כ
                             </span>
+
                             <strong>
-                                ₪
-                                {sale.total.toFixed(
-                                    2,
+                                {formatMoney(
+                                    sale.total,
                                 )}
                             </strong>
                         </div>
-                    </div>
+                    </section>
 
-                    <div className="receipt__payments">
-                        <h2>
-                            תשלומים
-                        </h2>
+                    <section className="receipt__payments">
+                        <div className="receipt__section-heading">
+                            <span>
+                                תשלומים / החזרים
+                            </span>
 
-                        {sale.payments.map(
-                            (payment) => (
-                                <div
-                                    className="receipt__payment"
-                                    key={
-                                        payment.id
-                                    }
-                                >
-                                    <span>
-                                        {getPaymentLabel(
-                                            payment,
-                                        )}
-                                    </span>
+                            <span>
+                                {
+                                    sale.payments
+                                        .length
+                                }
+                            </span>
+                        </div>
 
-                                    <strong>
-                                        ₪
-                                        {payment.amount.toFixed(
-                                            2,
-                                        )}
-                                    </strong>
-                                </div>
-                            ),
+                        {sale.payments.length ===
+                            0 ? (
+                            <div className="receipt__empty">
+                                ללא תשלום
+                            </div>
+                        ) : (
+                            sale.payments.map(
+                                (payment) => (
+                                    <div
+                                        className="receipt__payment"
+                                        key={
+                                            payment.id
+                                        }
+                                    >
+                                        <div>
+                                            <strong>
+                                                {getPaymentLabel(
+                                                    payment,
+                                                )}
+                                            </strong>
+
+                                            {payment.tenderedAmount !==
+                                                undefined && (
+                                                    <span>
+                                                        התקבל{" "}
+                                                        {formatMoney(
+                                                            payment.tenderedAmount,
+                                                        )}
+                                                    </span>
+                                                )}
+
+                                            {(payment.changeAmount ??
+                                                0) >
+                                                0 && (
+                                                    <span>
+                                                        עודף{" "}
+                                                        {formatMoney(
+                                                            payment.changeAmount ??
+                                                            0,
+                                                        )}
+                                                    </span>
+                                                )}
+                                        </div>
+
+                                        <strong>
+                                            {formatMoney(
+                                                payment.amount,
+                                            )}
+                                        </strong>
+                                    </div>
+                                ),
+                            )
                         )}
-                    </div>
+                    </section>
 
-                    <footer className="receipt__footer">
-                        תודה ולהתראות
-                    </footer>
+                    <section className="receipt__barcode">
+                        <div
+                            className="receipt__barcode-placeholder"
+                            aria-label="מזהה ברקוד למסמך"
+                        >
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                            <span />
+                        </div>
+
+                        <strong dir="ltr">
+                            {document?.number ??
+                                sale.number}
+                        </strong>
+
+                        <span>
+                            מזהה לסריקת העסקה
+                        </span>
+                    </section>
+
+                    <section className="receipt__legal">
+                        <span>
+                            אזור מידע חשבונאי /
+                            משפטי לפי הגדרת בית
+                            העסק והמדינה
+                        </span>
+                    </section>
                 </article>
 
                 <aside className="receipt-page__actions">
                     <button
                         type="button"
                         className="receipt-page__primary"
-                        onClick={() =>
-                            window.print()
+                        onClick={
+                            printDocument
                         }
+                        disabled={!document}
                     >
                         הדפס מסמך
                     </button>
 
                     <button type="button">
-                        שלח ב־WhatsApp
+                        שלח מסמך
                     </button>
 
                     <button type="button">

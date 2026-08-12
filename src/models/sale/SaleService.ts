@@ -1,6 +1,6 @@
 import { calculateIncludedTax } from "../tax/TaxPolicy";
 import {
-    createAccountingDocument,
+    createAccountingDocuments,
 } from "../document/DocumentFactory";
 import type {
     Payment,
@@ -374,7 +374,7 @@ export function completeSale(
         sale,
     );
 
-    createAccountingDocument(
+    createAccountingDocuments(
         sale,
     );
 

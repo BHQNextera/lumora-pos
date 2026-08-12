@@ -1,4 +1,4 @@
-﻿import {
+import {
     useEffect,
     useMemo,
     useState,
@@ -17,7 +17,9 @@ import { categorySeed } from "../../models/catalog/Category";
 import {
     testCustomers,
 } from "../../models/customer/CustomerSeed";
-import { createAccountingDocument } from "../../models/document/DocumentFactory";
+import {
+    getDocumentsForTransaction,
+} from "../../models/document/DocumentRepository";
 import { issueMonetaryValue } from "../../models/monetary-value/MonetaryValueService";
 import type { Payment } from "../../models/Payment";
 import {
@@ -685,6 +687,12 @@ function SalePage({
 
                         originalSaleLineId:
                             line.origin?.saleLineId,
+
+                        originalDocumentId:
+                            line.origin?.documentId,
+
+                        originalDocumentNumber:
+                            line.origin?.documentNumber,
                     };
                 },
             );
@@ -760,17 +768,17 @@ function SalePage({
                 },
             );
 
-        
+
         const accountingDocument =
-            createAccountingDocument(
-                sale,
-            );
+            getDocumentsForTransaction(
+                sale.id,
+            )[0] ?? null;
 
         const refundVoucherPayment =
             payments.find(
                 (payment) =>
                     payment.method ===
-                        "credit_voucher" &&
+                    "credit_voucher" &&
                     payment.amount < 0,
             );
 
@@ -804,7 +812,7 @@ function SalePage({
             });
         }
 
-removeCoupon();
+        removeCoupon();
 
         setCartLines([]);
         clearPricingRules();
@@ -813,18 +821,18 @@ removeCoupon();
         setCheckoutTotal(null);
     };
 
-        const transactionTotal =
+    const transactionTotal =
         appliedCoupon
             ? totalAfterCoupon
             : createSaleLines().reduce(
-                  (
-                      sum,
-                      line,
-                  ) =>
-                      sum +
-                      line.netAmount,
-                  0,
-              );
+                (
+                    sum,
+                    line,
+                ) =>
+                    sum +
+                    line.netAmount,
+                0,
+            );
 
     const handleCheckout = () => {
         if (
@@ -1419,5 +1427,4 @@ removeCoupon();
     );
 }
 
-export default SalePage;
-
+export default SalePage

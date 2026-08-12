@@ -16,6 +16,9 @@ export type CartLineOrigin = {
     saleId: string;
     saleNumber: string;
     saleLineId: string;
+
+    documentId?: string;
+    documentNumber?: string;
 };
 
 export type CartLine = {

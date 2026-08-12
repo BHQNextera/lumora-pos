@@ -4,6 +4,9 @@ import {
 } from "react";
 
 import { products } from "../../data/products";
+import {
+    getDocumentsForTransaction,
+} from "../../models/document/DocumentRepository";
 import type { CartLine } from "../../models/sale/CartLine";
 import type { Sale } from "../../models/sale/Sale";
 import {
@@ -37,6 +40,16 @@ function ReturnsPage({
         getReturnsForSale(
             sale.id,
         );
+
+    const sourceDocuments =
+        getDocumentsForTransaction(
+            sale.id,
+        );
+
+    const sourceDocument =
+        sourceDocuments.length === 1
+            ? sourceDocuments[0]
+            : null;
 
     const returnedQuantityByLine =
         useMemo(() => {
@@ -174,6 +187,12 @@ function ReturnsPage({
 
                                 saleLineId:
                                     line.id,
+
+                                documentId:
+                                    sourceDocument?.id,
+
+                                documentNumber:
+                                    sourceDocument?.number,
                             },
                         };
                     });

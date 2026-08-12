@@ -269,3 +269,193 @@ Do not modify application code until the audit findings and proposed Lumora ↔ 
 Implement and verify policy-driven document outcomes for exchange transactions:
 positive net, negative net and zero balance.
 
+
+---
+
+# Checkpoint - 2026-08-12 - Documents / Returns / Output Foundation
+
+## Completed in this checkpoint
+
+### Configurable Document Policy
+- Document selection is policy-driven and not universally hard-coded.
+- DocumentFactory supports zero, one or multiple document outcomes.
+- Accounting document creation is idempotent per transaction/document type.
+- Current register numbering remains separated by store + register + document type.
+
+### Sales / Returns / Exchanges
+- Normal sale accounting document verified.
+- Negative return accounting document verified.
+- Positive-net exchange verified.
+- Negative-net exchange verified.
+- Returned lines now preserve source accounting document identity.
+- Source document number is displayed next to the returned line.
+- Exchange document no longer shows one misleading generic source document at header level.
+
+### Zero-balance Exchange Policy
+Legal/accounting behavior was clarified:
+
+- Tenant using Tax Invoice / Receipt model:
+  zero-balance exchange issues Tax Invoice / Receipt for 0.
+
+- Tenant using Receipt + consolidated/periodic invoice model:
+  zero-balance exchange issues Receipt for 0.
+
+This remains tenant-configurable Document Policy behavior.
+
+### Original / Copy Lifecycle
+- Added DocumentOutputService.
+- Screen viewing is recorded separately and does not consume the original print output.
+- First produced output is Original.
+- Subsequent produced outputs are Copy.
+- outputCount is updated.
+- Printing from the document screen works.
+- Printing from Previous Transactions works.
+
+### Document Blueprint V1
+Created:
+- docs/DOCUMENT_BLUEPRINT_V1.md
+
+Blueprint separates:
+1. Document Policy
+2. Stored Value Policy
+3. Output Policy
+4. Delivery Policy
+
+### Output Policy Decisions
+Accounting-document auto-print is tenant-configurable.
+
+Defaults:
+- Tax Invoice / Receipt: autoPrint false
+- Receipt: autoPrint false
+- Tax Credit Invoice: autoPrint false
+- Credit Receipt: autoPrint false
+
+These defaults may be overridden per tenant.
+
+### Credit Voucher Flow
+Return refunded as Credit Voucher produces two independent outputs:
+
+1. Accounting credit document according to tenant policy.
+2. Credit Voucher.
+
+Default output behavior:
+- Accounting document: no automatic print.
+- Credit Voucher: automatic print.
+
+Credit Voucher requires:
+- Business identity
+- Voucher number
+- Amount/balance
+- Barcode for redemption
+- Optional expiration/conditions
+
+### Gift Card Flow
+Gift Card loading produces:
+
+1. Receipt without VAT.
+2. Gift Card stored-value instrument.
+
+Default output:
+- Accounting Receipt: no automatic print.
+- Paper Gift Card: automatic print.
+- Plastic Gift Card: no automatic paper voucher.
+
+Gift Card media type is tenant-configurable.
+
+### Delivery Direction
+All delivery capabilities may exist in Lumora.
+Tenant configuration determines which relevant buttons are exposed.
+
+Expected priority:
+- SMS
+- WhatsApp
+- Email
+
+Print remains an independent output capability.
+
+No PDF dependency has been committed as a mandatory architectural requirement.
+
+### Accounting Document Layout
+Accounting Document Layout V1 was started.
+
+Current renderer now includes:
+- Business identity area
+- Document title + number together
+- Original / Copy
+- Transaction metadata
+- Customer area
+- Transaction lines
+- Source document at returned-line level
+- Discounts/promotions
+- VAT breakdown
+- Payments/refunds
+- Barcode placeholder/identity area
+- Legal information placeholder
+
+The current visual layout is NOT final.
+
+### Browser Investigation
+A temporary full-screen dim state was investigated.
+No Lumora DOM/CSS overlay was responsible.
+Closing and reopening the Chrome window resolved the state.
+No code workaround was introduced.
+
+## Important design decision for next session
+
+Do NOT continue polishing the current ReceiptPage as one universal layout.
+
+Accounting documents must support multiple render formats from the same document data model:
+
+- Standard / digital / regular-print renderer
+- Thermal 80mm renderer
+- Thermal 58mm renderer where required
+
+The information model must remain common.
+Only rendering/layout changes by output format.
+
+Thermal output must be compact and operationally usable at POS.
+
+## Exact next action
+
+Define the shared AccountingDocumentData structure and the information anatomy for:
+
+1. Standard renderer
+2. Thermal 80mm renderer
+3. Thermal 58mm constraints
+
+Then implement renderers from the same canonical document data.
+
+Do not proceed to SMS / WhatsApp / Email delivery until the accounting-document structures are stable.
+
+## Remaining Documents Roadmap
+
+1. Shared AccountingDocumentData model
+2. Standard accounting-document renderer
+3. Thermal 80mm renderer
+4. Thermal 58mm support/constraints
+5. Real operational barcode identity + scan lookup
+6. Business Profile / fiscal identity fields
+7. Credit Voucher model + renderer
+8. Gift Card model + paper/plastic media policy
+9. Tenant-configurable Output Policy
+10. Automatic output orchestration
+11. Multi-document transaction orchestration
+12. Zero-balance exchange policy implementation
+13. SMS delivery
+14. WhatsApp delivery
+15. Email delivery
+16. Secure/digital document access strategy
+17. Document/payment reconciliation
+18. Fiscal/legal blocks by tenant/country
+19. Final visual and print polish
+20. Full regression QA
+
+## Verification
+
+- TypeScript/build passed during document work.
+- Sale document rendering tested locally.
+- Positive and negative exchanges tested locally.
+- Line-level source-document reference tested locally.
+- Original/Copy print lifecycle tested locally.
+- Previous Transactions printing tested locally.
+
