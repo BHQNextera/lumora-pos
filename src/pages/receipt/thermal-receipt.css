@@ -1,0 +1,418 @@
+.thermal-receipt {
+    width: 80mm;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 5mm 4mm;
+    background: #fff;
+    color: #111;
+    direction: rtl;
+    font-family: Arial, "Noto Sans Hebrew", sans-serif;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.thermal-receipt__business,
+.thermal-receipt__identity,
+.thermal-receipt__barcode,
+.thermal-receipt__legal {
+    text-align: center;
+}
+
+.thermal-receipt__business {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: 7px;
+}
+
+.thermal-receipt__business > strong {
+    font-size: 16px;
+}
+
+.thermal-receipt__business span {
+    font-size: 9px;
+}
+
+.thermal-receipt__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 7px 0;
+    border-top: 1px dashed #777;
+    border-bottom: 1px dashed #777;
+}
+
+.thermal-receipt__identity > strong {
+    font-size: 14px;
+}
+
+.thermal-receipt__identity > b {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.thermal-receipt__identity > span {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.thermal-receipt__meta {
+    padding: 6px 0;
+    border-bottom: 1px dashed #999;
+}
+
+.thermal-receipt__meta-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.thermal-receipt__meta-row span {
+    color: #555;
+    font-size: 8px;
+}
+
+.thermal-receipt__meta-row strong {
+    font-size: 9px;
+}
+
+.thermal-receipt__meta-inline {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 3px 8px;
+    margin-top: 4px;
+    font-size: 9px;
+}
+
+.thermal-receipt__meta-inline > span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+.thermal-receipt__meta-inline > span:not(:last-child)::after {
+    content: "|";
+    margin-right: 6px;
+    color: #888;
+    font-weight: 400;
+}
+
+.thermal-receipt__customer {
+    padding: 6px 0;
+    border-bottom: 1px dashed #999;
+    font-size: 9px;
+}
+
+.thermal-receipt__customer div {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.thermal-receipt__customer div + div {
+    margin-top: 2px;
+}
+
+.thermal-receipt__customer span,
+.thermal-receipt__document-source span {
+    color: #555;
+}
+
+.thermal-receipt__document-source {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 6px 0;
+    border-bottom: 1px dashed #999;
+    font-size: 9px;
+}
+
+.thermal-receipt__lines {
+    padding: 5px 0;
+}
+
+.thermal-line {
+    padding: 6px 0;
+    border-bottom: 1px dotted #aaa;
+}
+
+.thermal-line:last-child {
+    border-bottom: 0;
+}
+
+.thermal-line__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.thermal-line__top > strong:first-child {
+    min-width: 0;
+    flex: 1;
+}
+
+.thermal-line__top > strong:last-child {
+    flex: 0 0 auto;
+}
+
+.thermal-money {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.thermal-line__description,
+.thermal-line__quantity,
+.thermal-line__detail,
+.thermal-line__promotion,
+.thermal-line__origin {
+    margin-top: 2px;
+    font-size: 8px;
+}
+
+.thermal-line__description {
+    display: block;
+    color: #333;
+}
+
+.thermal-line__quantity {
+    color: #333;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.thermal-line__detail {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.thermal-line__promotion {
+    display: block;
+}
+
+.thermal-line__promotion span {
+    color: #555;
+}
+
+.thermal-line__origin {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    font-size: 8px;
+}
+
+.thermal-line__origin span {
+    color: #555;
+}
+
+.thermal-line__origin strong {
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.thermal-receipt__totals {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 0;
+    border-top: 1px dashed #777;
+    border-bottom: 1px dashed #777;
+}
+
+.thermal-receipt__totals > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.thermal-receipt__totals span {
+    color: #444;
+}
+
+.thermal-receipt__grand-total {
+    margin-top: 3px;
+    padding-top: 5px;
+    border-top: 1px solid #333;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.thermal-receipt__grand-total span {
+    color: #111;
+}
+
+.thermal-receipt__payments {
+    padding: 6px 0;
+    border-bottom: 1px dashed #777;
+}
+
+.thermal-receipt__section-title {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.thermal-receipt__empty {
+    font-size: 9px;
+}
+
+.thermal-payment {
+    padding: 2px 0;
+}
+
+.thermal-payment__main {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.thermal-payment small {
+    display: block;
+    color: #555;
+    font-size: 8px;
+}
+
+.thermal-receipt__barcode {
+    padding: 9px 0 3px;
+}
+
+.thermal-receipt__barcode-placeholder {
+    display: flex;
+    width: 62mm;
+    max-width: 100%;
+    height: 16mm;
+    margin: 0 auto 3px;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1.2mm;
+    padding: 1.5mm 2mm;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.thermal-receipt__barcode-placeholder span {
+    display: block;
+    width: 0.7mm;
+    background: #111;
+}
+
+.thermal-receipt__barcode-placeholder span:nth-child(3n) {
+    width: 1.4mm;
+}
+
+.thermal-receipt__barcode-placeholder span:nth-child(4n) {
+    width: 0.4mm;
+}
+
+.thermal-receipt__barcode > strong {
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+}
+
+.thermal-receipt__legal {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 7px;
+    font-size: 7px;
+}
+
+@media screen {
+    .thermal-receipt {
+        margin: 0 auto;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+@media print {
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    .thermal-receipt {
+        width: 80mm;
+        max-width: 80mm;
+        margin: 0;
+        padding: 4mm 3mm;
+        border: 0;
+        box-shadow: none;
+    }
+}
+/* 57mm full-feature compact thermal format */
+.thermal-receipt--57mm {
+    width: 57mm;
+    padding: 4mm 3mm;
+    font-size: 9px;
+    line-height: 1.24;
+}
+
+.thermal-receipt--57mm .thermal-receipt__business > strong { font-size: 14px; }
+.thermal-receipt--57mm .thermal-receipt__business span { font-size: 8px; }
+.thermal-receipt--57mm .thermal-receipt__identity { padding: 5px 0; gap: 1px; }
+.thermal-receipt--57mm .thermal-receipt__identity > strong { font-size: 12px; }
+.thermal-receipt--57mm .thermal-receipt__identity > b { font-size: 10px; }
+
+.thermal-receipt--57mm .thermal-receipt__meta,
+.thermal-receipt--57mm .thermal-receipt__customer,
+.thermal-receipt--57mm .thermal-receipt__document-source {
+    padding: 5px 0;
+    font-size: 8px;
+}
+
+.thermal-receipt--57mm .thermal-receipt__meta-inline {
+    gap: 2px 4px;
+    margin-top: 3px;
+    font-size: 8px;
+}
+
+.thermal-receipt--57mm .thermal-line { padding: 5px 0; }
+.thermal-receipt--57mm .thermal-line__top { gap: 5px; }
+.thermal-receipt--57mm .thermal-line__top > strong { font-size: 9px; }
+
+.thermal-receipt--57mm .thermal-line__description,
+.thermal-receipt--57mm .thermal-line__detail,
+.thermal-receipt--57mm .thermal-line__promotion,
+.thermal-receipt--57mm .thermal-line__origin { font-size: 7px; }
+
+.thermal-receipt--57mm .thermal-line__quantity { font-size: 8px; }
+
+.thermal-receipt--57mm .thermal-receipt__totals {
+    gap: 2px;
+    padding: 5px 0;
+}
+
+.thermal-receipt--57mm .thermal-receipt__grand-total {
+    margin-top: 2px;
+    padding-top: 4px;
+    font-size: 12px;
+}
+
+.thermal-receipt--57mm .thermal-receipt__payments { padding: 5px 0; }
+.thermal-receipt--57mm .thermal-receipt__section-title { font-size: 9px; }
+.thermal-receipt--57mm .thermal-payment,
+.thermal-receipt--57mm .thermal-payment small { font-size: 7px; }
+
+.thermal-receipt--57mm .thermal-receipt__barcode-placeholder {
+    width: 46mm;
+    height: 14mm;
+    gap: .7mm;
+    padding: 1mm;
+}
+
+.thermal-receipt--57mm .thermal-receipt__barcode > strong { font-size: 8px; }
+.thermal-receipt--57mm .thermal-receipt__legal { font-size: 6px; }
+
+@media print {
+    .thermal-receipt--57mm {
+        width: 57mm;
+        max-width: 57mm;
+        padding: 3mm 2.5mm;
+    }
+}

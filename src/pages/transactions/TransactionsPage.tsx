@@ -1,4 +1,5 @@
 import {
+    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -27,6 +28,9 @@ type TransactionsPageProps = {
     onReturnToSale: (
         lines: CartLine[],
     ) => void;
+
+    scannedSale?: Sale;
+    scanId?: number;
 };
 
 type TransactionsView =
@@ -184,6 +188,8 @@ function getOriginalDocumentNumber(
 
 function TransactionsPage({
     onReturnToSale,
+    scannedSale,
+    scanId,
 }: TransactionsPageProps) {
     const [
         search,
@@ -199,9 +205,23 @@ function TransactionsPage({
         );
 
     const [view, setView] =
-        useState<TransactionsView>({
-            type: "list",
-        });
+    useState<TransactionsView>({
+        type: "list",
+    });
+
+useEffect(() => {
+    if (!scannedSale) {
+        return;
+    }
+
+    setView({
+        type: "details",
+        sale: scannedSale,
+    });
+}, [
+    scannedSale,
+    scanId,
+]);
 
     const transactions =
         useMemo(() => {

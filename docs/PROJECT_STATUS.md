@@ -1,4 +1,4 @@
-﻿# Lumora POS — Project Status
+# Lumora POS — Project Status
 
 ## Current checkpoint
 
@@ -408,7 +408,7 @@ Accounting documents must support multiple render formats from the same document
 
 - Standard / digital / regular-print renderer
 - Thermal 80mm renderer
-- Thermal 58mm renderer where required
+- Thermal 57mm renderer where required
 
 The information model must remain common.
 Only rendering/layout changes by output format.
@@ -421,7 +421,7 @@ Define the shared AccountingDocumentData structure and the information anatomy f
 
 1. Standard renderer
 2. Thermal 80mm renderer
-3. Thermal 58mm constraints
+3. Thermal 57mm constraints
 
 Then implement renderers from the same canonical document data.
 
@@ -432,7 +432,7 @@ Do not proceed to SMS / WhatsApp / Email delivery until the accounting-document 
 1. Shared AccountingDocumentData model
 2. Standard accounting-document renderer
 3. Thermal 80mm renderer
-4. Thermal 58mm support/constraints
+4. Thermal 57mm support/constraints
 5. Real operational barcode identity + scan lookup
 6. Business Profile / fiscal identity fields
 7. Credit Voucher model + renderer

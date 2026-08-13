@@ -1,4 +1,4 @@
-﻿# Lumora Document Blueprint V1
+# Lumora Document Blueprint V1
 
 ## 1. Architecture
 
@@ -330,3 +330,44 @@ Default for plastic Gift Card:
 7. Multi-document transaction orchestration
 8. Delivery channels
 9. Final visual/print polish
+
+---
+
+## 13. Thermal Accounting Document Formats
+
+Accounting documents use one canonical AccountingDocumentData model.
+
+### 80mm - Full Thermal
+80mm is the primary full thermal format.
+
+### 57mm - Full Thermal Compact
+57mm is a fully supported accounting-document format for small, backup and peak-period terminals.
+
+57mm must preserve the same business/accounting information as 80mm:
+- Business identity
+- Document title and number
+- Original / Copy
+- Date/time
+- Register / store / transaction metadata
+- Customer
+- Transaction lines
+- Line discounts
+- Promotions
+- Return-line source document
+- Document-level source where semantically valid
+- Tax breakdown
+- Totals
+- Payments / refunds
+- Operational barcode
+- Required legal/fiscal lines
+
+The difference is layout only:
+- Narrower width
+- Smaller spacing and typography
+- More wrapping / vertical stacking
+- More compact metadata
+- Narrower barcode rendering
+
+No accounting, discount, promotion, return-source or payment information may be silently removed because the printer is 57mm.
+
+80mm and 57mm render from the same AccountingDocumentData source.

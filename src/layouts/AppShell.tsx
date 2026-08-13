@@ -1,12 +1,20 @@
 import {
+  useEffect,
+  useRef,
   useState,
 } from "react";
 
 import Sidebar from "../components/layout/Sidebar";
 import StatusBar from "../components/layout/StatusBar";
+import {
+  findByDocumentNumber,
+} from "../models/document/DocumentLookupService";
 import type {
   CartLine,
 } from "../models/sale/CartLine";
+import type {
+  Sale,
+} from "../models/sale/Sale";
 import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
 import ProductManagementPage from "../pages/products/ProductManagementPage";
 import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
@@ -24,6 +32,11 @@ export type AppView =
   | "credits"
   | "gift-cards";
 
+type ScannedTransaction = {
+  sale: Sale;
+  scanId: number;
+};
+
 function AppShell() {
   const [
     activeView,
@@ -40,6 +53,147 @@ function AppShell() {
     useState<CartLine[]>(
       [],
     );
+
+  const [
+    scannedTransaction,
+    setScannedTransaction,
+  ] =
+    useState<ScannedTransaction | null>(
+      null,
+    );
+
+  const scanBufferRef =
+    useRef("");
+
+  const scanResetTimerRef =
+    useRef<number | null>(
+      null,
+    );
+
+  useEffect(() => {
+    const resetBuffer = () => {
+      scanBufferRef.current =
+        "";
+
+      if (
+        scanResetTimerRef.current !==
+        null
+      ) {
+        window.clearTimeout(
+          scanResetTimerRef.current,
+        );
+
+        scanResetTimerRef.current =
+          null;
+      }
+    };
+
+    const handleKeyDown = (
+      event: KeyboardEvent,
+    ) => {
+      const target =
+        event.target as
+          | HTMLElement
+          | null;
+
+      if (
+        target instanceof
+          HTMLInputElement ||
+        target instanceof
+          HTMLTextAreaElement ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+        const scannedValue =
+          scanBufferRef.current;
+
+        resetBuffer();
+
+        if (!scannedValue) {
+          return;
+        }
+
+        const result =
+          findByDocumentNumber(
+            scannedValue,
+          );
+
+        if (!result) {
+          console.warn(
+            "Document barcode not found:",
+            scannedValue,
+          );
+
+          return;
+        }
+
+        setScannedTransaction({
+          sale:
+            result.sale,
+
+          scanId:
+            Date.now(),
+        });
+
+        setActiveView(
+          "transactions",
+        );
+
+        return;
+      }
+
+      if (
+        /^[0-9]$/.test(
+          event.key,
+        )
+      ) {
+        scanBufferRef.current +=
+          event.key;
+
+        if (
+          scanResetTimerRef.current !==
+          null
+        ) {
+          window.clearTimeout(
+            scanResetTimerRef.current,
+          );
+        }
+
+        scanResetTimerRef.current =
+          window.setTimeout(
+            resetBuffer,
+            10000,
+          );
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+
+      if (
+        scanResetTimerRef.current !==
+        null
+      ) {
+        window.clearTimeout(
+          scanResetTimerRef.current,
+        );
+      }
+    };
+  }, []);
 
   const handleReturnToSale = (
     lines: CartLine[],
@@ -88,6 +242,14 @@ function AppShell() {
             <TransactionsPage
               onReturnToSale={
                 handleReturnToSale
+              }
+              scannedSale={
+                scannedTransaction
+                  ?.sale
+              }
+              scanId={
+                scannedTransaction
+                  ?.scanId
               }
             />
           )}
