@@ -259,6 +259,33 @@ function ShiftXReportDialog({
                 {
                     type: "row",
                     label:
+                        "הפקדות לקופה",
+                    value:
+                        money(
+                            report.cashIn,
+                        ),
+                },
+                {
+                    type: "row",
+                    label:
+                        "משיכות מהקופה",
+                    value:
+                        money(
+                            report.cashOut,
+                        ),
+                },
+                {
+                    type: "row",
+                    label:
+                        "תנועת מזומן נטו",
+                    value:
+                        money(
+                            report.netCashMovement,
+                        ),
+                },
+                {
+                    type: "row",
+                    label:
                         "מזומן צפוי בקופה",
                     value:
                         money(
@@ -509,6 +536,47 @@ function ShiftXReportDialog({
                                         report.cashPayments,
                                     )
                                 }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                הפקדות לקופה
+                            </td>
+                            <td>
+                                {
+                                    money(
+                                        report.cashIn,
+                                    )
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                משיכות מהקופה
+                            </td>
+                            <td>
+                                {
+                                    money(
+                                        report.cashOut,
+                                    )
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                תנועת מזומן נטו
+                            </td>
+                            <td>
+                                <strong>
+                                    {
+                                        money(
+                                            report.netCashMovement,
+                                        )
+                                    }
+                                </strong>
                             </td>
                         </tr>
 

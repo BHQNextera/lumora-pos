@@ -4,6 +4,10 @@ import type {
 import {
     getTransactions,
 } from "../transaction/TransactionRepository";
+
+import {
+    getCashMovementsForShift,
+} from "../cash-movement/CashMovementRepository";
 import type {
     RegisterShift,
 } from "./RegisterShift";
@@ -45,6 +49,11 @@ export type ShiftXReport = {
         ShiftPaymentTotal[];
 
     cashPayments: number;
+
+    cashIn: number;
+    cashOut: number;
+    netCashMovement: number;
+
     expectedCash: number;
 };
 
@@ -229,10 +238,54 @@ export function generateShiftXReport(
             )?.amount ?? 0,
         );
 
+    const cashMovements =
+        getCashMovementsForShift(
+            shift.id,
+        );
+
+    const cashIn =
+        roundMoney(
+            cashMovements
+                .filter(
+                    (movement) =>
+                        movement.type ===
+                        "cash_in",
+                )
+                .reduce(
+                    (total, movement) =>
+                        total +
+                        movement.amount,
+                    0,
+                ),
+        );
+
+    const cashOut =
+        roundMoney(
+            cashMovements
+                .filter(
+                    (movement) =>
+                        movement.type ===
+                        "cash_out",
+                )
+                .reduce(
+                    (total, movement) =>
+                        total +
+                        movement.amount,
+                    0,
+                ),
+        );
+
+    const netCashMovement =
+        roundMoney(
+            cashIn -
+                cashOut,
+        );
+
     const expectedCash =
         roundMoney(
             shift.openingCash +
-                cashPayments,
+                cashPayments +
+                netCashMovement,
         );
 
     return {
@@ -280,6 +333,11 @@ export function generateShiftXReport(
         paymentTotals,
 
         cashPayments,
+
+        cashIn,
+        cashOut,
+        netCashMovement,
+
         expectedCash,
     };
 }

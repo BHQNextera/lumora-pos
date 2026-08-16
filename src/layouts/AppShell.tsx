@@ -6,6 +6,7 @@ import {
 
 import Sidebar from "../components/layout/Sidebar";
 import AttendancePanel from "../components/attendance/AttendancePanel";
+import CashMovementDialog from "../components/cash/CashMovementDialog";
 import ShiftXReportDialog from "../components/shift/ShiftXReportDialog";
 import ShiftZReportDialog from "../components/shift/ShiftZReportDialog";
 import CloseRegisterShiftDialog from "../components/shift/CloseRegisterShiftDialog";
@@ -259,6 +260,12 @@ function AppShell() {
     useState(false);
 
   const [
+    showCashMovement,
+    setShowCashMovement,
+  ] =
+    useState(false);
+
+  const [
     showXReport,
     setShowXReport,
   ] =
@@ -297,6 +304,11 @@ function AppShell() {
         }
         onOpenAttendance={() =>
           setShowAttendance(
+            true,
+          )
+        }
+        onOpenCashMovement={() =>
+          setShowCashMovement(
             true,
           )
         }
@@ -439,6 +451,24 @@ function AppShell() {
 
             setActiveShift(
               undefined,
+            );
+          }}
+        />
+      )}
+
+      {showCashMovement && activeShift && (
+        <CashMovementDialog
+          shift={
+            activeShift
+          }
+          onClose={() =>
+            setShowCashMovement(
+              false,
+            )
+          }
+          onCompleted={() => {
+            setShowCashMovement(
+              false,
             );
           }}
         />

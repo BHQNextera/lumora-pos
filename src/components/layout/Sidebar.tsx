@@ -23,6 +23,7 @@ type SidebarProps = {
 
   onOpenRegisterShift: () => void;
   onOpenAttendance: () => void;
+  onOpenCashMovement: () => void;
   onOpenXReport: () => void;
   onCloseRegisterShift: () => void;
 };
@@ -41,6 +42,7 @@ function Sidebar({
   activeShift,
   onOpenRegisterShift,
   onOpenAttendance,
+  onOpenCashMovement,
   onOpenXReport,
   onCloseRegisterShift,
 }: SidebarProps) {
@@ -221,6 +223,17 @@ function Sidebar({
                 ♙
               </span>
               נוכחות עובדים
+            </button>
+
+            <button
+              type="button"
+              className="pos-sidebar__drawer-button"
+              onClick={onOpenCashMovement}
+            >
+              <span aria-hidden="true">
+                ₪
+              </span>
+              הפקדה / משיכה
             </button>
 
             <button

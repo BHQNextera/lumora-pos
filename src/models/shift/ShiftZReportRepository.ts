@@ -272,6 +272,15 @@ export function createShiftZReport(
         cashPayments:
             summary.cashPayments,
 
+        cashIn:
+            summary.cashIn,
+
+        cashOut:
+            summary.cashOut,
+
+        netCashMovement:
+            summary.netCashMovement,
+
         expectedCash:
             summary.expectedCash,
 

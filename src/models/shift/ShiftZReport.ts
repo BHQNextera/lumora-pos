@@ -52,6 +52,10 @@ export type ShiftZReport = {
 
     cashPayments: number;
 
+    cashIn: number;
+    cashOut: number;
+    netCashMovement: number;
+
     expectedCash: number;
     cashVariance: number;
 };

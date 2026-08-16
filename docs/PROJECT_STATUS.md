@@ -1236,3 +1236,207 @@ After the checkpoint is preserved, continue with Cash Movement V1:
 cash in / cash out events during an active register shift, including amount, reason, employee, timestamp and effect on expected cash.
 
 Do not resume credit transmission or physical printer integration until real test hardware or a real provider sandbox is available.
+---
+
+# Follow-up Checkpoint — 2026-08-16 — Cash Movement V1
+
+## Completed in this checkpoint
+
+### Cash Movement domain
+- CashMovement domain model created.
+- Cash movement types:
+  - cash_in
+  - cash_out
+- Movement records preserve:
+  - tenant
+  - store
+  - register
+  - shiftId
+  - type
+  - amount
+  - reason
+  - optional note
+  - employee identity
+  - timestamp
+- CashMovementRepository created using current local persistence.
+- Cash movements remain separate immutable operational events rather than being silently merged into RegisterShift.
+
+### Cash Movement operator flow
+- Cash Movement dialog created.
+- Supported operator actions:
+  - deposit cash into register
+  - withdraw cash from register
+- Amount validation connected.
+- Reason selection connected.
+- Optional note connected.
+- Employee performing the operation is selected only from employees currently in attendance.
+- Zero employees present blocks the operation.
+- One employee present is selected automatically.
+- Multiple employees require explicit selection.
+- Drawer-open command is triggered for the physical cash operation.
+- Sidebar action "הפקדה / משיכה" connected for active register shifts.
+
+### Expected cash calculation
+- Shift cash calculation now uses:
+
+  opening cash
+  + cash payments
+  + cash in
+  - cash out
+  = expected cash
+
+- ShiftXReport now exposes:
+  - cashIn
+  - cashOut
+  - netCashMovement
+  - expectedCash
+- Runtime verified:
+  opening cash 200
+  + deposits 100
+  - withdrawals 30
+  = expected cash 270.
+
+### X Report
+- X screen displays:
+  - cash receipts
+  - deposits
+  - withdrawals
+  - net cash movement
+  - expected cash
+- Shared thermal X document displays the same values.
+- Runtime verification passed.
+
+### Z Report
+- ShiftZReport immutable snapshot extended with:
+  - cashIn
+  - cashOut
+  - netCashMovement
+- Z repository copies these values into the snapshot at shift close.
+- Historical Z therefore does not depend on recalculating current cash movement data.
+- Z screen and thermal output display the movement totals.
+- Runtime verification passed:
+  - opening declaration: 200
+  - cash receipts: 0
+  - deposits: 100
+  - withdrawals: 30
+  - net movement: 70
+  - expected cash: 270
+  - closing declaration: 200
+  - cash variance: -70
+
+### QA note
+- Negative monetary values are mathematically correct.
+- RTL rendering of negative currency currently needs visual cleanup so values render consistently as e.g. -₪70.00 rather than visually reordered punctuation.
+- This is a presentation issue, not a calculation issue.
+
+## Current external blockers
+
+### Credit / SHVA
+BLOCKED — real test terminal or provider sandbox/API required.
+
+### Physical printer / drawer
+DOMAIN + SIMULATION READY.
+Physical ESC/POS / vendor adapter, cutter and drawer pulse require real hardware for final verification.
+
+## Remaining roadmap from current state
+
+### 1. Register operational audit
+- Cash movement history viewer.
+- Show individual deposit / withdrawal events.
+- Preserve employee, reason, amount, note and timestamp.
+- Register / shift filtering.
+- Manager authorization policy for sensitive movements.
+- Controlled manual drawer-open audit policy.
+
+### 2. Reports
+- Complete seller report using net sales.
+- Returns linked to source transaction reduce original seller sales.
+- Multi-seller transaction reporting.
+- Date / time / register / employee / payment filters.
+- Current day remains default reporting period.
+
+### 3. Attendance security
+- Employee PIN / badge authentication.
+- Prevent buddy punching.
+- Manager override.
+- Attendance audit history.
+- Controlled retrospective corrections.
+
+### 4. Business policy configuration
+- Seller required per transaction / line.
+- Customer requirement policy.
+- Cash movement permissions.
+- Manual drawer-open permissions.
+- Document policies.
+- Delivery-channel priorities.
+- Register and employee policies.
+
+### 5. Payment hardware integration
+- Real credit terminal integration.
+- Real credit payment flow.
+- Split payment with real terminal.
+- Cancel / retry / failure handling.
+- Credit transmission snapshot/report.
+- Provider / SHVA requirements after integration is available.
+
+### 6. Physical printer / drawer integration
+- Printer transport adapter.
+- ESC/POS or vendor adapter.
+- Physical X printing.
+- Physical Z printing.
+- Historical reprint.
+- Drawer pulse without print job.
+- Cutter support.
+- 58 / 80 mm physical calibration.
+
+### 7. Operational QA
+- Sale.
+- Seller enforcement.
+- Discounts and promotions.
+- Returns.
+- Exchanges.
+- Fashion variants.
+- Stored value.
+- Customers.
+- Register lifecycle.
+- Attendance.
+- Cash declarations.
+- Cash movements.
+- X / Z.
+- Cash drawer.
+- Split payments.
+- Printing preview.
+
+### 8. Integrations
+- Echo payment integration.
+- Optional Nextera back-office integration.
+- Generic API / replication layer.
+- Preserve Lumora standalone / offline operation.
+
+### 9. Offline / replication
+- Durable local persistence.
+- Queue and retry.
+- Synchronization.
+- Conflict handling.
+- Connectivity status.
+
+### 10. UI / design
+- Unified visual cleanup after functional flows stabilize.
+- RTL / LTR.
+- Negative currency RTL formatting.
+- Hebrew / English completion.
+- Greek readiness.
+
+### 11. Release
+- Full regression.
+- Console/runtime error pass.
+- Build optimization.
+- Demo environment.
+- Release candidate.
+
+## Exact next action
+
+After this checkpoint is pushed, build Cash Movement History V1:
+a register operational audit view showing every deposit and withdrawal with amount, reason, employee, note and timestamp.
+
+Do not resume SHVA or physical printer integration until real test hardware or a real provider sandbox is available.
