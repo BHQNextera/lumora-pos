@@ -15,6 +15,9 @@ import type {
 import type {
     Customer,
 } from "../../models/customer/Customer";
+import type {
+    SellerAssignment,
+} from "../../models/sale/SellerAssignment";
 
 import "./cart-panel.css";
 
@@ -48,6 +51,18 @@ type CartPanelProps = {
     onDecrease: (lineId: string) => void;
     onSelectLine: (lineId: string) => void;
 
+    sellers: SellerAssignment[];
+
+    onChangeSellerForLine: (
+        lineId: string,
+        seller: SellerAssignment,
+    ) => void;
+
+    onChangeSellerFromLineToEnd: (
+        lineId: string,
+        seller: SellerAssignment,
+    ) => void;
+
     onEditDescription: (
         lineId: string,
         description: string | undefined,
@@ -72,6 +87,9 @@ function CartPanel({
     onIncrease,
     onDecrease,
     onSelectLine,
+    sellers,
+    onChangeSellerForLine,
+    onChangeSellerFromLineToEnd,
     onEditDescription,
     onCheckout,
 }: CartPanelProps) {
@@ -96,10 +114,32 @@ function CartPanel({
     ] =
         useState("");
 
+    const [
+        sellerTargetEmployeeId,
+        setSellerTargetEmployeeId,
+    ] =
+        useState("");
+
     const totalQuantity = lines.reduce(
         (sum, line) => sum + line.quantity,
         0,
     );
+
+    const selectedSellerLine =
+        selectedLineId
+            ? lines.find(
+                  (line) =>
+                      line.id ===
+                      selectedLineId,
+              )
+            : undefined;
+
+    const selectedSeller =
+        sellers.find(
+            (seller) =>
+                seller.employeeId ===
+                sellerTargetEmployeeId,
+        );
 
     useEffect(() => {
         if (
@@ -153,6 +193,24 @@ function CartPanel({
         closeDescriptionEditor();
     };
 
+    useEffect(() => {
+        if (!selectedSellerLine) {
+            return;
+        }
+
+        setSellerTargetEmployeeId(
+            selectedSellerLine.seller
+                ?.employeeId ??
+                sellers[0]
+                    ?.employeeId ??
+                "",
+        );
+    }, [
+        selectedLineId,
+        selectedSellerLine?.seller
+            ?.employeeId,
+        sellers,
+    ]);
     return (
         <>
             <aside
@@ -160,6 +218,110 @@ function CartPanel({
                 aria-label="עגלה"
             >
                 <div className="lumora-cart__header">
+
+                    {selectedSellerLine && (
+                        <div
+                            style={{
+                                width: "100%",
+                                marginTop: "8px",
+                                padding: "8px",
+                                border:
+                                    "1px solid rgba(15,23,42,.12)",
+                                borderRadius:
+                                    "8px",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    marginBottom: "6px",
+                                }}
+                            >
+                                שינוי מוכרן לשורה הנבחרת
+                            </div>
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    gap: "6px",
+                                    flexWrap: "wrap",
+                                }}
+                            >
+                                <select
+                                    value={
+                                        sellerTargetEmployeeId
+                                    }
+                                    onChange={(event) =>
+                                        setSellerTargetEmployeeId(
+                                            event.target.value,
+                                        )
+                                    }
+                                >
+                                    {sellers.map(
+                                        (seller) => (
+                                            <option
+                                                key={
+                                                    seller.employeeId
+                                                }
+                                                value={
+                                                    seller.employeeId
+                                                }
+                                            >
+                                                {
+                                                    seller.employeeName
+                                                }
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+
+                                <button
+                                    type="button"
+                                    disabled={
+                                        !selectedSeller
+                                    }
+                                    onClick={() => {
+                                        if (
+                                            !selectedSeller ||
+                                            !selectedLineId
+                                        ) {
+                                            return;
+                                        }
+
+                                        onChangeSellerForLine(
+                                            selectedLineId,
+                                            selectedSeller,
+                                        );
+                                    }}
+                                >
+                                    רק שורה זו
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={
+                                        !selectedSeller
+                                    }
+                                    onClick={() => {
+                                        if (
+                                            !selectedSeller ||
+                                            !selectedLineId
+                                        ) {
+                                            return;
+                                        }
+
+                                        onChangeSellerFromLineToEnd(
+                                            selectedLineId,
+                                            selectedSeller,
+                                        );
+                                    }}
+                                >
+                                    מכאן ועד הסוף
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     <div>
                         <h2>עגלה</h2>
 
@@ -266,6 +428,62 @@ function CartPanel({
                                             {line.descriptionOverride ??
                                                 line.product.name}
                                         </strong>
+
+                                        {line.seller && (
+                                            <span
+                                                style={{
+                                                    display:
+                                                        "block",
+                                                    marginTop:
+                                                        "3px",
+                                                    fontSize:
+                                                        "11px",
+                                                    fontWeight:
+                                                        700,
+                                                }}
+                                            >
+                                                מוכרן: {
+                                                    line.seller
+                                                        .employeeName
+                                                }
+                                            </span>
+                                        )}
+
+                                        {line.variant && (
+                                            <span
+                                                style={{
+                                                    display:
+                                                        "block",
+                                                    marginTop:
+                                                        "3px",
+                                                    fontSize:
+                                                        "11px",
+                                                    fontWeight:
+                                                        700,
+                                                }}
+                                            >
+                                                {
+                                                    line.variant
+                                                        .color
+                                                        .name
+                                                }
+                                                {" / "}
+                                                {
+                                                    line.variant
+                                                        .size
+                                                        .name
+                                                }
+                                                {" · "}
+                                                <span
+                                                    dir="ltr"
+                                                >
+                                                    {
+                                                        line.product
+                                                            .sku
+                                                    }
+                                                </span>
+                                            </span>
+                                        )}
 
                                         {line.descriptionOverride && (
                                             <span

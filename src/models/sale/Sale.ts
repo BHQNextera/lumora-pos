@@ -41,7 +41,9 @@ export type Sale = {
     status: SaleStatus;
     transactionType: TransactionType;
 
-    customer: SaleCustomer;
+    
+    shiftId?: string;
+customer: SaleCustomer;
 
     lines: SaleLine[];
 

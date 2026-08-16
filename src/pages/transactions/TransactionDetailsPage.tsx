@@ -25,6 +25,11 @@ type TransactionDetailsPageProps = {
 
 function getDocumentLabel(type: string) {
     switch (type) {
+        case "tax_invoice":
+
+            return "חשבונית מס";
+
+
         case "tax_invoice_receipt":
             return "חשבונית מס / קבלה";
 
@@ -262,6 +267,18 @@ function TransactionDetailsPage({
                                             <strong>
                                                 {line.productName}
                                             </strong>
+
+                                            {line.variant && (
+                                                <span>
+                                                    {line.variant.color.name}
+                                                    {" / "}
+                                                    {line.variant.size.name}
+                                                    {" · "}
+                                                    <span dir="ltr">
+                                                        {line.sku}
+                                                    </span>
+                                                </span>
+                                            )}
 
                                             <span>
                                                 {line.kind === "return"

@@ -1,4 +1,12 @@
-import type { Product } from "../../types/product";
+import type {
+    ProductVariantIdentity,
+} from "../catalog/ProductVariantIdentity";
+import type {
+    Product,
+} from "../../types/product";
+import type {
+    SellerAssignment,
+} from "./SellerAssignment";
 
 export type CartLineKind =
     | "sale"
@@ -28,6 +36,17 @@ export type CartLine = {
     source: CartLineSource;
 
     product: Product;
+
+    /**
+     * Exact product variant identity captured for this transaction.
+     *
+     * Used by segment models such as Fashion.
+     * This is a transaction snapshot and must not depend on the
+     * current state of the product master after the sale.
+     */
+    variant?: ProductVariantIdentity;
+
+    seller?: SellerAssignment;
 
     quantity: number;
     unitPrice: number;

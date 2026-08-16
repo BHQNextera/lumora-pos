@@ -1,3 +1,10 @@
+import type {
+    ProductVariantIdentity,
+} from "../catalog/ProductVariantIdentity";
+import type {
+    SellerAssignment,
+} from "./SellerAssignment";
+
 export type SaleLineKind =
     | "sale"
     | "return";
@@ -28,6 +35,19 @@ export type SaleLine = {
      * Original master/catalog name.
      */
     productName: string;
+
+    /**
+     * Exact product variant identity at transaction time.
+     *
+     * Example:
+     * Style SHIRT-101 / Black / M.
+     *
+     * This snapshot remains immutable even if the catalog
+     * definition changes later.
+     */
+    variant?: ProductVariantIdentity;
+
+    seller?: SellerAssignment;
 
     /**
      * Transaction-only description.

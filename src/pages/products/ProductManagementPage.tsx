@@ -6,6 +6,7 @@ import {
 import {
     useCatalog,
 } from "../../context/useCatalog";
+import ProductVariantManagementDialog from "../../components/product/ProductVariantManagementDialog";
 import {
     categorySeed,
 } from "../../models/catalog/Category";
@@ -131,6 +132,14 @@ function ProductManagementPage() {
         useState<ProductDraft>(emptyDraft);
     const [error, setError] =
         useState<string | null>(null);
+
+    const [
+        variantEditingProduct,
+        setVariantEditingProduct,
+    ] =
+        useState<Product | null>(
+            null,
+        );
 
     const categories =
         useMemo(
@@ -354,6 +363,13 @@ function ProductManagementPage() {
                 draft.imageUrl.trim(),
             barcode,
             sku,
+
+            styleCode:
+                current?.styleCode,
+
+            variants:
+                current?.variants,
+
             isActive:
                 current?.isActive ??
                 true,
@@ -497,6 +513,17 @@ function ProductManagementPage() {
                                         <button
                                             type="button"
                                             onClick={() =>
+                                                setVariantEditingProduct(
+                                                    product,
+                                                )
+                                            }
+                                        >
+                                            וריאנטים
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
                                                 setProductActive(
                                                     product.id,
                                                     !product.isActive,
@@ -514,6 +541,31 @@ function ProductManagementPage() {
                     </tbody>
                 </table>
             </div>
+
+            {variantEditingProduct && (
+                <ProductVariantManagementDialog
+                    product={
+                        variantEditingProduct
+                    }
+                    products={
+                        products
+                    }
+                    onClose={() =>
+                        setVariantEditingProduct(
+                            null,
+                        )
+                    }
+                    onSave={(product) => {
+                        updateProduct(
+                            product,
+                        );
+
+                        setVariantEditingProduct(
+                            null,
+                        );
+                    }}
+                />
+            )}
 
             {editingId && (
                 <div

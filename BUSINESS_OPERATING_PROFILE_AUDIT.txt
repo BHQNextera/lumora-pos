@@ -1,0 +1,700 @@
+﻿=== GIT ===
+?? apply_thermal_preview_v1.ps1
+46dbb02 feat: complete thermal documents and barcode lookup
+
+=== RELEVANT FILE TREE ===
+src\components\layout\Sidebar.tsx
+src\components\pos\ProductCard.tsx
+src\components\pos\ProductGrid.tsx
+src\components\pos\ProductInfoDialog.tsx
+src\config\posCapabilities.ts
+src\config\RegisterPrinterConfig.ts
+src\config\storedValuePolicy.ts
+src\data\products.ts
+src\layouts\AppShell.tsx
+src\layouts\PosLayout.tsx
+src\models\Payment.ts
+src\models\PaymentMethod.ts
+src\models\catalog\Category.ts
+src\models\coupon\Coupon.ts
+src\models\coupon\CouponRepository.ts
+src\models\coupon\CouponSeed.ts
+src\models\coupon\CouponService.ts
+src\models\customer\Customer.ts
+src\models\customer\CustomerRepository.ts
+src\models\customer\CustomerSeed.ts
+src\models\document\AccountingDocumentData.ts
+src\models\document\AccountingDocumentMapper.ts
+src\models\document\Document.ts
+src\models\document\DocumentFactory.ts
+src\models\document\DocumentLookupService.ts
+src\models\document\DocumentNumbering.ts
+src\models\document\DocumentOutputService.ts
+src\models\document\DocumentPolicy.ts
+src\models\document\DocumentRepository.ts
+src\models\monetary-value\MonetaryValue.ts
+src\models\monetary-value\MonetaryValueRepository.ts
+src\models\monetary-value\MonetaryValueService.ts
+src\models\pricing\DefaultPricingRules.ts
+src\models\pricing\PricingEngine.ts
+src\models\pricing\PricingEvents.ts
+src\models\pricing\PricingOrchestrator.ts
+src\models\pricing\PricingRule.ts
+src\models\pricing\PricingSnapshot.ts
+src\models\promotion\DefaultPromotions.ts
+src\models\promotion\MixAndMatchPromotion.ts
+src\models\promotion\Promotion.ts
+src\models\promotion\PromotionEngine.ts
+src\models\promotion\PromotionRepository.ts
+src\models\promotion\PromotionSeed.ts
+src\models\sale\CartLine.ts
+src\models\sale\Return.ts
+src\models\sale\ReturnEngine.ts
+src\models\sale\Sale.ts
+src\models\sale\SaleLine.ts
+src\models\sale\SaleService.ts
+src\models\sales-coach\SalesCoachEngine.ts
+src\models\tax\TaxPolicy.ts
+src\models\transaction\ReturnRepository.ts
+src\models\transaction\TransactionFilters.ts
+src\models\transaction\TransactionRepository.ts
+src\pages\products\product-management-page.css
+src\pages\products\ProductManagementPage.tsx
+src\pages\promotions\promotion-management-page.css
+src\pages\promotions\PromotionManagementPage.tsx
+src\pages\sale\SalePage.tsx
+src\types\product.ts
+
+=== OPERATING PROFILE AUDIT ===
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:95: {data.identity.registerCode && (
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:104: .registerCode
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:110: {data.identity.storeCode && (
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:119: .storeCode
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:241: .promotionNames
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:244: <span className="receipt-line__promotion">
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentStandardRenderer.tsx:245: {line.promotionNames.join(
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:98: {data.identity.registerCode && (
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:104: .registerCode
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:110: {data.identity.storeCode && (
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:116: .storeCode
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:243: {line.promotionNames.length >
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:245: <div className="thermal-line__promotion">
+C:\PROJECT\lumora-pos\src\components\document\AccountingDocumentThermalRenderer.tsx:251: {line.promotionNames.join(
+C:\PROJECT\lumora-pos\src\components\layout\Header.tsx:10: <strong>Coffee Time</strong>
+C:\PROJECT\lumora-pos\src\components\layout\Sidebar.tsx:70: view: "promotions",
+C:\PROJECT\lumora-pos\src\components\layout\Sidebar.tsx:94: Coffee Time
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:314: {line.appliedPromotions.map(
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:315: (promotion) => (
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:317: key={promotion.id}
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:322: {promotion.name}
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:325: {promotion.discountAmount >
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:329: {promotion.discountAmount.toFixed(
+C:\PROJECT\lumora-pos\src\components\pos\CartPanel.tsx:339: line.appliedPromotions.length ===
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:2: getPromotions,
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:3: } from "../../models/promotion/PromotionRepository";
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:5: Promotion,
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:6: } from "../../models/promotion/Promotion";
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:20: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:22: if (!promotion.isActive) {
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:27: promotion.excludedProductIds?.includes(
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:35: promotion.excludedCategoryIds?.includes(
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:43: promotion.target.type ===
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:46: return promotion.target.productIds.includes(
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:51: return promotion.target.categoryIds.includes(
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:62: const promotions =
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:63: getPromotions().filter(
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:64: (promotion) =>
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:67: promotion,
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:314: {promotions.length ===
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:332: {promotions.map(
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:334: promotion,
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:338: promotion.id
+C:\PROJECT\lumora-pos\src\components\pos\ProductInfoDialog.tsx:352: promotion.name
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:5: export type RegisterPrinterConfig = {
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:6: storeCode: string;
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:7: registerCode: string;
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:26: const registerPrinterConfigs:
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:27: RegisterPrinterConfig[] = [
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:29: storeCode: "01",
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:30: registerCode: "02",
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:36: RegisterPrinterConfig = {
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:37: storeCode: "01",
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:38: registerCode: "02",
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:42: export function getRegisterPrinterConfig(
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:43: storeCode?: string,
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:44: registerCode?: string,
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:45: ): RegisterPrinterConfig {
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:47: !storeCode ||
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:48: !registerCode
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:54: registerPrinterConfigs.find(
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:56: config.storeCode ===
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:57: storeCode &&
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:58: config.registerCode ===
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:59: registerCode,
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:63: storeCode,
+C:\PROJECT\lumora-pos\src\config\RegisterPrinterConfig.ts:64: registerCode,
+C:\PROJECT\lumora-pos\src\context\CatalogProvider.tsx:26: window.localStorage.getItem(
+C:\PROJECT\lumora-pos\src\context\CatalogProvider.tsx:50: window.localStorage.setItem(
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:12: Promotion,
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:13: } from "../models/promotion/Promotion";
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:29: promotions: Promotion[];
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:65: setPromotions: (
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:66: promotions: Promotion[],
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:69: addPromotion: (
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:70: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:73: removePromotion: (
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:74: promotionId: string,
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:77: togglePromotion: (
+C:\PROJECT\lumora-pos\src\context\PricingContext.tsx:78: promotionId: string,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:35: Promotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:36: } from "../models/promotion/Promotion";
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:38: getPromotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:39: removePromotion as removePromotionFromRepository,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:40: savePromotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:41: savePromotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:42: } from "../models/promotion/PromotionRepository";
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:44: seedPromotionsIfEmpty,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:45: } from "../models/promotion/PromotionSeed";
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:77: promotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:78: setPromotionsState,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:80: useState<Promotion[]>(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:82: seedPromotionsIfEmpty(),
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:107: promotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:116: promotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:286: const setPromotions =
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:289: nextPromotions:
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:290: Promotion[],
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:292: savePromotions(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:293: nextPromotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:296: setPromotionsState(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:297: nextPromotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:303: const addPromotion =
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:306: promotion:
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:307: Promotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:309: savePromotion(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:310: promotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:313: setPromotionsState(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:314: getPromotions(),
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:320: const removePromotion =
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:323: promotionId:
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:326: removePromotionFromRepository(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:327: promotionId,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:330: setPromotionsState(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:331: getPromotions(),
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:337: const togglePromotion =
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:340: promotionId:
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:346: getPromotions();
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:348: const promotion =
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:352: promotionId,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:355: if (!promotion) {
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:359: savePromotion({
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:360: ...promotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:364: setPromotionsState(
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:365: getPromotions(),
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:453: promotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:471: setPromotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:472: addPromotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:473: removePromotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:474: togglePromotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:486: promotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:504: setPromotions,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:505: addPromotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:506: removePromotion,
+C:\PROJECT\lumora-pos\src\context\PricingProvider.tsx:507: togglePromotion,
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:18: import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:19: import ProductManagementPage from "../pages/products/ProductManagementPage";
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:20: import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:31: | "promotions"
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:259: <CustomerManagementPage />
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:264: <ProductManagementPage />
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:268: "promotions" && (
+C:\PROJECT\lumora-pos\src\layouts\AppShell.tsx:269: <PromotionManagementPage />
+C:\PROJECT\lumora-pos\src\models\coupon\Coupon.ts:59: promotionId?: string;
+C:\PROJECT\lumora-pos\src\models\coupon\CouponRepository.ts:17: localStorage.getItem(
+C:\PROJECT\lumora-pos\src\models\coupon\CouponRepository.ts:40: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\customer\CustomerRepository.ts:14: localStorage.getItem(
+C:\PROJECT\lumora-pos\src\models\customer\CustomerRepository.ts:36: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentData.ts:52: promotionNames: string[];
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentData.ts:98: storeCode?: string;
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentData.ts:99: registerCode?: string;
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:188: storeCode:
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:189: document?.storeCode,
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:191: registerCode:
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:192: document?.registerCode,
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:204: "Coffee Time",
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:269: promotionNames:
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:270: line.appliedPromotions?.map(
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:272: promotion,
+C:\PROJECT\lumora-pos\src\models\document\AccountingDocumentMapper.ts:274: promotion.name,
+C:\PROJECT\lumora-pos\src\models\document\Document.ts:30: storeCode: string;
+C:\PROJECT\lumora-pos\src\models\document\Document.ts:31: registerCode: string;
+C:\PROJECT\lumora-pos\src\models\document\Document.ts:60: registerCode: string;
+C:\PROJECT\lumora-pos\src\models\document\DocumentFactory.ts:120: storeCode:
+C:\PROJECT\lumora-pos\src\models\document\DocumentFactory.ts:121: allocation.storeCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentFactory.ts:123: registerCode:
+C:\PROJECT\lumora-pos\src\models\document\DocumentFactory.ts:124: allocation.registerCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:5: currentRegister,
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:20: currentRegister.storeCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:21: currentRegister.registerCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:33: localStorage.getItem(key);
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:57: storeCode: string;
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:58: registerCode: string;
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:81: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:94: `${currentRegister.storeCode}` +
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:95: `${currentRegister.registerCode}` +
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:104: storeCode:
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:105: currentRegister.storeCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:107: registerCode:
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:108: currentRegister.registerCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:129: `${currentRegister.storeCode}` +
+C:\PROJECT\lumora-pos\src\models\document\DocumentNumbering.ts:130: `${currentRegister.registerCode}` +
+C:\PROJECT\lumora-pos\src\models\document\DocumentOutputService.ts:46: registerCode: document.registerCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentOutputService.ts:72: registerCode: document.registerCode,
+C:\PROJECT\lumora-pos\src\models\document\DocumentPolicy.ts:44: export const currentRegister = {
+C:\PROJECT\lumora-pos\src\models\document\DocumentPolicy.ts:45: storeCode: "01",
+C:\PROJECT\lumora-pos\src\models\document\DocumentPolicy.ts:46: registerCode: "02",
+C:\PROJECT\lumora-pos\src\models\document\DocumentRepository.ts:17: localStorage.getItem(key);
+C:\PROJECT\lumora-pos\src\models\document\DocumentRepository.ts:45: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\document\DocumentRepository.ts:52: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValue.ts:65: registerCode?: string;
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueRepository.ts:17: localStorage.getItem(key);
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueRepository.ts:38: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:61: registerCode?: string;
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:119: registerCode:
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:120: input.registerCode,
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:198: registerCode?: string;
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:315: registerCode:
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:316: input.registerCode,
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:345: registerCode:
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:346: input.registerCode,
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:411: registerCode:
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:412: input.registerCode,
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:483: registerCode?: string;
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:568: registerCode:
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:569: input.registerCode,
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:635: registerCode:
+C:\PROJECT\lumora-pos\src\models\monetary-value\MonetaryValueService.ts:636: input.registerCode,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:4: export type AppliedPromotion = {
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:15: appliedPromotions: AppliedPromotion[];
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:99: const appliedPromotions:
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:100: AppliedPromotion[] = [];
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:130: "promotion" &&
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:131: rule.promotionId
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:134: appliedPromotions.find(
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:135: (promotion) =>
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:136: promotion.id ===
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:137: rule.promotionId,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:147: appliedPromotions.push(
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:150: rule.promotionId,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:186: appliedPromotions,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:318: appliedPromotions:
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEngine.ts:320: ? item.appliedPromotions
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEvents.ts:20: PromotionAdded: "promotion_added",
+C:\PROJECT\lumora-pos\src\models\pricing\PricingEvents.ts:21: PromotionRemoved: "promotion_removed",
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:1: import type { Promotion } from "../promotion/Promotion";
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:3: PromotionEvaluationContext,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:4: } from "../promotion/PromotionEngine";
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:6: evaluatePromotions,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:7: } from "../promotion/PromotionEngine";
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:23: promotions: Promotion[] = [],
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:24: promotionContext:
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:25: PromotionEvaluationContext = {},
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:27: const promotionRules =
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:28: evaluatePromotions(
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:30: promotions,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:31: promotionContext,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingOrchestrator.ts:37: ...promotionRules,
+C:\PROJECT\lumora-pos\src\models\pricing\PricingRule.ts:11: | "promotion";
+C:\PROJECT\lumora-pos\src\models\pricing\PricingRule.ts:30: promotionId?: string;
+C:\PROJECT\lumora-pos\src\models\pricing\PricingRule.ts:32: promotionParticipantLineIds?: string[];
+C:\PROJECT\lumora-pos\src\models\promotion\DefaultPromotions.ts:2: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\DefaultPromotions.ts:3: } from "./Promotion";
+C:\PROJECT\lumora-pos\src\models\promotion\DefaultPromotions.ts:5: export const defaultPromotions: Promotion[] =
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:2: import type { Promotion } from "./Promotion";
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:13: promotionAmount: number;
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:23: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:25: if (promotion.target.type === "product") {
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:26: return promotion.target.productIds.includes(
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:31: return promotion.target.categoryIds.includes(
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:50: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:54: promotion.bundleQuantity ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:56: const promotionPrice =
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:57: promotion.bundlePrice ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:61: promotionPrice < 0
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:73: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:137: promotionPrice,
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:148: promotionAmount:
+C:\PROJECT\lumora-pos\src\models\promotion\MixAndMatchPromotion.ts:150: promotionPrice,
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:1: export type PromotionType =
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:12: export type PromotionTarget =
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:22: export type PromotionRewardTarget =
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:32: export type PromotionTier = {
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:41: export type PromotionSchedule = {
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:66: export type Promotion = {
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:71: type: PromotionType;
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:79: target: PromotionTarget;
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:83: * Useful for category-wide promotions with specific products excluded.
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:90: * When present, the promotion applies only when the current customer
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:98: rewardTarget?: PromotionRewardTarget;
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:110: tiers?: PromotionTier[];
+C:\PROJECT\lumora-pos\src\models\promotion\Promotion.ts:117: schedule?: PromotionSchedule;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:8: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:9: } from "./Promotion";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:12: } from "./MixAndMatchPromotion";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:14: export type PromotionEvaluationContext = {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:29: type PromotionApplication = {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:31: promotion: Promotion;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:34: * Units whose participation is consumed by this promotion application.
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:36: * the same unit. Units not consumed remain free for other promotions.
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:98: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:102: promotion.schedule;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:221: function isPromotionActive(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:222: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:223: context: PromotionEvaluationContext,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:225: if (!promotion.isActive) {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:230: promotion.allowedCustomerGroupIds ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:258: promotion.startsAt &&
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:260: promotion.startsAt,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:268: promotion.endsAt &&
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:270: promotion.endsAt,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:278: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:283: function isPromotionExcluded(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:285: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:288: promotion.excludedProductIds?.includes(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:296: promotion.excludedCategoryIds?.includes(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:306: function matchesPromotionTarget(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:308: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:311: isPromotionExcluded(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:313: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:320: promotion.target.type ===
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:323: return promotion.target.productIds.includes(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:328: return promotion.target.categoryIds.includes(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:334: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:341: matchesPromotionTarget(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:343: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:369: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:372: ): PromotionApplication | null {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:389: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:542: *   another promotion.
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:547: * remainder = 6 -> may still receive another eligible promotion.
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:550: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:554: promotion.buyQuantity ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:557: promotion.getQuantity ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:560: promotion.rewardDiscountPercentage ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:578: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:587: PromotionApplication[] =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:620: `${promotion.id}::group-${groupIndex}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:621: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:651: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:655: promotion.discountPercentage ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:666: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:672: `${promotion.id}::${unit.id}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:673: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:698: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:702: promotion.minimumQuantity ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:706: promotion.discountPercentage ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:718: PromotionApplication[] =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:726: !matchesPromotionTarget(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:728: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:754: `${promotion.id}::${line.id}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:755: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:784: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:788: promotion.bundleQuantity ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:792: promotion.bundlePrice ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:804: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:819: PromotionApplication[] =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:880: `${promotion.id}::bundle-${bundleIndex}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:881: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:901: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:904: isPromotionExcluded(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:906: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:913: promotion.rewardTarget;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:934: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:938: promotion.buyQuantity ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:941: promotion.getQuantity ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:944: promotion.rewardDiscountPercentage ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:952: !promotion.rewardTarget
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:959: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:974: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1015: PromotionApplication[] =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1071: `${promotion.id}::group-${groupIndex}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1072: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1088: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1092: promotion.basketMinimumAmount ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1102: ...promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1144: (promotion.discountPercentage ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1151: promotion.discountPercentage ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1158: promotion.discountAmount ??
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1198: `${promotion.id}::basket`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1199: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1210: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1214: [...(promotion.tiers ?? [])]
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1320: `${promotion.id}::tier`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1321: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1332: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1337: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1342: PromotionApplication[] =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1367: `${promotion.id}::mix-${groupIndex}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1368: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1387: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1391: promotion.discountAmount ?? 0;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1398: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1412: `${promotion.id}::${unit.id}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1413: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1433: function buildPromotionApplications(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1434: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1436: ): PromotionApplication[] {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1438: promotion.type
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1442: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1448: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1454: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1460: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1466: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1472: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1478: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1484: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1490: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1497: first: PromotionApplication,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1498: second: PromotionApplication,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1501: * Same-promotion applications are generated from disjoint units.
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1504: first.promotion.id ===
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1505: second.promotion.id
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1511: * Stacking is allowed on the SAME unit only when both promotions allow it.
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1514: first.promotion.allowStacking &&
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1515: second.promotion.allowStacking
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1537: applications: PromotionApplication[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1653: applications: PromotionApplication[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1771: .promotion.priority,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1790: applications: PromotionApplication[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1817: applications: PromotionApplication[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1823: promotion: Promotion;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1830: const participantsByPromotion =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1841: participantsByPromotion.get(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1842: application.promotion.id,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1868: participantsByPromotion.set(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1869: application.promotion.id,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1883: `${application.promotion.id}::${allocation.lineId}`;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1891: promotion:
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1892: application.promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1907: participantsByPromotion.get(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1908: application.promotion.id,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1917: * A promotion may consume a line without allocating money to it
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1923: promotionId,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1926: participantsByPromotion.entries()
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1928: const promotion =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1931: application.promotion.id ===
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1932: promotionId,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1933: )?.promotion;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1935: if (!promotion) {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1944: `${promotionId}::${lineId}`;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1955: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1968: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1974: `promotion-${promotion.id}-${lineId}`,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1977: promotion.name,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1995: "promotion",
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1997: promotionId:
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:1998: promotion.id,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2000: promotionParticipantLineIds:
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2008: export function evaluatePromotions(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2010: promotions: Promotion[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2011: context: PromotionEvaluationContext = {},
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2014: promotions
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2016: (promotion) =>
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2017: isPromotionActive(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2018: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2028: (promotion) =>
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2029: buildPromotionApplications(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionEngine.ts:2030: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:2: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:3: } from "./Promotion";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:6: "lumora.promotions";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:8: function loadPromotions(): Promotion[] {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:11: localStorage.getItem(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:30: return parsed as Promotion[];
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:36: function persistPromotions(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:37: promotions: Promotion[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:39: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:42: promotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:47: let promotions: Promotion[] =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:48: loadPromotions();
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:50: export function getPromotions() {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:51: return [...promotions];
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:54: export function getPromotion(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:55: promotionId: string,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:57: return promotions.find(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:58: (promotion) =>
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:59: promotion.id ===
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:60: promotionId,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:64: export function savePromotion(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:65: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:68: promotions.findIndex(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:71: promotion.id,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:77: promotions =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:78: promotions.map(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:81: promotion.id
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:82: ? promotion
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:86: promotions = [
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:87: ...promotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:88: promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:92: persistPromotions(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:93: promotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:97: export function savePromotions(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:98: nextPromotions: Promotion[],
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:100: promotions = [
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:101: ...nextPromotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:104: persistPromotions(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:105: promotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:109: export function removePromotion(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:110: promotionId: string,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:112: promotions =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:113: promotions.filter(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:114: (promotion) =>
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:115: promotion.id !==
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:116: promotionId,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:119: persistPromotions(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:120: promotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:124: export function clearPromotions() {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:125: promotions = [];
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionRepository.ts:127: localStorage.removeItem(
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:2: defaultPromotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:3: } from "./DefaultPromotions";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:5: Promotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:6: } from "./Promotion";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:8: getPromotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:9: savePromotions,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:10: } from "./PromotionRepository";
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:12: const clubTestPromotion: Promotion = {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:31: export function seedPromotionsIfEmpty() {
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:33: getPromotions();
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:38: : defaultPromotions;
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:40: const hasClubTestPromotion =
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:42: (promotion) =>
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:43: promotion.id ===
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:44: clubTestPromotion.id,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:48: hasClubTestPromotion
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:52: clubTestPromotion,
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:57: !hasClubTestPromotion
+C:\PROJECT\lumora-pos\src\models\promotion\PromotionSeed.ts:59: savePromotions(
+C:\PROJECT\lumora-pos\src\models\sale\ReturnEngine.ts:13: localStorage.getItem(
+C:\PROJECT\lumora-pos\src\models\sale\ReturnEngine.ts:24: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\sale\SaleLine.ts:13: export type AppliedSalePromotion = {
+C:\PROJECT\lumora-pos\src\models\sale\SaleLine.ts:51: * Promotions that actually participated in pricing this line.
+C:\PROJECT\lumora-pos\src\models\sale\SaleLine.ts:52: * A promotion may appear with discountAmount=0 when the line
+C:\PROJECT\lumora-pos\src\models\sale\SaleLine.ts:53: * participated in the promotion but another line carried the
+C:\PROJECT\lumora-pos\src\models\sale\SaleLine.ts:56: appliedPromotions?: AppliedSalePromotion[];
+C:\PROJECT\lumora-pos\src\models\sale\SaleService.ts:46: localStorage.getItem(
+C:\PROJECT\lumora-pos\src\models\sale\SaleService.ts:57: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\sale\SaleService.ts:386: localStorage.getItem(
+C:\PROJECT\lumora-pos\src\models\transaction\ReturnRepository.ts:7: const raw = localStorage.getItem(STORAGE_KEY);
+C:\PROJECT\lumora-pos\src\models\transaction\ReturnRepository.ts:28: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\transaction\ReturnRepository.ts:81: localStorage.removeItem(
+C:\PROJECT\lumora-pos\src\models\transaction\TransactionRepository.ts:7: const raw = localStorage.getItem(STORAGE_KEY);
+C:\PROJECT\lumora-pos\src\models\transaction\TransactionRepository.ts:28: localStorage.setItem(
+C:\PROJECT\lumora-pos\src\models\transaction\TransactionRepository.ts:78: localStorage.removeItem(
+C:\PROJECT\lumora-pos\src\pages\customers\CustomerManagementPage.tsx:72: function CustomerManagementPage() {
+C:\PROJECT\lumora-pos\src\pages\customers\CustomerManagementPage.tsx:888: export default CustomerManagementPage;
+C:\PROJECT\lumora-pos\src\pages\products\ProductManagementPage.tsx:118: function ProductManagementPage() {
+C:\PROJECT\lumora-pos\src\pages\products\ProductManagementPage.tsx:806: export default ProductManagementPage;
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:13: Promotion,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:14: PromotionType,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:15: } from "../../models/promotion/Promotion";
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:17: getPromotions,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:18: savePromotion,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:19: } from "../../models/promotion/PromotionRepository";
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:21: seedPromotionsIfEmpty,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:22: } from "../../models/promotion/PromotionSeed";
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:24: import "./promotion-management-page.css";
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:30: type PromotionDraft = {
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:32: type: PromotionType;
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:52: const emptyDraft: PromotionDraft = {
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:75: Record<PromotionType, string> = {
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:133: function PromotionManagementPage() {
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:139: promotions,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:140: setPromotions,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:142: useState<Promotion[]>(
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:144: seedPromotionsIfEmpty(),
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:151: useState<PromotionDraft>(emptyDraft);
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:178: promotions.filter(
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:179: (promotion) =>
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:181: promotion.name
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:200: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:202: setEditingId(promotion.id);
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:205: name: promotion.name,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:206: type: promotion.type,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:207: targetMode: promotion.target.type,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:209: promotion.target.type === "category"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:210: ? promotion.target.categoryIds[0] ?? "desserts"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:213: promotion.target.type === "product"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:214: ? promotion.target.productIds[0] ?? ""
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:217: promotion.allowedCustomerGroupIds ?? [],
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:219: promotion.discountPercentage ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:220: promotion.discountAmount ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:221: promotion.rewardDiscountPercentage ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:225: promotion.bundleQuantity ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:226: promotion.minimumQuantity ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:227: promotion.buyQuantity ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:232: promotion.getQuantity ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:237: promotion.bundlePrice ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:242: promotion.basketMinimumAmount ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:247: promotion.priority,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:251: promotion.startsAt,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:255: promotion.endsAt,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:258: promotion.schedule?.daysOfWeek ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:261: promotion.schedule?.startTime ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:264: promotion.schedule?.endTime ??
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:267: promotion.isActive,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:269: promotion.allowStacking,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:302: ? promotions.find(
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:303: (promotion) =>
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:304: promotion.id === editingId,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:331: const base: Promotion = {
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:411: savePromotion(base);
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:412: setPromotions(getPromotions());
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:417: promotion: Promotion,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:419: savePromotion({
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:420: ...promotion,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:422: !promotion.isActive,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:425: setPromotions(getPromotions());
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:430: className="promotion-management"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:433: <header className="promotion-management__header">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:444: className="promotion-management__primary"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:451: <div className="promotion-management__toolbar">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:463: <div className="promotion-management__grid">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:464: {visible.map((promotion) => (
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:466: key={promotion.id}
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:467: className="promotion-management__card"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:471: className={`promotion-management__status ${
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:472: promotion.isActive
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:473: ? "promotion-management__status--active"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:477: {promotion.isActive
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:482: <h3>{promotion.name}</h3>
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:485: {typeLabels[promotion.type]} · עדיפות{" "}
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:486: {promotion.priority}
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:490: <div className="promotion-management__actions">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:494: startEdit(promotion)
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:502: toggleActive(promotion)
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:505: {promotion.isActive
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:515: <div className="promotion-management__overlay">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:516: <div className="promotion-management__dialog">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:526: <div className="promotion-management__form">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:549: .value as PromotionType,
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:808: className="promotion-management__check"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:846: className="promotion-management__check"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:870: <label className="promotion-management__check">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:885: <label className="promotion-management__check">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:901: <div className="promotion-management__error">
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:911: className="promotion-management__primary"
+C:\PROJECT\lumora-pos\src\pages\promotions\PromotionManagementPage.tsx:924: export default PromotionManagementPage;
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:9: getRegisterPrinterConfig,
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:10: } from "../../config/RegisterPrinterConfig";
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:87: getRegisterPrinterConfig(
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:88: data.identity.storeCode,
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:89: data.identity.registerCode,
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:92: data.identity.storeCode,
+C:\PROJECT\lumora-pos\src\pages\receipt\ReceiptPage.tsx:93: data.identity.registerCode,
+C:\PROJECT\lumora-pos\src\pages\sale\SalePage.tsx:661: appliedPromotions:
+C:\PROJECT\lumora-pos\src\pages\sale\SalePage.tsx:662: line.appliedPromotions?.map(
+C:\PROJECT\lumora-pos\src\pages\sale\SalePage.tsx:663: (promotion) => ({
+C:\PROJECT\lumora-pos\src\pages\sale\SalePage.tsx:665: promotion.id,
+C:\PROJECT\lumora-pos\src\pages\sale\SalePage.tsx:667: promotion.name,
+C:\PROJECT\lumora-pos\src\pages\sale\SalePage.tsx:669: promotion.discountAmount,

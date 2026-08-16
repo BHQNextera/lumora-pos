@@ -1,3 +1,6 @@
+import {
+    getActiveBusinessOperatingProfile,
+} from "../../config/ActiveBusinessConfiguration";
 import type {
     DocumentCopyType,
     SaleDocument,
@@ -16,6 +19,11 @@ function getDocumentTitle(
     document: SaleDocument | null,
 ): string {
     switch (document?.type) {
+        case "tax_invoice":
+
+            return "חשבונית מס";
+
+
         case "tax_invoice_receipt":
             return "חשבונית מס / קבלה";
 
@@ -152,6 +160,8 @@ export function createAccountingDocumentData(
     document: SaleDocument | null,
     copyType: DocumentCopyType,
 ): AccountingDocumentData {
+    const activeProfile =
+        getActiveBusinessOperatingProfile();
     const issuedAt =
         document?.originalIssueAt ??
         sale.completedAt ??
@@ -200,12 +210,25 @@ export function createAccountingDocumentData(
         },
 
         business: {
-            name:
-                "Coffee Time",
+        name:
+            activeProfile.identity.tradingName ??
+            activeProfile.identity.businessName,
 
-            branchName:
-                "סניף רחובות",
-        },
+        branchName:
+            activeProfile.identity.branchName,
+
+        businessNumber:
+            activeProfile.identity.businessNumber,
+
+        vatNumber:
+            activeProfile.identity.vatNumber,
+
+        address:
+            activeProfile.identity.address,
+
+        phone:
+            activeProfile.identity.phone,
+    },
 
         customer: {
             id:
@@ -238,7 +261,16 @@ export function createAccountingDocumentData(
                             line.productName,
 
                         description:
-                            line.descriptionOverride,
+                            [
+                                line.descriptionOverride,
+
+                                line.variant
+                                    ? `${line.variant.color.name} / ${line.variant.size.name} · ${line.sku}`
+                                    : undefined,
+                            ]
+                                .filter(Boolean)
+                                .join(" · ") ||
+                            undefined,
 
                         sku:
                             line.sku,

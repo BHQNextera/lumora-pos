@@ -1,0 +1,515 @@
+﻿import type { Payment } from "../Payment";
+import type { CouponRedemptionPolicy, CouponValueType } from "../coupon/Coupon";
+import type { SaleLine } from "./SaleLine";
+
+export type SaleStatus =
+    | "draft"
+    | "completed"
+    | "cancelled";
+
+export type TransactionType =
+    | "sale"
+    | "return"
+    | "exchange";
+
+export type SaleCustomer = {
+    id?: string;
+    name: string;
+    phone?: string;
+    groupIds?: string[];
+    isClubMember?: boolean;
+};
+
+export type AppliedSaleCoupon = {
+    couponId: string;
+    code: string;
+    name: string;
+
+    valueType: CouponValueType;
+    originalValue: number;
+
+    redemptionPolicy:
+    CouponRedemptionPolicy;
+
+    discountApplied: number;
+};
+
+export type Sale = {
+    id: string;
+    number: string;
+
+    status: SaleStatus;
+    transactionType: TransactionType;
+
+    customer: SaleCustomer;
+
+    lines: SaleLine[];
+
+    subtotal: number;
+    discount: number;
+
+    coupon?: AppliedSaleCoupon;
+
+    tax: number;
+    total: number;
+
+    payments: Payment[];
+
+    createdAt: string;
+    completedAt?: string;
+};
+import type {
+    PaymentMethodCode,
+} from "./PaymentMethod";
+
+export type PaymentStatus =
+    | "draft"
+    | "pending"
+    | "approved"
+    | "declined"
+    | "cancelled"
+    | "refunded";
+
+export type Payment = {
+    id: string;
+
+    method: PaymentMethodCode;
+    status: PaymentStatus;
+
+    amount: number;
+
+    /**
+     * Relevant mainly for cash.
+     * Example:
+     * sale amount = 80
+     * customer gives = 100
+     */
+    tenderedAmount?: number;
+
+    /**
+     * Change returned to the customer.
+     * Never treated as part of the payment amount.
+     */
+    changeAmount?: number;
+
+    externalReference?: string;
+    providerReference?: string;
+
+    createdAt: string;
+};
+
+export type PaymentTotals = {
+    saleTotal: number;
+    paidAmount: number;
+    remainingAmount: number;
+    changeAmount: number;
+    isFullyPaid: boolean;
+};
+
+export function calculatePaymentTotals(
+    saleTotal: number,
+    payments: Payment[],
+): PaymentTotals {
+    const approvedPayments = payments.filter(
+        (payment) =>
+            payment.status === "approved",
+    );
+
+    const paidAmount = approvedPayments.reduce(
+        (sum, payment) =>
+            sum + payment.amount,
+        0,
+    );
+
+    const changeAmount = approvedPayments.reduce(
+        (sum, payment) =>
+            sum + (payment.changeAmount ?? 0),
+        0,
+    );
+
+    const remainingAmount = Math.max(
+        0,
+        saleTotal - paidAmount,
+    );
+
+    return {
+        saleTotal,
+        paidAmount,
+        remainingAmount,
+        changeAmount,
+        isFullyPaid:
+            saleTotal > 0 &&
+            remainingAmount < 0.001,
+    };
+}
+export type PaymentMethodCode =
+    | "cash"
+    | "card_terminal"
+    | "echo"
+    | "bit"
+    | "paybox"
+    | "bank_transfer"
+    | "cheque"
+    | "external_credit"
+    | "credit_voucher"
+    | "gift_card"
+    | "store_credit"
+    | "custom";
+
+export type PaymentMethodKind =
+    | "cash"
+    | "integrated"
+    | "recorded"
+    | "stored_value";
+
+export type PaymentMethod = {
+    code: PaymentMethodCode;
+    name: string;
+    kind: PaymentMethodKind;
+
+    isActive: boolean;
+    sortOrder: number;
+
+    requiresExternalReference: boolean;
+    allowsPartialPayment: boolean;
+    allowsOverpayment: boolean;
+    returnsChange: boolean;
+};
+
+export const defaultPaymentMethods: PaymentMethod[] = [
+    {
+        code: "cash",
+        name: "מזומן",
+        kind: "cash",
+
+        isActive: true,
+        sortOrder: 10,
+
+        requiresExternalReference: false,
+        allowsPartialPayment: true,
+        allowsOverpayment: true,
+        returnsChange: true,
+    },
+
+    {
+        code: "card_terminal",
+        name: "אשראי",
+        kind: "integrated",
+
+        isActive: true,
+        sortOrder: 20,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "echo",
+        name: "Echo",
+        kind: "integrated",
+
+        isActive: true,
+        sortOrder: 30,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "credit_voucher",
+        name: "שובר זיכוי",
+        kind: "stored_value",
+
+        isActive: true,
+        sortOrder: 40,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "gift_card",
+        name: "Gift Card",
+        kind: "stored_value",
+
+        isActive: true,
+        sortOrder: 50,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "store_credit",
+        name: "יתרת לקוח",
+        kind: "stored_value",
+
+        isActive: false,
+        sortOrder: 60,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "bit",
+        name: "Bit",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 70,
+
+        requiresExternalReference: false,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "paybox",
+        name: "PayBox",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 80,
+
+        requiresExternalReference: false,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "bank_transfer",
+        name: "העברה בנקאית",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 90,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "cheque",
+        name: "המחאה",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 100,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "external_credit",
+        name: "אשראי חיצוני",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 110,
+
+        requiresExternalReference: true,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+
+    {
+        code: "custom",
+        name: "אמצעי תשלום נוסף",
+        kind: "recorded",
+
+        isActive: false,
+        sortOrder: 120,
+
+        requiresExternalReference: false,
+        allowsPartialPayment: true,
+        allowsOverpayment: false,
+        returnsChange: false,
+    },
+];
+export type ReportId =
+    | "sales-summary"
+    | "payments-summary"
+    | "product-sales"
+    | "returns-summary"
+    | "seller-sales";
+
+export type ReportColumn = {
+    id: string;
+    label: string;
+    align?:
+        | "start"
+        | "end"
+        | "center";
+};
+
+export type ReportRow = {
+    id: string;
+    values:
+        Record<
+            string,
+            string | number
+        >;
+};
+
+export type ReportResult = {
+    id: ReportId;
+
+    title: string;
+    subtitle?: string;
+
+    generatedAt: string;
+
+    columns:
+        ReportColumn[];
+
+    rows:
+        ReportRow[];
+
+    totals?: {
+        label: string;
+        value: string;
+    }[];
+};
+
+export type ReportDefinition = {
+    id: ReportId;
+
+    title: string;
+    description: string;
+};
+
+  src\models\report\ReportEngine.ts:115:            return method;
+  src\models\report\ReportEngine.ts:116:    }
+  src\models\report\ReportEngine.ts:117:}
+  src\models\report\ReportEngine.ts:118:
+> src\models\report\ReportEngine.ts:119:function completedTransactions() {
+  src\models\report\ReportEngine.ts:120:    return getTransactions()
+  src\models\report\ReportEngine.ts:121:        .filter(
+  src\models\report\ReportEngine.ts:122:            (sale) =>
+  src\models\report\ReportEngine.ts:123:                sale.status ===
+  src\models\report\ReportEngine.ts:124:                "completed",
+  src\models\report\ReportEngine.ts:125:        );
+  src\models\report\ReportEngine.ts:126:}
+  src\models\report\ReportEngine.ts:127:
+  src\models\report\ReportEngine.ts:128:function salesSummary():
+  src\models\report\ReportEngine.ts:129:ReportResult {
+  src\models\report\ReportEngine.ts:130:    const transactions =
+> src\models\report\ReportEngine.ts:131:        completedTransactions();
+  src\models\report\ReportEngine.ts:132:
+  src\models\report\ReportEngine.ts:133:    const sales =
+  src\models\report\ReportEngine.ts:134:        transactions.filter(
+  src\models\report\ReportEngine.ts:135:            (transaction) => {
+  src\models\report\ReportEngine.ts:136:                const type =
+  src\models\report\ReportEngine.ts:137:                    transaction.transactionType ??
+  src\models\report\ReportEngine.ts:138:                    "sale";
+  src\models\report\ReportEngine.ts:139:
+  src\models\report\ReportEngine.ts:140:                return (
+  src\models\report\ReportEngine.ts:141:                    type === "sale" ||
+  src\models\report\ReportEngine.ts:142:                    (
+  src\models\report\ReportEngine.ts:143:                        type === "exchange" &&
+  src\models\report\ReportEngine.ts:335:        >();
+  src\models\report\ReportEngine.ts:336:
+  src\models\report\ReportEngine.ts:337:    for (
+  src\models\report\ReportEngine.ts:338:        const sale of
+> src\models\report\ReportEngine.ts:339:        completedTransactions()
+  src\models\report\ReportEngine.ts:340:    ) {
+  src\models\report\ReportEngine.ts:341:        for (
+  src\models\report\ReportEngine.ts:342:            const payment of
+  src\models\report\ReportEngine.ts:343:            sale.payments
+  src\models\report\ReportEngine.ts:344:        ) {
+  src\models\report\ReportEngine.ts:345:            const current =
+  src\models\report\ReportEngine.ts:346:                totals.get(
+  src\models\report\ReportEngine.ts:347:                    payment.method,
+  src\models\report\ReportEngine.ts:348:                ) ?? {
+  src\models\report\ReportEngine.ts:349:                    transactionIds:
+  src\models\report\ReportEngine.ts:350:                        new Set<string>(),
+  src\models\report\ReportEngine.ts:351:                    amount:
+  src\models\report\ReportEngine.ts:485:        >();
+  src\models\report\ReportEngine.ts:486:
+  src\models\report\ReportEngine.ts:487:    for (
+  src\models\report\ReportEngine.ts:488:        const sale of
+> src\models\report\ReportEngine.ts:489:        completedTransactions()
+  src\models\report\ReportEngine.ts:490:    ) {
+  src\models\report\ReportEngine.ts:491:        for (
+  src\models\report\ReportEngine.ts:492:            const line of
+  src\models\report\ReportEngine.ts:493:            sale.lines
+  src\models\report\ReportEngine.ts:494:        ) {
+  src\models\report\ReportEngine.ts:495:            const key =
+  src\models\report\ReportEngine.ts:496:                [
+  src\models\report\ReportEngine.ts:497:                    line.productId,
+  src\models\report\ReportEngine.ts:498:                    line.variant
+  src\models\report\ReportEngine.ts:499:                        ?.variantId ??
+  src\models\report\ReportEngine.ts:500:                        "",
+  src\models\report\ReportEngine.ts:501:                    line.sku,
+  src\models\report\ReportEngine.ts:648:
+  src\models\report\ReportEngine.ts:649:function returnsSummary():
+  src\models\report\ReportEngine.ts:650:ReportResult {
+  src\models\report\ReportEngine.ts:651:    const rows =
+> src\models\report\ReportEngine.ts:652:        completedTransactions()
+  src\models\report\ReportEngine.ts:653:            .filter(
+  src\models\report\ReportEngine.ts:654:                (sale) =>
+  src\models\report\ReportEngine.ts:655:                    sale.transactionType ===
+  src\models\report\ReportEngine.ts:656:                        "return" ||
+  src\models\report\ReportEngine.ts:657:                    sale.transactionType ===
+  src\models\report\ReportEngine.ts:658:                        "exchange",
+  src\models\report\ReportEngine.ts:659:            )
+  src\models\report\ReportEngine.ts:660:            .sort(
+  src\models\report\ReportEngine.ts:661:                (
+  src\models\report\ReportEngine.ts:662:                    a,
+  src\models\report\ReportEngine.ts:663:                    b,
+  src\models\report\ReportEngine.ts:664:                ) =>
+  src\models\report\ReportEngine.ts:769:        >();
+  src\models\report\ReportEngine.ts:770:
+  src\models\report\ReportEngine.ts:771:    for (
+  src\models\report\ReportEngine.ts:772:        const transaction of
+> src\models\report\ReportEngine.ts:773:        completedTransactions()
+  src\models\report\ReportEngine.ts:774:    ) {
+  src\models\report\ReportEngine.ts:775:        for (
+  src\models\report\ReportEngine.ts:776:            const line of
+  src\models\report\ReportEngine.ts:777:            transaction.lines
+  src\models\report\ReportEngine.ts:778:        ) {
+  src\models\report\ReportEngine.ts:779:            if (!line.seller) {
+  src\models\report\ReportEngine.ts:780:                continue;
+  src\models\report\ReportEngine.ts:781:            }
+  src\models\report\ReportEngine.ts:782:
+  src\models\report\ReportEngine.ts:783:            const key =
+  src\models\report\ReportEngine.ts:784:                line.seller.employeeId;
+  src\models\report\ReportEngine.ts:785:
+  src\models\report\ReportEngine.ts:1022:        ],
+  src\models\report\ReportEngine.ts:1023:    };
+  src\models\report\ReportEngine.ts:1024:}
+  src\models\report\ReportEngine.ts:1025:
+> src\models\report\ReportEngine.ts:1026:export function generateReport(
+  src\models\report\ReportEngine.ts:1027:    reportId:
+  src\models\report\ReportEngine.ts:1028:        ReportId,
+  src\models\report\ReportEngine.ts:1029:): ReportResult {
+  src\models\report\ReportEngine.ts:1030:    switch (
+  src\models\report\ReportEngine.ts:1031:        reportId
+  src\models\report\ReportEngine.ts:1032:    ) {
+  src\models\report\ReportEngine.ts:1033:        case "sales-summary":
+  src\models\report\ReportEngine.ts:1034:            return salesSummary();
+  src\models\report\ReportEngine.ts:1035:
+  src\models\report\ReportEngine.ts:1036:        case "payments-summary":
+  src\models\report\ReportEngine.ts:1037:            return paymentsSummary();
+  src\models\report\ReportEngine.ts:1038:
+
+

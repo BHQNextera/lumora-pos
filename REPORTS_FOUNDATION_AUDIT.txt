@@ -1,0 +1,62 @@
+﻿
+  src\components\layout\Sidebar.tsx:88:      isVisible:
+  src\components\layout\Sidebar.tsx:89:        profile.features.giftCards,
+  src\components\layout\Sidebar.tsx:90:    },
+  src\components\layout\Sidebar.tsx:91:    {
+> src\components\layout\Sidebar.tsx:92:      id: "reports",
+> src\components\layout\Sidebar.tsx:93:      label: "דוחות",
+  src\components\layout\Sidebar.tsx:94:      icon: "▥",
+  src\components\layout\Sidebar.tsx:95:      isVisible: true,
+  src\components\layout\Sidebar.tsx:96:    },
+  src\components\layout\Sidebar.tsx:97:    {
+  src\components\layout\Sidebar.tsx:98:      id: "settings",
+  src\components\layout\Sidebar.tsx:99:      label: "הגדרות",
+  src\components\layout\Sidebar.tsx:100:      icon: "⚙",
+  src\components\layout\Sidebar.tsx:101:      view: "promotions",
+src\models\document\AccountingDocumentData.ts:6:export type AccountingDocumentBusiness = {
+src\models\document\AccountingDocumentData.ts:17:export type AccountingDocumentCustomer = {
+src\models\document\AccountingDocumentData.ts:23:export type AccountingDocumentLine = {
+src\models\document\AccountingDocumentData.ts:60:export type AccountingDocumentPayment = {
+src\models\document\AccountingDocumentData.ts:75:export type AccountingDocumentTotals = {
+src\models\document\AccountingDocumentData.ts:85:export type AccountingDocumentIdentity = {
+src\models\document\AccountingDocumentData.ts:115:export type AccountingDocumentBarcode = {
+src\models\document\AccountingDocumentData.ts:119:     * Human-readable value printed below
+src\models\document\AccountingDocumentData.ts:125:export type AccountingDocumentData = {
+src\models\document\AccountingDocumentMapper.ts:158:export function createAccountingDocumentData(
+src\models\document\Document.ts:1:export type DocumentType =
+src\models\document\Document.ts:11:export type DocumentCopyType =
+src\models\document\Document.ts:15:export type DocumentStatus =
+src\models\document\Document.ts:20:export type SaleDocument = {
+src\models\document\Document.ts:47:export type DocumentOutputEvent = {
+src\models\document\Document.ts:56:    | "print"
+src\models\document\Document.ts:57:    | "whatsapp"
+src\models\document\Document.ts:58:    | "email";
+src\models\document\DocumentFactory.ts:149:export function createAccountingDocuments(
+src\models\document\DocumentFactory.ts:195:export function createAccountingDocument(
+src\models\document\DocumentLookupService.ts:14:export type DocumentLookupResult = {
+src\models\document\DocumentLookupService.ts:19:export function findByDocumentNumber(
+src\models\document\DocumentNumbering.ts:51:export type AllocatedDocumentNumber = {
+src\models\document\DocumentNumbering.ts:59:export function allocateDocumentNumber(
+src\models\document\DocumentNumbering.ts:91:export function peekNextDocumentNumber(
+src\models\document\DocumentOutputService.ts:12:export type ProducedDocumentChannel =
+src\models\document\DocumentOutputService.ts:13:    | "print"
+src\models\document\DocumentOutputService.ts:14:    | "whatsapp"
+src\models\document\DocumentOutputService.ts:15:    | "email";
+src\models\document\DocumentOutputService.ts:23:export function getNextDocumentCopyType(
+src\models\document\DocumentOutputService.ts:31:export function recordDocumentScreenView(
+src\models\document\DocumentOutputService.ts:54:export function registerDocumentOutput(
+src\models\document\DocumentPolicy.ts:8:export type DocumentTypeDefinition = {
+src\models\document\DocumentPolicy.ts:13:export type DocumentRuleContext = {
+src\models\document\DocumentPolicy.ts:25:export type DocumentRule = {
+src\models\document\DocumentPolicy.ts:36:export type DocumentPolicy = {
+src\models\document\DocumentPolicy.ts:50:export const currentRegister = {
+src\models\document\DocumentPolicy.ts:94:export const documentPolicy:
+src\models\document\DocumentPolicy.ts:253:export function resolveDocumentTypes(
+src\models\document\DocumentRepository.ts:60:export function saveDocument(
+src\models\document\DocumentRepository.ts:89:export function getDocuments() {
+src\models\document\DocumentRepository.ts:93:export function getDocument(
+src\models\document\DocumentRepository.ts:102:export function getDocumentsForTransaction(
+src\models\document\DocumentRepository.ts:112:export function saveDocumentOutputEvent(
+src\models\document\DocumentRepository.ts:123:export function getDocumentOutputEvents(
+
+

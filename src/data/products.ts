@@ -1,6 +1,10 @@
-﻿import type { Product } from "../types/product";
+import type { Product } from "../types/product";
+import {
+    fashionProductSeed,
+} from "./fashionSeed";
 
 export const products: Product[] = [
+    fashionProductSeed,
     {
         id: "espresso",
         name: "אספרסו",

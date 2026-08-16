@@ -1,10 +1,16 @@
+import type {
+    ProductVariant,
+} from "../models/catalog/ProductVariantIdentity";
+
 export type ProductCategory =
     | "all"
     | "hot-drinks"
     | "cold-drinks"
     | "pastries"
     | "sandwiches"
-    | "desserts";
+    | "desserts"
+    | "manual"
+    | "fashion";
 
 export type ProductHierarchy = {
     department?: string;
@@ -40,7 +46,11 @@ export type Product = {
 
     costPrice?: number;
 
-    category: Exclude<ProductCategory, "all">;
+    category:
+        Exclude<
+            ProductCategory,
+            "all"
+        >;
 
     hierarchy?: ProductHierarchy;
 
@@ -51,6 +61,33 @@ export type Product = {
     imageUrl: string;
     barcode: string;
     sku: string;
+
+    /*
+     * Optional Style/Model identity.
+     *
+     * Used by segment models such as Fashion.
+     * Standard Retail products do not need this field.
+     */
+    styleCode?: string;
+
+    /*
+     * Optional variants belonging to the same product master.
+     *
+     * Fashion example:
+     *
+     * Product:
+     * SHIRT-101
+     *
+     * Variants:
+     * Black / S
+     * Black / M
+     * White / S
+     * White / M
+     *
+     * SKU, barcode, stock and optional variant price belong
+     * to the exact variant.
+     */
+    variants?: ProductVariant[];
 
     isActive: boolean;
 };

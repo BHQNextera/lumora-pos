@@ -1,0 +1,149 @@
+﻿
+  src\theme\global.css:107:  font-weight: 650;
+  src\theme\global.css:108:}
+  src\theme\global.css:109:
+> src\theme\global.css:110:.pos-sidebar {
+  src\theme\global.css:111:  display: flex;
+  src\theme\global.css:112:  flex-direction: column;
+  src\theme\global.css:113:  width: 210px;
+  src\theme\global.css:114:  height: 100%;
+  src\theme\global.css:115:  padding: 18px 12px;
+  src\theme\global.css:116:  overflow: hidden;
+  src\theme\global.css:117:  background: #171a20;
+  src\theme\global.css:118:  color: #fff;
+  src\theme\global.css:119:}
+  src\theme\global.css:120:
+> src\theme\global.css:121:.pos-sidebar__business {
+  src\theme\global.css:122:  display: flex;
+  src\theme\global.css:123:  align-items: center;
+  src\theme\global.css:124:  gap: 11px;
+  src\theme\global.css:125:  min-height: 62px;
+  src\theme\global.css:126:  padding: 0 7px 16px;
+  src\theme\global.css:127:  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  src\theme\global.css:128:}
+  src\theme\global.css:129:
+> src\theme\global.css:130:.pos-sidebar__logo {
+  src\theme\global.css:131:  display: grid;
+  src\theme\global.css:132:  flex: 0 0 auto;
+  src\theme\global.css:133:  place-items: center;
+  src\theme\global.css:134:  width: 44px;
+  src\theme\global.css:135:  height: 44px;
+  src\theme\global.css:136:  border-radius: 13px;
+  src\theme\global.css:137:  background: var(--primary);
+  src\theme\global.css:138:  color: #fff;
+  src\theme\global.css:139:  font-weight: 800;
+  src\theme\global.css:140:}
+  src\theme\global.css:141:
+> src\theme\global.css:142:.pos-sidebar__business-details {
+  src\theme\global.css:143:  display: flex;
+  src\theme\global.css:144:  min-width: 0;
+  src\theme\global.css:145:  flex-direction: column;
+  src\theme\global.css:146:  gap: 3px;
+  src\theme\global.css:147:}
+  src\theme\global.css:148:
+> src\theme\global.css:149:.pos-sidebar__business-details strong {
+  src\theme\global.css:150:  overflow: hidden;
+  src\theme\global.css:151:  font-size: 13px;
+  src\theme\global.css:152:  text-overflow: ellipsis;
+  src\theme\global.css:153:  white-space: nowrap;
+  src\theme\global.css:154:}
+  src\theme\global.css:155:
+> src\theme\global.css:156:.pos-sidebar__business-details span {
+  src\theme\global.css:157:  color: #9ba2ae;
+  src\theme\global.css:158:  font-size: 10px;
+  src\theme\global.css:159:}
+  src\theme\global.css:160:
+> src\theme\global.css:161:.pos-sidebar__navigation {
+  src\theme\global.css:162:  display: flex;
+  src\theme\global.css:163:  flex: 1;
+  src\theme\global.css:164:  flex-direction: column;
+  src\theme\global.css:165:  gap: 4px;
+  src\theme\global.css:166:  padding-top: 15px;
+  src\theme\global.css:167:}
+  src\theme\global.css:168:
+> src\theme\global.css:169:.pos-sidebar__item {
+  src\theme\global.css:170:  display: flex;
+  src\theme\global.css:171:  align-items: center;
+  src\theme\global.css:172:  gap: 12px;
+  src\theme\global.css:173:  min-height: 44px;
+  src\theme\global.css:174:  padding: 0 13px;
+  src\theme\global.css:175:  border-radius: 11px;
+  src\theme\global.css:176:  background: transparent;
+  src\theme\global.css:177:  color: #aeb4bf;
+  src\theme\global.css:179:  text-align: right;
+  src\theme\global.css:180:}
+  src\theme\global.css:181:
+> src\theme\global.css:182:.pos-sidebar__item:hover {
+  src\theme\global.css:183:  background: rgb(255 255 255 / 7%);
+  src\theme\global.css:184:  color: #fff;
+  src\theme\global.css:185:}
+  src\theme\global.css:186:
+> src\theme\global.css:187:.pos-sidebar__item--active {
+  src\theme\global.css:188:  background: var(--primary);
+  src\theme\global.css:189:  color: #fff;
+  src\theme\global.css:190:}
+  src\theme\global.css:191:
+> src\theme\global.css:192:.pos-sidebar__item-icon {
+  src\theme\global.css:193:  display: grid;
+  src\theme\global.css:194:  flex: 0 0 21px;
+  src\theme\global.css:195:  place-items: center;
+  src\theme\global.css:196:  font-size: 18px;
+  src\theme\global.css:197:}
+  src\theme\global.css:198:
+> src\theme\global.css:199:.pos-sidebar__item>span:last-child {
+  src\theme\global.css:200:  font-size: 12px;
+  src\theme\global.css:201:  font-weight: 650;
+  src\theme\global.css:202:}
+  src\theme\global.css:203:
+> src\theme\global.css:204:.pos-sidebar__footer {
+  src\theme\global.css:205:  display: flex;
+  src\theme\global.css:206:  flex-direction: column;
+  src\theme\global.css:207:  gap: 10px;
+  src\theme\global.css:208:  padding-top: 14px;
+  src\theme\global.css:209:  border-top: 1px solid rgb(255 255 255 / 8%);
+  src\theme\global.css:210:}
+  src\theme\global.css:211:
+> src\theme\global.css:212:.pos-sidebar__drawer-button {
+  src\theme\global.css:213:  display: flex;
+  src\theme\global.css:214:  align-items: center;
+  src\theme\global.css:215:  justify-content: center;
+  src\theme\global.css:216:  gap: 8px;
+  src\theme\global.css:217:  min-height: 40px;
+  src\theme\global.css:218:  border: 1px solid rgb(255 255 255 / 8%);
+  src\theme\global.css:219:  border-radius: 10px;
+  src\theme\global.css:220:  background: rgb(255 255 255 / 4%);
+  src\theme\global.css:223:  font-size: 11px;
+  src\theme\global.css:224:}
+  src\theme\global.css:225:
+> src\theme\global.css:226:.pos-sidebar__shift-status {
+  src\theme\global.css:227:  display: flex;
+  src\theme\global.css:228:  align-items: center;
+  src\theme\global.css:229:  justify-content: center;
+  src\theme\global.css:230:  gap: 7px;
+  src\theme\global.css:231:  color: #aeb4bf;
+  src\theme\global.css:232:  font-size: 9px;
+  src\theme\global.css:233:}
+  src\theme\global.css:234:
+> src\theme\global.css:235:.pos-sidebar__shift-status>span {
+  src\theme\global.css:236:  width: 7px;
+  src\theme\global.css:237:  height: 7px;
+  src\theme\global.css:238:  border-radius: 50%;
+  src\theme\global.css:239:  background: var(--success);
+  src\theme\global.css:240:}
+  src\theme\global.css:241:
+  src\theme\global.css:242:.sale-page {
+  src\theme\global.css:243:  display: flex;
+  src\theme\global.css:746:    grid-template-columns: 190px minmax(0, 1fr);
+  src\theme\global.css:747:  }
+  src\theme\global.css:748:
+> src\theme\global.css:749:  .pos-sidebar {
+  src\theme\global.css:750:    width: 190px;
+  src\theme\global.css:751:  }
+  src\theme\global.css:752:
+  src\theme\global.css:753:  .sale-page__content {
+  src\theme\global.css:754:    grid-template-columns: minmax(0, 1fr) 340px;
+  src\theme\global.css:755:  }
+  src\theme\global.css:756:
+  src\theme\global.css:757:  .product-grid {
+
+

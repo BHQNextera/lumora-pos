@@ -1,3 +1,6 @@
+import type {
+  RegisterShift,
+} from "../../models/shift/RegisterShift";
 type ConnectionStatus = {
   id: string;
   label: string;
@@ -12,18 +15,77 @@ const statuses: ConnectionStatus[] = [
   { id: "drawer", label: "מגירה", icon: "▱", connected: true },
 ];
 
-function StatusBar() {
+type StatusBarProps = {
+  activeShift?: RegisterShift;
+};
+
+function StatusBar({
+  activeShift,
+}: StatusBarProps) {
   return (
     <footer className="pos-status-bar" aria-label="מצב מערכת">
       <div className="pos-status-bar__operations">
-        <div className="pos-status-bar__operation"><span>קופה</span><strong>02</strong></div>
+        <div className="pos-status-bar__operation">
+          <span>קופה</span>
+          <strong>
+            {
+              activeShift?.registerCode ??
+              "—"
+            }
+          </strong>
+        </div>
+
         <span className="pos-status-bar__separator" aria-hidden="true" />
-        <div className="pos-status-bar__operation"><span>משמרת</span><strong>בוקר</strong></div>
+
+        <div className="pos-status-bar__operation">
+          <span>משמרת</span>
+          <strong>
+            {
+              activeShift
+                ? "פתוחה"
+                : "סגורה"
+            }
+          </strong>
+        </div>
+
         <span className="pos-status-bar__separator" aria-hidden="true" />
-        <div className="pos-status-bar__operation"><span>קופאי</span><strong>שי בל</strong></div>
-        <span className="pos-status-bar__separator" aria-hidden="true" />
-        <div className="pos-status-bar__operation"><span>שעה</span><strong>20:31</strong></div>
-        <span className="pos-status-bar__date">06.08.2026</span>
+
+        <div className="pos-status-bar__operation">
+          <span>קופאי</span>
+          <strong>
+            {
+              activeShift
+                ?.openedBy
+                .employeeName ??
+              "—"
+            }
+          </strong>
+        </div>
+
+        {activeShift && (
+          <>
+            <span className="pos-status-bar__separator" aria-hidden="true" />
+
+            <div className="pos-status-bar__operation">
+              <span>נפתחה</span>
+              <strong>
+                {
+                  new Date(
+                    activeShift.openedAt,
+                  ).toLocaleTimeString(
+                    "he-IL",
+                    {
+                      hour:
+                        "2-digit",
+                      minute:
+                        "2-digit",
+                    },
+                  )
+                }
+              </strong>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="pos-status-bar__right">

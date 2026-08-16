@@ -7,9 +7,16 @@ import {
 import LineDiscountDialog from "../../components/pricing/LineDiscountDialog";
 import PriceOverrideDialog from "../../components/pricing/PriceOverrideDialog";
 import TransactionDiscountDialog from "../../components/pricing/TransactionDiscountDialog";
+import CalculatorSaleEntry from "../../components/pos/CalculatorSaleEntry";
+import FashionVariantSelector from "../../components/pos/FashionVariantSelector";
 import CartPanel from "../../components/pos/CartPanel";
 import ProductGrid from "../../components/pos/ProductGrid";
-import { posCapabilities } from "../../config/posCapabilities";
+import {
+    getActiveBusinessOperatingProfile,
+} from "../../config/ActiveBusinessConfiguration";
+import {
+    getPresentSellers,
+} from "../../models/employee/AvailableSellerService";
 import { usePricing } from "../../context/usePricing";
 import { useCatalog } from "../../context/useCatalog";
 import { translate } from "../../i18n";
@@ -28,6 +35,15 @@ import {
 import {
     DefaultPricingRules,
 } from "../../models/pricing/DefaultPricingRules";
+import {
+    isFashionProduct,
+} from "../../models/catalog/FashionProduct";
+import type {
+    FashionProduct,
+} from "../../models/catalog/FashionProduct";
+import type {
+    ProductVariant,
+} from "../../models/catalog/ProductVariantIdentity";
 import type { CartLine } from "../../models/sale/CartLine";
 import type {
     AppliedSaleCoupon,
@@ -35,6 +51,9 @@ import type {
 } from "../../models/sale/Sale";
 import type { SaleLine } from "../../models/sale/SaleLine";
 import { completeSale } from "../../models/sale/SaleService";
+import {
+    getActiveRegisterShift,
+} from "../../models/shift/RegisterShiftRepository";
 import type { Product } from "../../types/product";
 import PaymentPage from "../payment/PaymentPage";
 import RefundPage from "../payment/RefundPage";
@@ -80,7 +99,158 @@ function SalePage({
     incomingReturnLines = [],
     onReturnLinesConsumed,
 }: SalePageProps) {
+    const activeProfile =
+        getActiveBusinessOperatingProfile();
+
+    const posCapabilities =
+        activeProfile.pos;
+
     const { products } = useCatalog();
+
+    const activeSellers =
+        getPresentSellers();
+
+    const [
+        currentSellerId,
+        setCurrentSellerId,
+    ] =
+        useState<string>(
+            activeSellers.length === 1
+                ? activeSellers[0].id
+                : "",
+        );
+
+    const [
+        sellerSelectionMode,
+        setSellerSelectionMode,
+    ] =
+        useState<
+            "auto" |
+            "explicit" |
+            null
+        >(
+            activeSellers.length === 1
+                ? "auto"
+                : null,
+        );
+
+    const currentSeller =
+        activeSellers.find(
+            (employee) =>
+                employee.id ===
+                currentSellerId,
+        );
+
+    const sellerPresenceKey =
+        activeSellers
+            .map(
+                (employee) =>
+                    employee.id,
+            )
+            .sort()
+            .join("|");
+
+    useEffect(() => {
+        if (
+            activeSellers.length === 0
+        ) {
+            if (currentSellerId) {
+                setCurrentSellerId("");
+            }
+
+            if (
+                sellerSelectionMode !==
+                null
+            ) {
+                setSellerSelectionMode(
+                    null,
+                );
+            }
+
+            return;
+        }
+
+        if (
+            activeSellers.length === 1
+        ) {
+            const onlySeller =
+                activeSellers[0];
+
+            if (
+                currentSellerId !==
+                onlySeller.id
+            ) {
+                setCurrentSellerId(
+                    onlySeller.id,
+                );
+            }
+
+            if (
+                sellerSelectionMode !==
+                "auto"
+            ) {
+                setSellerSelectionMode(
+                    "auto",
+                );
+            }
+
+            return;
+        }
+
+        const currentStillPresent =
+            activeSellers.some(
+                (employee) =>
+                    employee.id ===
+                    currentSellerId,
+            );
+
+        /*
+         * With 2+ sellers, only an explicit manual selection
+         * may remain active.
+         *
+         * Example:
+         * Shay was alone and auto-selected.
+         * Kobi clocks in.
+         * We clear Shay and require an intentional choice.
+         */
+        if (
+            !currentStillPresent ||
+            sellerSelectionMode !==
+                "explicit"
+        ) {
+            if (currentSellerId) {
+                setCurrentSellerId("");
+            }
+
+            if (
+                sellerSelectionMode !==
+                null
+            ) {
+                setSellerSelectionMode(
+                    null,
+                );
+            }
+        }
+    }, [
+        sellerPresenceKey,
+        currentSellerId,
+        sellerSelectionMode,
+    ]);
+    const [
+        selectedFashionProduct,
+        setSelectedFashionProduct,
+    ] =
+        useState<FashionProduct | null>(
+            null,
+        );
+
+    const [
+        pendingProductForSeller,
+        setPendingProductForSeller,
+    ] =
+        useState<Product | null>(
+            null,
+        );
 
     const {
         pricingRules,
@@ -214,20 +384,51 @@ function SalePage({
                         product.category ===
                         selectedCategory;
 
+                    const variantSearchMatch =
+                        product.variants?.some(
+                            (variant) =>
+                                variant.isActive &&
+                                (
+                                    variant.barcode
+                                        .toLowerCase()
+                                        .includes(value) ||
+                                    variant.sku
+                                        .toLowerCase()
+                                        .includes(value)
+                                ),
+                        ) ?? false;
+
                     const searchMatch =
                         !value ||
                         product.name
                             .toLowerCase()
                             .includes(value) ||
-                        product.barcode.includes(
-                            value,
-                        ) ||
+                        product.barcode
+                            .toLowerCase()
+                            .includes(value) ||
                         product.sku
                             .toLowerCase()
-                            .includes(value);
+                            .includes(value) ||
+                        product.styleCode
+                            ?.toLowerCase()
+                            .includes(value) ===
+                            true ||
+                        variantSearchMatch;
+
+                    const segmentMatch =
+                        activeProfile.operatingModel ===
+                            "calculator"
+                            ? false
+                            : activeProfile.operatingModel ===
+                                  "fashion"
+                                ? true
+                                : !isFashionProduct(
+                                      product,
+                                  );
 
                     return (
                         product.isActive &&
+                        segmentMatch &&
                         categoryMatch &&
                         searchMatch
                     );
@@ -301,6 +502,16 @@ function SalePage({
 
                 product,
 
+                seller:
+                    currentSeller
+                        ? {
+                              employeeId:
+                                  currentSeller.id,
+                              employeeName:
+                                  currentSeller.name,
+                          }
+                        : undefined,
+
                 quantity: 1,
 
                 unitPrice:
@@ -321,6 +532,243 @@ function SalePage({
                 newLine,
             ];
         });
+    };
+    const addFashionVariant = (
+        product: FashionProduct,
+        variant: ProductVariant,
+    ) => {
+        const variantProduct: Product = {
+            ...product,
+
+            price:
+                variant.price ??
+                product.price,
+
+            sku:
+                variant.sku,
+
+            barcode:
+                variant.barcode,
+
+            stockOnHand:
+                variant.stockOnHand,
+        };
+
+        updateCartLines(
+            (current) => {
+                const existing =
+                    current.find(
+                        (line) =>
+                            line.kind ===
+                                "sale" &&
+                            line.source ===
+                                "catalog" &&
+                            line.product.id ===
+                                product.id &&
+                            line.variant
+                                ?.variantId ===
+                                variant.variantId,
+                    );
+
+                if (existing) {
+                    setSelectedLineId(
+                        existing.id,
+                    );
+
+                    return current.map(
+                        (line) =>
+                            line.id ===
+                                existing.id
+                                ? {
+                                    ...line,
+                                    quantity:
+                                        line.quantity +
+                                        1,
+                                }
+                                : line,
+                    );
+                }
+
+                const line:
+                    CartLine = {
+                    id:
+                        crypto.randomUUID(),
+
+                    kind:
+                        "sale",
+
+                    source:
+                        "catalog",
+
+                    product:
+                        variantProduct,
+
+                    seller:
+                        currentSeller
+                            ? {
+                                  employeeId:
+                                      currentSeller.id,
+                                  employeeName:
+                                      currentSeller.name,
+                              }
+                            : undefined,
+
+                    variant: {
+                        variantId:
+                            variant.variantId,
+
+                        styleCode:
+                            variant.styleCode,
+
+                        color:
+                            variant.color,
+
+                        size:
+                            variant.size,
+                    },
+
+                    quantity:
+                        1,
+
+                    unitPrice:
+                        variant.price ??
+                        product.price,
+
+                    lineDiscountAmount:
+                        0,
+
+                    allocatedSaleDiscountAmount:
+                        0,
+                };
+
+                setSelectedLineId(
+                    line.id,
+                );
+
+                return [
+                    ...current,
+                    line,
+                ];
+            },
+        );
+
+        setSelectedFashionProduct(
+            null,
+        );
+    };
+
+    const continueProductSelection = (
+        product: Product,
+    ) => {
+        if (
+            activeProfile.operatingModel ===
+                "fashion" &&
+            isFashionProduct(
+                product,
+            )
+        ) {
+            setSelectedFashionProduct(
+                product,
+            );
+
+            return;
+        }
+
+        addProduct(
+            product,
+        );
+    };
+
+    const handleProductSelection = (
+        product: Product,
+    ) => {
+        if (!currentSeller) {
+            setPendingProductForSeller(
+                product,
+            );
+
+            return;
+        }
+
+        continueProductSelection(
+            product,
+        );
+    };
+    const addCalculatorAmount = (
+        amount: number,
+        description: string,
+    ) => {
+        const productId =
+            crypto.randomUUID();
+
+        const product: Product = {
+            id:
+                productId,
+
+            name:
+                description ||
+                "פריט כללי",
+
+            names: {
+                he:
+                    description ||
+                    "פריט כללי",
+            },
+
+            price:
+                amount,
+
+            category:
+                "manual",
+
+            imageUrl:
+                "",
+
+            barcode:
+                "",
+
+            sku:
+                `CALC-${productId}`,
+
+            isActive:
+                true,
+        };
+
+        const line: CartLine = {
+            id:
+                crypto.randomUUID(),
+
+            kind:
+                "sale",
+
+            source:
+                "calculator",
+
+            product,
+
+            quantity:
+                1,
+
+            unitPrice:
+                amount,
+
+            lineDiscountAmount:
+                0,
+
+            allocatedSaleDiscountAmount:
+                0,
+        };
+
+        updateCartLines(
+            (current) => [
+                ...current,
+                line,
+            ],
+        );
+
+        setSelectedLineId(
+            line.id,
+        );
     };
 
     const addReturnLines = (
@@ -631,6 +1079,12 @@ function SalePage({
                         productName:
                             line.product.name,
 
+                        variant:
+                            line.variant,
+
+                        seller:
+                            line.seller,
+
                         descriptionOverride:
                             line.descriptionOverride,
 
@@ -763,6 +1217,11 @@ function SalePage({
                 },
                 {
                     transactionId,
+
+                    shiftId:
+                        getActiveRegisterShift()
+                            ?.id,
+
                     coupon:
                         appliedSaleCoupon,
                 },
@@ -834,6 +1293,75 @@ function SalePage({
                 0,
             );
 
+    const sellerAssignments =
+        activeSellers.map(
+            (employee) => ({
+                employeeId:
+                    employee.id,
+
+                employeeName:
+                    employee.name,
+            }),
+        );
+
+    const changeSellerForLine = (
+        lineId: string,
+        seller: {
+            employeeId: string;
+            employeeName: string;
+        },
+    ) => {
+        updateCartLines(
+            (current) =>
+                current.map(
+                    (line) =>
+                        line.id ===
+                        lineId
+                            ? {
+                                  ...line,
+                                  seller,
+                              }
+                            : line,
+                ),
+        );
+    };
+
+    const changeSellerFromLineToEnd = (
+        lineId: string,
+        seller: {
+            employeeId: string;
+            employeeName: string;
+        },
+    ) => {
+        updateCartLines(
+            (current) => {
+                const startIndex =
+                    current.findIndex(
+                        (line) =>
+                            line.id ===
+                            lineId,
+                    );
+
+                if (startIndex < 0) {
+                    return current;
+                }
+
+                return current.map(
+                    (
+                        line,
+                        index,
+                    ) =>
+                        index >=
+                        startIndex
+                            ? {
+                                  ...line,
+                                  seller,
+                              }
+                            : line,
+                );
+            },
+        );
+    };
     const handleCheckout = () => {
         if (
             Math.abs(
@@ -1130,7 +1658,77 @@ function SalePage({
                     </button>
                 </header>
 
-                <div className="sale-page__content">
+                                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        marginBottom: "10px",
+                    }}
+                >
+                    <strong>
+                        מוכרן פעיל
+                    </strong>
+
+                    <select
+                        value={
+                            currentSellerId
+                        }
+                        onChange={(event) => {
+                            const nextSellerId =
+                                event.target.value;
+
+                            setCurrentSellerId(
+                                nextSellerId,
+                            );
+
+                            setSellerSelectionMode(
+                                nextSellerId
+                                    ? "explicit"
+                                    : null,
+                            );
+                        }}
+                    >
+                        {activeSellers.length !== 1 && (
+                            <option value="">
+                                {
+                                    activeSellers.length === 0
+                                        ? "אין מוכרנים בנוכחות"
+                                        : "בחר מוכרן"
+                                }
+                            </option>
+                        )}
+
+                        {activeSellers.map(
+                            (employee) => (
+                                <option
+                                    key={
+                                        employee.id
+                                    }
+                                    value={
+                                        employee.id
+                                    }
+                                >
+                                    {
+                                        employee.name
+                                    }
+                                </option>
+                            ),
+                        )}
+                    </select>
+                </div>
+<div className="sale-page__content">
+                    {activeProfile.operatingModel ===
+                        "calculator" && (
+                        <CalculatorSaleEntry
+                            onAddAmount={
+                                addCalculatorAmount
+                            }
+                        />
+                    )}
+
+                    {activeProfile.operatingModel !==
+                        "calculator" && (
                     <section className="sale-page__catalog">
                         <div className="sale-page__search-row">
                             <input
@@ -1144,6 +1742,115 @@ function SalePage({
                                             .value,
                                     )
                                 }
+                                onKeyDown={(event) => {
+                                    if (
+                                        event.key !==
+                                        "Enter"
+                                    ) {
+                                        return;
+                                    }
+
+                                    const value =
+                                        searchTerm.trim();
+
+                                    if (!value) {
+                                        return;
+                                    }
+
+                                    event.preventDefault();
+
+                                    const normalized =
+                                        value.toLowerCase();
+
+                                    /*
+                                     * 1. Exact variant barcode / SKU.
+                                     *
+                                     * Highest priority because a physical
+                                     * Fashion barcode identifies the exact
+                                     * sellable variant.
+                                     */
+                                    for (
+                                        const product of products
+                                    ) {
+                                        if (
+                                            !product.isActive ||
+                                            !isFashionProduct(
+                                                product,
+                                            )
+                                        ) {
+                                            continue;
+                                        }
+
+                                        const variant =
+                                            product.variants.find(
+                                                (item) =>
+                                                    item.isActive &&
+                                                    (
+                                                        item.barcode ===
+                                                            value ||
+                                                        item.sku
+                                                            .toLowerCase() ===
+                                                            normalized
+                                                    ),
+                                            );
+
+                                        if (variant) {
+                                            addFashionVariant(
+                                                product,
+                                                variant,
+                                            );
+
+                                            setSearchTerm(
+                                                "",
+                                            );
+
+                                            return;
+                                        }
+                                    }
+
+                                    /*
+                                     * 2. Exact master product barcode / SKU.
+                                     *
+                                     * Regular product:
+                                     * add directly.
+                                     *
+                                     * Style with variants:
+                                     * open variant selector.
+                                     */
+                                    const exactProduct =
+                                        products.find(
+                                            (product) =>
+                                                product.isActive &&
+                                                (
+                                                    product.barcode ===
+                                                        value ||
+                                                    product.sku
+                                                        .toLowerCase() ===
+                                                        normalized ||
+                                                    product.styleCode
+                                                        ?.toLowerCase() ===
+                                                        normalized
+                                                ),
+                                        );
+
+                                    if (exactProduct) {
+                                        handleProductSelection(
+                                            exactProduct,
+                                        );
+
+                                        setSearchTerm(
+                                            "",
+                                        );
+
+                                        return;
+                                    }
+
+                                    /*
+                                     * No exact code match:
+                                     * keep the value in the field so it
+                                     * continues working as normal search.
+                                     */
+                                }}
                                 autoFocus
                             />
 
@@ -1192,7 +1899,7 @@ function SalePage({
                                 filteredProducts
                             }
                             onSelectProduct={
-                                addProduct
+                                handleProductSelection
                             }
                         />
 
@@ -1273,6 +1980,7 @@ function SalePage({
                             </button>
                         </div>
                     </section>
+                    )}
 
                     <section className="sale-page__cart">
                         <CartPanel
@@ -1312,7 +2020,19 @@ function SalePage({
                             onSelectLine={
                                 setSelectedLineId
                             }
-                            onEditDescription={
+                            
+                            sellers={
+                                sellerAssignments
+                            }
+
+                            onChangeSellerForLine={
+                                changeSellerForLine
+                            }
+
+                            onChangeSellerFromLineToEnd={
+                                changeSellerFromLineToEnd
+                            }
+onEditDescription={
                                 editDescription
                             }
                             onCheckout={
@@ -1323,6 +2043,155 @@ function SalePage({
                 </div>
             </section>
 
+            {pendingProductForSeller && (
+                <div
+                    dir="rtl"
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        zIndex: 13000,
+                        display: "grid",
+                        placeItems: "center",
+                        padding: "24px",
+                        background:
+                            "rgba(15,23,42,.42)",
+                    }}
+                >
+                    <section
+                        style={{
+                            width:
+                                "min(440px, 94vw)",
+                            padding: "24px",
+                            borderRadius: "18px",
+                            background: "#fff",
+                            boxShadow:
+                                "0 24px 70px rgba(15,23,42,.22)",
+                        }}
+                    >
+                        <h2
+                            style={{
+                                margin:
+                                    "0 0 6px",
+                            }}
+                        >
+                            בחירת מוכרן
+                        </h2>
+
+                        <div
+                            style={{
+                                marginBottom:
+                                    "20px",
+                                opacity: .65,
+                            }}
+                        >
+                            יש לבחור מוכרן לפני הוספת הפריט
+                        </div>
+
+                        {activeSellers.length === 0 ? (
+                            <div>
+                                <strong>
+                                    אין מוכרנים בנוכחות
+                                </strong>
+
+                                <p>
+                                    יש לבצע כניסה בנוכחות עובדים לפני המשך המכירה.
+                                </p>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setPendingProductForSeller(
+                                            null,
+                                        )
+                                    }
+                                >
+                                    סגור
+                                </button>
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    display:
+                                        "grid",
+                                    gap:
+                                        "10px",
+                                }}
+                            >
+                                {activeSellers.map(
+                                    (employee) => (
+                                        <button
+                                            key={
+                                                employee.id
+                                            }
+                                            type="button"
+                                            onClick={() => {
+                                                setCurrentSellerId(
+                                                    employee.id,
+                                                );
+
+                                                setSellerSelectionMode(
+                                                    "explicit",
+                                                );
+
+                                                const product =
+                                                    pendingProductForSeller;
+
+                                                setPendingProductForSeller(
+                                                    null,
+                                                );
+
+                                                continueProductSelection(
+                                                    product,
+                                                );
+                                            }}
+                                            style={{
+                                                minHeight:
+                                                    "48px",
+                                                textAlign:
+                                                    "right",
+                                            }}
+                                        >
+                                            {
+                                                employee.name
+                                            }
+                                        </button>
+                                    ),
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setPendingProductForSeller(
+                                            null,
+                                        )
+                                    }
+                                >
+                                    ביטול
+                                </button>
+                            </div>
+                        )}
+                    </section>
+                </div>
+            )}
+
+            {selectedFashionProduct && (
+                <FashionVariantSelector
+                    product={
+                        selectedFashionProduct
+                    }
+                    onClose={() =>
+                        setSelectedFashionProduct(
+                            null,
+                        )
+                    }
+                    onSelect={(variant) =>
+                        addFashionVariant(
+                            selectedFashionProduct,
+                            variant,
+                        )
+                    }
+                />
+            )}
             {showTransactionDiscount && (
                 <TransactionDiscountDialog
                     currentPercentage={

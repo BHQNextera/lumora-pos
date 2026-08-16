@@ -156,7 +156,22 @@ function ReturnsPage({
                             kind: "return",
                             source: "catalog",
 
-                            product,
+                            product: {
+                                ...product,
+
+                                sku:
+                                    line.sku,
+
+                                barcode:
+                                    line.barcode,
+                            },
+
+                            variant:
+                                line.variant,
+
+
+                        seller:
+                            line.seller,
 
                             quantity,
 
@@ -293,6 +308,26 @@ function ReturnsPage({
                                             line.productName
                                         }
                                     </strong>
+
+                                    {line.variant && (
+                                        <span>
+                                            {
+                                                line.variant
+                                                    .color.name
+                                            }
+                                            {" / "}
+                                            {
+                                                line.variant
+                                                    .size.name
+                                            }
+                                            {" · "}
+                                            <span dir="ltr">
+                                                {
+                                                    line.sku
+                                                }
+                                            </span>
+                                        </span>
+                                    )}
 
                                     <span>
                                         נרכשו{" "}

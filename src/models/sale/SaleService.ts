@@ -253,6 +253,7 @@ function registerLinkedReturns(
 
 export type CompleteSaleOptions = {
     transactionId?: string;
+    shiftId?: string;
     coupon?: AppliedSaleCoupon;
 };
 
@@ -336,6 +337,9 @@ export function completeSale(
             determineTransactionType(
                 lines,
             ),
+
+        shiftId:
+            options.shiftId,
 
         customer,
 

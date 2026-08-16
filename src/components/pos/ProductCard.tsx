@@ -1,10 +1,10 @@
-﻿import {
+import {
     useState,
 } from "react";
 
 import {
-    posCapabilities,
-} from "../../config/posCapabilities";
+    getActiveBusinessOperatingProfile,
+} from "../../config/ActiveBusinessConfiguration";
 import type {
     Product,
 } from "../../types/product";
@@ -22,6 +22,10 @@ function ProductCard({
     product,
     onSelect,
 }: ProductCardProps) {
+    const posCapabilities =
+        getActiveBusinessOperatingProfile()
+            .pos;
+
     const [
         showInfo,
         setShowInfo,

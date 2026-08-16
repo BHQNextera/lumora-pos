@@ -1,4 +1,5 @@
 export type DocumentType =
+    | "tax_invoice"
     | "tax_invoice_receipt"
     | "receipt"
     | "tax_credit_invoice"

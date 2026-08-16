@@ -1,0 +1,216 @@
+﻿
+  src\components\layout\Sidebar.tsx:14:  onNavigate: (
+  src\components\layout\Sidebar.tsx:15:    view: AppView,
+  src\components\layout\Sidebar.tsx:16:  ) => void;
+  src\components\layout\Sidebar.tsx:17:
+> src\components\layout\Sidebar.tsx:18:  activeShift?: RegisterShift;
+  src\components\layout\Sidebar.tsx:19:
+> src\components\layout\Sidebar.tsx:20:  onOpenRegisterShift: () => void;
+  src\components\layout\Sidebar.tsx:21:};
+  src\components\layout\Sidebar.tsx:22:
+  src\components\layout\Sidebar.tsx:23:type SidebarItem = {
+  src\components\layout\Sidebar.tsx:24:  id: string;
+  src\components\layout\Sidebar.tsx:25:  label: string;
+  src\components\layout\Sidebar.tsx:26:  icon: string;
+  src\components\layout\Sidebar.tsx:27:  view?: AppView;
+  src\components\layout\Sidebar.tsx:28:  isVisible?: boolean;
+  src\components\layout\Sidebar.tsx:29:};
+  src\components\layout\Sidebar.tsx:30:
+  src\components\layout\Sidebar.tsx:31:function Sidebar({
+  src\components\layout\Sidebar.tsx:32:  activeView,
+  src\components\layout\Sidebar.tsx:33:  onNavigate,
+> src\components\layout\Sidebar.tsx:34:  activeShift,
+> src\components\layout\Sidebar.tsx:35:  onOpenRegisterShift,
+  src\components\layout\Sidebar.tsx:36:}: SidebarProps) {
+  src\components\layout\Sidebar.tsx:37:  const profile =
+  src\components\layout\Sidebar.tsx:38:    getActiveBusinessOperatingProfile();
+  src\components\layout\Sidebar.tsx:39:
+  src\components\layout\Sidebar.tsx:40:  const businessName =
+  src\components\layout\Sidebar.tsx:41:    profile.identity.tradingName ??
+  src\components\layout\Sidebar.tsx:42:    profile.identity.businessName;
+  src\components\layout\Sidebar.tsx:43:
+  src\components\layout\Sidebar.tsx:44:  const branchName =
+  src\components\layout\Sidebar.tsx:45:    profile.identity.branchName;
+  src\components\layout\Sidebar.tsx:46:
+  src\components\layout\Sidebar.tsx:47:  const navigationItems: SidebarItem[] = [
+  src\components\layout\Sidebar.tsx:48:    {
+  src\components\layout\Sidebar.tsx:49:      id: "sale",
+  src\components\layout\Sidebar.tsx:198:          },
+  src\components\layout\Sidebar.tsx:199:        )}
+  src\components\layout\Sidebar.tsx:200:      </nav>
+  src\components\layout\Sidebar.tsx:201:
+> src\components\layout\Sidebar.tsx:202:      <div className="pos-sidebar__footer">
+  src\components\layout\Sidebar.tsx:203:        <button
+  src\components\layout\Sidebar.tsx:204:          type="button"
+  src\components\layout\Sidebar.tsx:205:          className="pos-sidebar__drawer-button"
+  src\components\layout\Sidebar.tsx:206:        >
+  src\components\layout\Sidebar.tsx:207:          <span aria-hidden="true">
+  src\components\layout\Sidebar.tsx:208:            ▱
+  src\components\layout\Sidebar.tsx:209:          </span>
+> src\components\layout\Sidebar.tsx:210:          פתיחת מגירה
+  src\components\layout\Sidebar.tsx:211:        </button>
+  src\components\layout\Sidebar.tsx:212:
+> src\components\layout\Sidebar.tsx:213:        {activeShift ? (
+  src\components\layout\Sidebar.tsx:214:          <div className="pos-sidebar__shift-status">
+  src\components\layout\Sidebar.tsx:215:            <span aria-hidden="true" />
+> src\components\layout\Sidebar.tsx:216:            משמרת פתוחה · {
+> src\components\layout\Sidebar.tsx:217:              activeShift.openedBy.employeeName
+  src\components\layout\Sidebar.tsx:218:            }
+  src\components\layout\Sidebar.tsx:219:          </div>
+  src\components\layout\Sidebar.tsx:220:        ) : (
+  src\components\layout\Sidebar.tsx:221:          <button
+  src\components\layout\Sidebar.tsx:222:            type="button"
+  src\components\layout\Sidebar.tsx:223:            className="pos-sidebar__shift-status"
+  src\components\layout\Sidebar.tsx:224:            onClick={
+> src\components\layout\Sidebar.tsx:225:              onOpenRegisterShift
+  src\components\layout\Sidebar.tsx:226:            }
+  src\components\layout\Sidebar.tsx:227:          >
+  src\components\layout\Sidebar.tsx:228:            <span aria-hidden="true" />
+> src\components\layout\Sidebar.tsx:229:            פתיחת קופה
+  src\components\layout\Sidebar.tsx:230:          </button>
+  src\components\layout\Sidebar.tsx:231:        )}
+  src\components\layout\Sidebar.tsx:232:      </div>
+  src\components\layout\Sidebar.tsx:233:    </aside>
+  src\components\layout\Sidebar.tsx:234:  );
+  src\components\layout\Sidebar.tsx:235:}
+  src\components\layout\Sidebar.tsx:236:
+  src\components\layout\Sidebar.tsx:237:export default Sidebar;
+  src\layouts\AppShell.tsx:3:  useRef,
+  src\layouts\AppShell.tsx:4:  useState,
+  src\layouts\AppShell.tsx:5:} from "react";
+  src\layouts\AppShell.tsx:6:
+  src\layouts\AppShell.tsx:7:import Sidebar from "../components/layout/Sidebar";
+> src\layouts\AppShell.tsx:8:import OpenRegisterShiftDialog from "../components/shift/OpenRegisterShiftDialog";
+  src\layouts\AppShell.tsx:9:import StatusBar from "../components/layout/StatusBar";
+  src\layouts\AppShell.tsx:10:import {
+  src\layouts\AppShell.tsx:11:  getActiveRegisterShift,
+  src\layouts\AppShell.tsx:12:  openRegisterShift,
+  src\layouts\AppShell.tsx:13:} from "../models/shift/RegisterShiftRepository";
+  src\layouts\AppShell.tsx:14:import type {
+  src\layouts\AppShell.tsx:15:  RegisterShift,
+  src\layouts\AppShell.tsx:16:} from "../models/shift/RegisterShift";
+  src\layouts\AppShell.tsx:17:import {
+  src\layouts\AppShell.tsx:18:  findByDocumentNumber,
+  src\layouts\AppShell.tsx:19:} from "../models/document/DocumentLookupService";
+  src\layouts\AppShell.tsx:20:import type {
+  src\layouts\AppShell.tsx:21:  CartLine,
+  src\layouts\AppShell.tsx:22:} from "../models/sale/CartLine";
+  src\layouts\AppShell.tsx:23:import type {
+  src\layouts\AppShell.tsx:24:  Sale,
+  src\layouts\AppShell.tsx:25:} from "../models/sale/Sale";
+  src\layouts\AppShell.tsx:26:import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
+  src\layouts\AppShell.tsx:47:  scanId: number;
+  src\layouts\AppShell.tsx:48:};
+  src\layouts\AppShell.tsx:49:
+  src\layouts\AppShell.tsx:50:function AppShell() {
+  src\layouts\AppShell.tsx:51:  const [
+> src\layouts\AppShell.tsx:52:    activeShift,
+> src\layouts\AppShell.tsx:53:    setActiveShift,
+  src\layouts\AppShell.tsx:54:  ] =
+  src\layouts\AppShell.tsx:55:    useState<RegisterShift | undefined>(
+  src\layouts\AppShell.tsx:56:      () =>
+  src\layouts\AppShell.tsx:57:        getActiveRegisterShift(),
+  src\layouts\AppShell.tsx:58:    );
+  src\layouts\AppShell.tsx:59:
+  src\layouts\AppShell.tsx:60:  const [
+> src\layouts\AppShell.tsx:61:    showOpenShiftDialog,
+> src\layouts\AppShell.tsx:62:    setShowOpenShiftDialog,
+  src\layouts\AppShell.tsx:63:  ] =
+  src\layouts\AppShell.tsx:64:    useState(false);
+  src\layouts\AppShell.tsx:65:
+  src\layouts\AppShell.tsx:66:  const [
+  src\layouts\AppShell.tsx:67:    activeView,
+  src\layouts\AppShell.tsx:68:    setActiveView,
+  src\layouts\AppShell.tsx:69:  ] =
+  src\layouts\AppShell.tsx:70:    useState<AppView>(
+  src\layouts\AppShell.tsx:71:      "sale",
+  src\layouts\AppShell.tsx:72:    );
+  src\layouts\AppShell.tsx:73:
+  src\layouts\AppShell.tsx:74:  const [
+  src\layouts\AppShell.tsx:75:    pendingReturnLines,
+  src\layouts\AppShell.tsx:76:    setPendingReturnLines,
+  src\layouts\AppShell.tsx:77:  ] =
+  src\layouts\AppShell.tsx:78:    useState<CartLine[]>(
+  src\layouts\AppShell.tsx:79:      [],
+  src\layouts\AppShell.tsx:80:    );
+  src\layouts\AppShell.tsx:232:    );
+  src\layouts\AppShell.tsx:233:  };
+  src\layouts\AppShell.tsx:234:
+  src\layouts\AppShell.tsx:235:  return (
+  src\layouts\AppShell.tsx:236:    <div className="pos-app-shell">
+> src\layouts\AppShell.tsx:237:      <Sidebar
+  src\layouts\AppShell.tsx:238:        activeView={
+  src\layouts\AppShell.tsx:239:          activeView
+  src\layouts\AppShell.tsx:240:        }
+  src\layouts\AppShell.tsx:241:        onNavigate={
+  src\layouts\AppShell.tsx:242:          setActiveView
+  src\layouts\AppShell.tsx:243:        }
+> src\layouts\AppShell.tsx:244:        activeShift={
+> src\layouts\AppShell.tsx:245:          activeShift
+  src\layouts\AppShell.tsx:246:        }
+> src\layouts\AppShell.tsx:247:        onOpenRegisterShift={() =>
+> src\layouts\AppShell.tsx:248:          setShowOpenShiftDialog(
+  src\layouts\AppShell.tsx:249:            true,
+  src\layouts\AppShell.tsx:250:          )
+  src\layouts\AppShell.tsx:251:        }
+  src\layouts\AppShell.tsx:252:      />
+  src\layouts\AppShell.tsx:253:
+  src\layouts\AppShell.tsx:254:      <div
+  src\layouts\AppShell.tsx:255:        className="pos-app-shell__main"
+  src\layouts\AppShell.tsx:256:        dir="rtl"
+  src\layouts\AppShell.tsx:257:      >
+  src\layouts\AppShell.tsx:258:        <main className="pos-app-shell__workspace">
+  src\layouts\AppShell.tsx:259:          {activeView ===
+  src\layouts\AppShell.tsx:260:            "sale" && (
+  src\layouts\AppShell.tsx:261:            <SalePage
+  src\layouts\AppShell.tsx:262:              incomingReturnLines={
+  src\layouts\AppShell.tsx:263:                pendingReturnLines
+  src\layouts\AppShell.tsx:264:              }
+  src\layouts\AppShell.tsx:265:              onReturnLinesConsumed={() =>
+  src\layouts\AppShell.tsx:266:                setPendingReturnLines(
+  src\layouts\AppShell.tsx:315:            <ReportsPage />
+  src\layouts\AppShell.tsx:316:          )}
+  src\layouts\AppShell.tsx:317:        </main>
+  src\layouts\AppShell.tsx:318:
+  src\layouts\AppShell.tsx:319:        <StatusBar
+> src\layouts\AppShell.tsx:320:          activeShift={
+> src\layouts\AppShell.tsx:321:            activeShift
+  src\layouts\AppShell.tsx:322:          }
+  src\layouts\AppShell.tsx:323:        />
+  src\layouts\AppShell.tsx:324:      </div>
+  src\layouts\AppShell.tsx:325:
+> src\layouts\AppShell.tsx:326:      {showOpenShiftDialog && (
+> src\layouts\AppShell.tsx:327:        <OpenRegisterShiftDialog
+  src\layouts\AppShell.tsx:328:          onClose={() =>
+> src\layouts\AppShell.tsx:329:            setShowOpenShiftDialog(
+  src\layouts\AppShell.tsx:330:              false,
+  src\layouts\AppShell.tsx:331:            )
+  src\layouts\AppShell.tsx:332:          }
+  src\layouts\AppShell.tsx:333:          onOpen={(
+  src\layouts\AppShell.tsx:334:            employeeId,
+  src\layouts\AppShell.tsx:335:            employeeName,
+  src\layouts\AppShell.tsx:336:            openingCash,
+  src\layouts\AppShell.tsx:337:          ) => {
+  src\layouts\AppShell.tsx:338:            const shift =
+  src\layouts\AppShell.tsx:339:              openRegisterShift({
+  src\layouts\AppShell.tsx:340:                employeeId,
+  src\layouts\AppShell.tsx:341:                employeeName,
+  src\layouts\AppShell.tsx:342:                openingCash,
+  src\layouts\AppShell.tsx:343:              });
+  src\layouts\AppShell.tsx:344:
+> src\layouts\AppShell.tsx:345:            setActiveShift(
+  src\layouts\AppShell.tsx:346:              shift,
+  src\layouts\AppShell.tsx:347:            );
+  src\layouts\AppShell.tsx:348:
+> src\layouts\AppShell.tsx:349:            setShowOpenShiftDialog(
+  src\layouts\AppShell.tsx:350:              false,
+  src\layouts\AppShell.tsx:351:            );
+  src\layouts\AppShell.tsx:352:          }}
+  src\layouts\AppShell.tsx:353:        />
+  src\layouts\AppShell.tsx:354:      )}    </div>
+  src\layouts\AppShell.tsx:355:  );
+  src\layouts\AppShell.tsx:356:}
+  src\layouts\AppShell.tsx:357:
+  src\layouts\AppShell.tsx:358:export default AppShell;
+
+

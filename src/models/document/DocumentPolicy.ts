@@ -1,3 +1,6 @@
+import {
+    getActiveBusinessConfiguration,
+} from "../../config/ActiveBusinessConfiguration";
 import type {
     DocumentType,
 } from "./Document";
@@ -41,9 +44,15 @@ export type DocumentPolicy = {
     >;
 };
 
+const activeBusinessConfiguration =
+    getActiveBusinessConfiguration();
+
 export const currentRegister = {
-    storeCode: "01",
-    registerCode: "02",
+    storeCode:
+        activeBusinessConfiguration.storeCode,
+
+    registerCode:
+        activeBusinessConfiguration.registerCode,
 };
 
 const isPositive = (
@@ -165,7 +174,9 @@ export const documentPolicy:
             id:
                 "current-exchange-zero",
 
-            documentTypes: [],
+            documentTypes: [
+                "tax_invoice",
+            ],
 
             matches: (
                 context,
@@ -181,6 +192,13 @@ export const documentPolicy:
     ],
 
     documentTypes: {
+        tax_invoice: {
+            type:
+                "tax_invoice",
+            code:
+                "08",
+        },
+
         tax_invoice_receipt: {
             type:
                 "tax_invoice_receipt",

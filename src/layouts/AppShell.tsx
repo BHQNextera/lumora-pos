@@ -5,7 +5,22 @@ import {
 } from "react";
 
 import Sidebar from "../components/layout/Sidebar";
+import AttendancePanel from "../components/attendance/AttendancePanel";
+import ShiftXReportDialog from "../components/shift/ShiftXReportDialog";
+import CloseRegisterShiftDialog from "../components/shift/CloseRegisterShiftDialog";
+import OpenRegisterShiftDialog from "../components/shift/OpenRegisterShiftDialog";
 import StatusBar from "../components/layout/StatusBar";
+import {
+  getActiveRegisterShift,
+  closeRegisterShift,
+} from "../models/shift/RegisterShiftRepository";
+import type {
+  RegisterShift,
+} from "../models/shift/RegisterShift";
+import {
+  clockOutEmployee,
+  getPresentAttendance,
+} from "../models/attendance/AttendanceRepository";
 import {
   findByDocumentNumber,
 } from "../models/document/DocumentLookupService";
@@ -19,6 +34,7 @@ import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
 import ProductManagementPage from "../pages/products/ProductManagementPage";
 import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
 import SalePage from "../pages/sale/SalePage";
+import ReportsPage from "../pages/reports/ReportsPage";
 import GiftCardManagementPage from "../pages/stored-value/GiftCardManagementPage";
 import StoredValueManagementPage from "../pages/stored-value/StoredValueManagementPage";
 import TransactionsPage from "../pages/transactions/TransactionsPage";
@@ -30,7 +46,8 @@ export type AppView =
   | "customers"
   | "promotions"
   | "credits"
-  | "gift-cards";
+  | "gift-cards"
+  | "reports";
 
 type ScannedTransaction = {
   sale: Sale;
@@ -38,6 +55,21 @@ type ScannedTransaction = {
 };
 
 function AppShell() {
+  const [
+    activeShift,
+    setActiveShift,
+  ] =
+    useState<RegisterShift | undefined>(
+      () =>
+        getActiveRegisterShift(),
+    );
+
+  const [
+    showOpenShiftDialog,
+    setShowOpenShiftDialog,
+  ] =
+    useState(true);
+
   const [
     activeView,
     setActiveView,
@@ -207,6 +239,24 @@ function AppShell() {
     );
   };
 
+  const [
+    showAttendance,
+    setShowAttendance,
+  ] =
+    useState(false);
+
+  const [
+    showXReport,
+    setShowXReport,
+  ] =
+    useState(false);
+
+  const [
+    showCloseShift,
+    setShowCloseShift,
+  ] =
+    useState(false);
+
   return (
     <div className="pos-app-shell">
       <Sidebar
@@ -215,6 +265,29 @@ function AppShell() {
         }
         onNavigate={
           setActiveView
+        }
+        activeShift={
+          activeShift
+        }
+        onOpenRegisterShift={() =>
+          setShowOpenShiftDialog(
+            true,
+          )
+        }
+        onOpenAttendance={() =>
+          setShowAttendance(
+            true,
+          )
+        }
+        onOpenXReport={() =>
+          setShowXReport(
+            true,
+          )
+        }
+        onCloseRegisterShift={() =>
+          setShowCloseShift(
+            true,
+          )
         }
       />
 
@@ -278,11 +351,107 @@ function AppShell() {
             "gift-cards" && (
             <GiftCardManagementPage />
           )}
+          {activeView === "reports" && (
+            <ReportsPage />
+          )}
         </main>
 
-        <StatusBar />
+        <StatusBar
+          activeShift={
+            activeShift
+          }
+        />
       </div>
-    </div>
+
+      {showCloseShift && activeShift && (
+        <CloseRegisterShiftDialog
+          shift={
+            activeShift
+          }
+          onClose={() =>
+            setShowCloseShift(
+              false,
+            )
+          }
+          onConfirm={(closingCashDeclaration) => {
+            const present =
+              getPresentAttendance();
+
+            present.forEach(
+              (entry) => {
+                clockOutEmployee(
+                  entry.employeeId,
+                );
+              },
+            );
+
+            const closed =
+              closeRegisterShift({
+                employeeId:
+                  activeShift.openedBy.employeeId,
+
+                employeeName:
+                  activeShift.openedBy.employeeName,
+
+                closingCash:
+                  closingCashDeclaration.total,
+
+                closingCashDeclaration,
+              });
+
+            void closed;
+
+            setShowCloseShift(
+              false,
+            );
+
+            setActiveShift(
+              undefined,
+            );
+
+            setShowOpenShiftDialog(
+              true,
+            );
+          }}
+        />
+      )}
+
+      {showXReport && activeShift && (
+        <ShiftXReportDialog
+          shift={
+            activeShift
+          }
+          onClose={() =>
+            setShowXReport(
+              false,
+            )
+          }
+        />
+      )}
+
+      {showAttendance && (
+        <AttendancePanel
+          onClose={() =>
+            setShowAttendance(
+              false,
+            )
+          }
+        />
+      )}
+
+      {showOpenShiftDialog && (
+        <OpenRegisterShiftDialog
+          onEnter={(shift) => {
+            setActiveShift(
+              shift,
+            );
+
+            setShowOpenShiftDialog(
+              false,
+            );
+          }}
+        />
+      )}    </div>
   );
 }
 

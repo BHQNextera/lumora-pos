@@ -1,0 +1,315 @@
+﻿
+  src\pages\sale\SalePage.tsx:361:        });
+  src\pages\sale\SalePage.tsx:362:    };
+  src\pages\sale\SalePage.tsx:363:    const addFashionVariant = (
+  src\pages\sale\SalePage.tsx:364:        product: FashionProduct,
+> src\pages\sale\SalePage.tsx:365:        variant: ProductVariant,
+  src\pages\sale\SalePage.tsx:366:    ) => {
+  src\pages\sale\SalePage.tsx:367:        const variantProduct: Product = {
+  src\pages\sale\SalePage.tsx:368:            ...product,
+  src\pages\sale\SalePage.tsx:369:
+  src\pages\sale\SalePage.tsx:370:            price:
+  src\pages\sale\SalePage.tsx:371:                variant.price ??
+  src\pages\sale\SalePage.tsx:372:                product.price,
+  src\pages\sale\SalePage.tsx:373:
+> src\pages\sale\SalePage.tsx:374:            sku:
+  src\pages\sale\SalePage.tsx:375:                variant.sku,
+  src\pages\sale\SalePage.tsx:376:
+> src\pages\sale\SalePage.tsx:377:            barcode:
+  src\pages\sale\SalePage.tsx:378:                variant.barcode,
+  src\pages\sale\SalePage.tsx:379:
+  src\pages\sale\SalePage.tsx:380:            stockOnHand:
+  src\pages\sale\SalePage.tsx:381:                variant.stockOnHand,
+  src\pages\sale\SalePage.tsx:382:        };
+  src\pages\sale\SalePage.tsx:383:
+  src\pages\sale\SalePage.tsx:384:        updateCartLines(
+  src\pages\sale\SalePage.tsx:385:            (current) => {
+  src\pages\sale\SalePage.tsx:386:                const existing =
+  src\pages\sale\SalePage.tsx:387:                    current.find(
+  src\pages\sale\SalePage.tsx:429:
+  src\pages\sale\SalePage.tsx:430:                    product:
+  src\pages\sale\SalePage.tsx:431:                        variantProduct,
+  src\pages\sale\SalePage.tsx:432:
+> src\pages\sale\SalePage.tsx:433:                    variant: {
+  src\pages\sale\SalePage.tsx:434:                        variantId:
+  src\pages\sale\SalePage.tsx:435:                            variant.variantId,
+  src\pages\sale\SalePage.tsx:436:
+  src\pages\sale\SalePage.tsx:437:                        styleCode:
+  src\pages\sale\SalePage.tsx:438:                            variant.styleCode,
+  src\pages\sale\SalePage.tsx:439:
+  src\pages\sale\SalePage.tsx:440:                        color:
+  src\pages\sale\SalePage.tsx:441:                            variant.color,
+  src\pages\sale\SalePage.tsx:442:
+  src\pages\sale\SalePage.tsx:443:                        size:
+  src\pages\sale\SalePage.tsx:524:
+  src\pages\sale\SalePage.tsx:525:            imageUrl:
+  src\pages\sale\SalePage.tsx:526:                "",
+  src\pages\sale\SalePage.tsx:527:
+> src\pages\sale\SalePage.tsx:528:            barcode:
+  src\pages\sale\SalePage.tsx:529:                "",
+  src\pages\sale\SalePage.tsx:530:
+> src\pages\sale\SalePage.tsx:531:            sku:
+  src\pages\sale\SalePage.tsx:532:                `CALC-${productId}`,
+  src\pages\sale\SalePage.tsx:533:
+  src\pages\sale\SalePage.tsx:534:            isActive:
+  src\pages\sale\SalePage.tsx:535:                true,
+  src\pages\sale\SalePage.tsx:536:        };
+  src\pages\sale\SalePage.tsx:537:
+  src\pages\sale\SalePage.tsx:538:        const line: CartLine = {
+  src\pages\sale\SalePage.tsx:539:            id:
+  src\pages\sale\SalePage.tsx:540:                crypto.randomUUID(),
+  src\pages\sale\SalePage.tsx:541:
+  src\pages\sale\SalePage.tsx:852:            null,
+  src\pages\sale\SalePage.tsx:853:        );
+  src\pages\sale\SalePage.tsx:854:    };
+  src\pages\sale\SalePage.tsx:855:
+> src\pages\sale\SalePage.tsx:856:    const createSaleLines =
+  src\pages\sale\SalePage.tsx:857:        (): SaleLine[] =>
+  src\pages\sale\SalePage.tsx:858:            pricing.lines.map(
+  src\pages\sale\SalePage.tsx:859:                (line) => {
+  src\pages\sale\SalePage.tsx:860:                    const sign =
+  src\pages\sale\SalePage.tsx:861:                        line.kind ===
+  src\pages\sale\SalePage.tsx:862:                            "return"
+  src\pages\sale\SalePage.tsx:863:                            ? -1
+  src\pages\sale\SalePage.tsx:864:                            : 1;
+  src\pages\sale\SalePage.tsx:865:
+  src\pages\sale\SalePage.tsx:866:                    const gross =
+  src\pages\sale\SalePage.tsx:876:
+  src\pages\sale\SalePage.tsx:877:                        productId:
+  src\pages\sale\SalePage.tsx:878:                            line.product.id,
+  src\pages\sale\SalePage.tsx:879:
+> src\pages\sale\SalePage.tsx:880:                        productName:
+  src\pages\sale\SalePage.tsx:881:                            line.product.name,
+  src\pages\sale\SalePage.tsx:882:
+> src\pages\sale\SalePage.tsx:883:                        variant:
+  src\pages\sale\SalePage.tsx:884:                            line.variant,
+  src\pages\sale\SalePage.tsx:885:
+  src\pages\sale\SalePage.tsx:886:                        descriptionOverride:
+  src\pages\sale\SalePage.tsx:887:                            line.descriptionOverride,
+  src\pages\sale\SalePage.tsx:888:
+> src\pages\sale\SalePage.tsx:889:                        sku:
+  src\pages\sale\SalePage.tsx:890:                            line.product.sku,
+  src\pages\sale\SalePage.tsx:891:
+> src\pages\sale\SalePage.tsx:892:                        barcode:
+  src\pages\sale\SalePage.tsx:893:                            line.product.barcode,
+  src\pages\sale\SalePage.tsx:894:
+  src\pages\sale\SalePage.tsx:895:                        quantity:
+  src\pages\sale\SalePage.tsx:896:                            line.quantity,
+  src\pages\sale\SalePage.tsx:897:
+  src\pages\sale\SalePage.tsx:898:                        unitPrice:
+  src\pages\sale\SalePage.tsx:899:                            line.unitPrice,
+  src\pages\sale\SalePage.tsx:900:
+  src\pages\sale\SalePage.tsx:901:                        originalUnitPrice:
+  src\pages\sale\SalePage.tsx:902:                            line.originalUnitPrice,
+  src\pages\sale\SalePage.tsx:998:        }
+  src\pages\sale\SalePage.tsx:999:
+  src\pages\sale\SalePage.tsx:1000:        const sale =
+  src\pages\sale\SalePage.tsx:1001:            completeSale(
+> src\pages\sale\SalePage.tsx:1002:                createSaleLines(),
+  src\pages\sale\SalePage.tsx:1003:                payments,
+  src\pages\sale\SalePage.tsx:1004:                {
+  src\pages\sale\SalePage.tsx:1005:                    id:
+  src\pages\sale\SalePage.tsx:1006:                        selectedCustomer.id,
+  src\pages\sale\SalePage.tsx:1007:                    name:
+  src\pages\sale\SalePage.tsx:1008:                        selectedCustomer.name,
+  src\pages\sale\SalePage.tsx:1009:                    phone:
+  src\pages\sale\SalePage.tsx:1010:                        selectedCustomer.phone,
+  src\pages\sale\SalePage.tsx:1011:                    groupIds:
+  src\pages\sale\SalePage.tsx:1012:                        selectedCustomer.groupIds,
+  src\pages\sale\SalePage.tsx:1075:
+  src\pages\sale\SalePage.tsx:1076:    const transactionTotal =
+  src\pages\sale\SalePage.tsx:1077:        appliedCoupon
+  src\pages\sale\SalePage.tsx:1078:            ? totalAfterCoupon
+> src\pages\sale\SalePage.tsx:1079:            : createSaleLines().reduce(
+  src\pages\sale\SalePage.tsx:1080:                (
+  src\pages\sale\SalePage.tsx:1081:                    sum,
+  src\pages\sale\SalePage.tsx:1082:                    line,
+  src\pages\sale\SalePage.tsx:1083:                ) =>
+  src\pages\sale\SalePage.tsx:1084:                    sum +
+  src\pages\sale\SalePage.tsx:1085:                    line.netAmount,
+  src\pages\sale\SalePage.tsx:1086:                0,
+  src\pages\sale\SalePage.tsx:1087:            );
+  src\pages\sale\SalePage.tsx:1088:
+  src\pages\sale\SalePage.tsx:1089:    const handleCheckout = () => {
+  src\pages\transactions\TransactionDetailsPage.tsx:120:            );
+  src\pages\transactions\TransactionDetailsPage.tsx:121:        }
+  src\pages\transactions\TransactionDetailsPage.tsx:122:    }
+  src\pages\transactions\TransactionDetailsPage.tsx:123:
+> src\pages\transactions\TransactionDetailsPage.tsx:124:    const totalSoldQuantity = sale.lines
+  src\pages\transactions\TransactionDetailsPage.tsx:125:        .filter((line) => line.kind !== "return")
+  src\pages\transactions\TransactionDetailsPage.tsx:126:        .reduce(
+  src\pages\transactions\TransactionDetailsPage.tsx:127:            (sum, line) => sum + line.quantity,
+  src\pages\transactions\TransactionDetailsPage.tsx:128:            0,
+  src\pages\transactions\TransactionDetailsPage.tsx:129:        );
+  src\pages\transactions\TransactionDetailsPage.tsx:130:
+> src\pages\transactions\TransactionDetailsPage.tsx:131:    const totalReturnableQuantity = sale.lines
+  src\pages\transactions\TransactionDetailsPage.tsx:132:        .filter((line) => line.kind !== "return")
+  src\pages\transactions\TransactionDetailsPage.tsx:133:        .reduce((sum, line) => {
+  src\pages\transactions\TransactionDetailsPage.tsx:134:            const returned =
+  src\pages\transactions\TransactionDetailsPage.tsx:135:                returnedByLine.get(line.id) ?? 0;
+  src\pages\transactions\TransactionDetailsPage.tsx:136:
+  src\pages\transactions\TransactionDetailsPage.tsx:137:            return (
+  src\pages\transactions\TransactionDetailsPage.tsx:138:                sum +
+  src\pages\transactions\TransactionDetailsPage.tsx:139:                Math.max(
+  src\pages\transactions\TransactionDetailsPage.tsx:140:                    0,
+  src\pages\transactions\TransactionDetailsPage.tsx:141:                    line.quantity - returned,
+  src\pages\transactions\TransactionDetailsPage.tsx:225:                            <div>
+  src\pages\transactions\TransactionDetailsPage.tsx:226:                                <h2>פריטים</h2>
+  src\pages\transactions\TransactionDetailsPage.tsx:227:
+  src\pages\transactions\TransactionDetailsPage.tsx:228:                                <span>
+> src\pages\transactions\TransactionDetailsPage.tsx:229:                                    {sale.lines.reduce(
+  src\pages\transactions\TransactionDetailsPage.tsx:230:                                        (sum, line) =>
+  src\pages\transactions\TransactionDetailsPage.tsx:231:                                            sum + line.quantity,
+  src\pages\transactions\TransactionDetailsPage.tsx:232:                                        0,
+  src\pages\transactions\TransactionDetailsPage.tsx:233:                                    )}{" "}
+  src\pages\transactions\TransactionDetailsPage.tsx:234:                                    יחידות
+  src\pages\transactions\TransactionDetailsPage.tsx:235:                                </span>
+  src\pages\transactions\TransactionDetailsPage.tsx:236:                            </div>
+  src\pages\transactions\TransactionDetailsPage.tsx:237:                        </header>
+  src\pages\transactions\TransactionDetailsPage.tsx:238:
+  src\pages\transactions\TransactionDetailsPage.tsx:239:                        <div className="transaction-details-lines">
+> src\pages\transactions\TransactionDetailsPage.tsx:240:                            {sale.lines.map((line) => {
+  src\pages\transactions\TransactionDetailsPage.tsx:241:                                const returnedQuantity =
+  src\pages\transactions\TransactionDetailsPage.tsx:242:                                    returnedByLine.get(line.id) ?? 0;
+  src\pages\transactions\TransactionDetailsPage.tsx:243:
+  src\pages\transactions\TransactionDetailsPage.tsx:244:                                const remainingQuantity =
+  src\pages\transactions\TransactionDetailsPage.tsx:245:                                    line.kind === "return"
+  src\pages\transactions\TransactionDetailsPage.tsx:246:                                        ? 0
+  src\pages\transactions\TransactionDetailsPage.tsx:247:                                        : Math.max(
+  src\pages\transactions\TransactionDetailsPage.tsx:248:                                            0,
+  src\pages\transactions\TransactionDetailsPage.tsx:249:                                            line.quantity -
+  src\pages\transactions\TransactionDetailsPage.tsx:250:                                            returnedQuantity,
+  src\pages\transactions\TransactionDetailsPage.tsx:259:                                        key={line.id}
+  src\pages\transactions\TransactionDetailsPage.tsx:260:                                    >
+  src\pages\transactions\TransactionDetailsPage.tsx:261:                                        <div className="transaction-details-line__product">
+  src\pages\transactions\TransactionDetailsPage.tsx:262:                                            <strong>
+> src\pages\transactions\TransactionDetailsPage.tsx:263:                                                {line.productName}
+  src\pages\transactions\TransactionDetailsPage.tsx:264:                                            </strong>
+  src\pages\transactions\TransactionDetailsPage.tsx:265:
+  src\pages\transactions\TransactionDetailsPage.tsx:266:                                            <span>
+  src\pages\transactions\TransactionDetailsPage.tsx:267:                                                {line.kind === "return"
+  src\pages\transactions\TransactionDetailsPage.tsx:268:                                                    ? "החזרה · "
+  src\pages\transactions\TransactionDetailsPage.tsx:269:                                                    : ""}
+  src\pages\transactions\TransactionDetailsPage.tsx:270:                                                {line.quantity} × ₪
+  src\pages\transactions\TransactionDetailsPage.tsx:271:                                                {line.unitPrice.toFixed(2)}
+  src\pages\transactions\TransactionDetailsPage.tsx:272:                                            </span>
+  src\pages\transactions\TransactionDetailsPage.tsx:273:
+  src\pages\returns\ReturnsPage.tsx:83:            number
+  src\pages\returns\ReturnsPage.tsx:84:        > = {};
+  src\pages\returns\ReturnsPage.tsx:85:
+  src\pages\returns\ReturnsPage.tsx:86:        for (
+> src\pages\returns\ReturnsPage.tsx:87:            const line of sale.lines
+  src\pages\returns\ReturnsPage.tsx:88:        ) {
+  src\pages\returns\ReturnsPage.tsx:89:            if (
+  src\pages\returns\ReturnsPage.tsx:90:                line.kind ===
+  src\pages\returns\ReturnsPage.tsx:91:                "return"
+  src\pages\returns\ReturnsPage.tsx:92:            ) {
+  src\pages\returns\ReturnsPage.tsx:93:                continue;
+  src\pages\returns\ReturnsPage.tsx:94:            }
+  src\pages\returns\ReturnsPage.tsx:95:
+  src\pages\returns\ReturnsPage.tsx:96:            const alreadyReturned =
+  src\pages\returns\ReturnsPage.tsx:97:                returnedQuantityByLine[
+  src\pages\returns\ReturnsPage.tsx:111:
+  src\pages\returns\ReturnsPage.tsx:112:    const continueToCart =
+  src\pages\returns\ReturnsPage.tsx:113:        () => {
+  src\pages\returns\ReturnsPage.tsx:114:            const returnLines: CartLine[] =
+> src\pages\returns\ReturnsPage.tsx:115:                sale.lines
+  src\pages\returns\ReturnsPage.tsx:116:                    .filter(
+  src\pages\returns\ReturnsPage.tsx:117:                        (line) =>
+  src\pages\returns\ReturnsPage.tsx:118:                            line.kind !==
+  src\pages\returns\ReturnsPage.tsx:119:                            "return" &&
+  src\pages\returns\ReturnsPage.tsx:120:                            (quantities[
+  src\pages\returns\ReturnsPage.tsx:121:                                line.id
+  src\pages\returns\ReturnsPage.tsx:122:                            ] ?? 0) >
+  src\pages\returns\ReturnsPage.tsx:123:                            0,
+  src\pages\returns\ReturnsPage.tsx:124:                    )
+  src\pages\returns\ReturnsPage.tsx:125:                    .map((line) => {
+  src\pages\returns\ReturnsPage.tsx:249:                </button>
+  src\pages\returns\ReturnsPage.tsx:250:            </header>
+  src\pages\returns\ReturnsPage.tsx:251:
+  src\pages\returns\ReturnsPage.tsx:252:            <div className="returns-page__lines">
+> src\pages\returns\ReturnsPage.tsx:253:                {sale.lines
+  src\pages\returns\ReturnsPage.tsx:254:                    .filter(
+  src\pages\returns\ReturnsPage.tsx:255:                        (line) =>
+  src\pages\returns\ReturnsPage.tsx:256:                            line.kind !==
+  src\pages\returns\ReturnsPage.tsx:257:                            "return",
+  src\pages\returns\ReturnsPage.tsx:258:                    )
+  src\pages\returns\ReturnsPage.tsx:259:                    .map((line) => {
+  src\pages\returns\ReturnsPage.tsx:260:                        const alreadyReturned =
+  src\pages\returns\ReturnsPage.tsx:261:                            returnedQuantityByLine[
+  src\pages\returns\ReturnsPage.tsx:262:                            line.id
+  src\pages\returns\ReturnsPage.tsx:263:                            ] ?? 0;
+  src\pages\returns\ReturnsPage.tsx:289:                            >
+  src\pages\returns\ReturnsPage.tsx:290:                                <div>
+  src\pages\returns\ReturnsPage.tsx:291:                                    <strong>
+  src\pages\returns\ReturnsPage.tsx:292:                                        {
+> src\pages\returns\ReturnsPage.tsx:293:                                            line.productName
+  src\pages\returns\ReturnsPage.tsx:294:                                        }
+  src\pages\returns\ReturnsPage.tsx:295:                                    </strong>
+  src\pages\returns\ReturnsPage.tsx:296:
+  src\pages\returns\ReturnsPage.tsx:297:                                    <span>
+  src\pages\returns\ReturnsPage.tsx:298:                                        נרכשו{" "}
+  src\pages\returns\ReturnsPage.tsx:299:                                        {line.quantity}
+  src\pages\returns\ReturnsPage.tsx:300:                                        {" · "}
+  src\pages\returns\ReturnsPage.tsx:301:                                        כבר זוכו{" "}
+  src\pages\returns\ReturnsPage.tsx:302:                                        {
+  src\pages\returns\ReturnsPage.tsx:303:                                            alreadyReturned
+  src\models\document\AccountingDocumentMapper.ts:235:            phone:
+  src\models\document\AccountingDocumentMapper.ts:236:                sale.customer.phone,
+  src\models\document\AccountingDocumentMapper.ts:237:        },
+  src\models\document\AccountingDocumentMapper.ts:238:
+> src\models\document\AccountingDocumentMapper.ts:239:        lines:
+  src\models\document\AccountingDocumentMapper.ts:240:            sale.lines.map(
+  src\models\document\AccountingDocumentMapper.ts:241:                (line) => {
+  src\models\document\AccountingDocumentMapper.ts:242:                    const lineDiscountAmount =
+  src\models\document\AccountingDocumentMapper.ts:243:                        line.lineDiscountAmount;
+  src\models\document\AccountingDocumentMapper.ts:244:
+  src\models\document\AccountingDocumentMapper.ts:245:                    const allocatedSaleDiscountAmount =
+  src\models\document\AccountingDocumentMapper.ts:246:                        line.allocatedSaleDiscountAmount;
+  src\models\document\AccountingDocumentMapper.ts:247:
+  src\models\document\AccountingDocumentMapper.ts:248:                    return {
+  src\models\document\AccountingDocumentMapper.ts:249:                        id:
+  src\models\document\AccountingDocumentMapper.ts:251:
+  src\models\document\AccountingDocumentMapper.ts:252:                        kind:
+  src\models\document\AccountingDocumentMapper.ts:253:                            line.kind,
+  src\models\document\AccountingDocumentMapper.ts:254:
+> src\models\document\AccountingDocumentMapper.ts:255:                        productName:
+> src\models\document\AccountingDocumentMapper.ts:256:                            line.productName,
+  src\models\document\AccountingDocumentMapper.ts:257:
+  src\models\document\AccountingDocumentMapper.ts:258:                        description:
+  src\models\document\AccountingDocumentMapper.ts:259:                            line.descriptionOverride,
+  src\models\document\AccountingDocumentMapper.ts:260:
+> src\models\document\AccountingDocumentMapper.ts:261:                        sku:
+> src\models\document\AccountingDocumentMapper.ts:262:                            line.sku,
+  src\models\document\AccountingDocumentMapper.ts:263:
+> src\models\document\AccountingDocumentMapper.ts:264:                        barcode:
+> src\models\document\AccountingDocumentMapper.ts:265:                            line.barcode,
+  src\models\document\AccountingDocumentMapper.ts:266:
+  src\models\document\AccountingDocumentMapper.ts:267:                        quantity:
+  src\models\document\AccountingDocumentMapper.ts:268:                            line.quantity,
+  src\models\document\AccountingDocumentMapper.ts:269:
+  src\models\document\AccountingDocumentMapper.ts:270:                        unitPrice:
+  src\models\document\AccountingDocumentMapper.ts:271:                            line.unitPrice,
+  src\models\document\AccountingDocumentMapper.ts:272:
+  src\models\document\AccountingDocumentMapper.ts:273:                        grossAmount:
+  src\models\document\AccountingDocumentMapper.ts:274:                            line.grossAmount,
+  src\models\document\AccountingDocumentMapper.ts:275:
+  src\models\document\AccountingDocumentMapper.ts:354:                        payment.providerReference,
+  src\models\document\AccountingDocumentMapper.ts:355:                }),
+  src\models\document\AccountingDocumentMapper.ts:356:            ),
+  src\models\document\AccountingDocumentMapper.ts:357:
+> src\models\document\AccountingDocumentMapper.ts:358:        barcode: {
+  src\models\document\AccountingDocumentMapper.ts:359:            value:
+  src\models\document\AccountingDocumentMapper.ts:360:                document?.id ??
+  src\models\document\AccountingDocumentMapper.ts:361:                sale.id,
+  src\models\document\AccountingDocumentMapper.ts:362:
+  src\models\document\AccountingDocumentMapper.ts:363:            displayValue:
+  src\models\document\AccountingDocumentMapper.ts:364:                document?.number ??
+  src\models\document\AccountingDocumentMapper.ts:365:                sale.number,
+  src\models\document\AccountingDocumentMapper.ts:366:        },
+  src\models\document\AccountingDocumentMapper.ts:367:
+> src\models\document\AccountingDocumentMapper.ts:368:        legalLines: [],
+  src\models\document\AccountingDocumentMapper.ts:369:    };
+  src\models\document\AccountingDocumentMapper.ts:370:}
+
+

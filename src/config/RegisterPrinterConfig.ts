@@ -1,68 +1,52 @@
-﻿export type PrinterPaperFormat =
+import {
+    getActiveBusinessConfiguration,
+    getActiveRegisterProfile,
+} from "./ActiveBusinessConfiguration";
+
+export type PrinterPaperFormat =
     | "thermal80"
     | "thermal57";
 
 export type RegisterPrinterConfig = {
     storeCode: string;
     registerCode: string;
-
-    paperFormat:
-        PrinterPaperFormat;
+    paperFormat: PrinterPaperFormat;
 };
 
-/*
- * Installation-level printer configuration.
+/**
+ * Compatibility adapter.
  *
- * This is REGISTER-specific, not tenant-wide.
+ * Register/printer configuration no longer owns
+ * hard-coded register settings.
  *
- * A single business may operate:
- * - Register 01 with an 80mm printer
- * - Register 02 with an 80mm printer
- * - Register 03 with a 57mm printer
- *
- * The cashier never chooses the paper width
- * during the transaction.
+ * Identity comes from ActiveBusinessConfiguration.
+ * Hardware configuration comes from the active
+ * Business Operating Profile register.
  */
-const registerPrinterConfigs:
-    RegisterPrinterConfig[] = [
-    {
-        storeCode: "01",
-        registerCode: "02",
-        paperFormat: "thermal80",
-    },
-];
-
-const defaultPrinterConfig:
-    RegisterPrinterConfig = {
-    storeCode: "01",
-    registerCode: "02",
-    paperFormat: "thermal80",
-};
-
 export function getRegisterPrinterConfig(
     storeCode?: string,
     registerCode?: string,
 ): RegisterPrinterConfig {
-    if (
-        !storeCode ||
-        !registerCode
-    ) {
-        return defaultPrinterConfig;
-    }
+    const activeConfiguration =
+        getActiveBusinessConfiguration();
 
-    return (
-        registerPrinterConfigs.find(
-            (config) =>
-                config.storeCode ===
-                    storeCode &&
-                config.registerCode ===
-                    registerCode,
-        ) ??
-        {
-            ...defaultPrinterConfig,
-            storeCode,
-            registerCode,
-        }
-    );
+    const resolvedStoreCode =
+        storeCode ?? activeConfiguration.storeCode;
+
+    const resolvedRegisterCode =
+        registerCode ?? activeConfiguration.registerCode;
+
+    const activeRegister =
+        resolvedStoreCode === activeConfiguration.storeCode &&
+        resolvedRegisterCode === activeConfiguration.registerCode
+            ? getActiveRegisterProfile()
+            : undefined;
+
+    return {
+        storeCode: resolvedStoreCode,
+        registerCode: resolvedRegisterCode,
+        paperFormat:
+            activeRegister?.printer.paperFormat ??
+            "thermal80",
+    };
 }
-
