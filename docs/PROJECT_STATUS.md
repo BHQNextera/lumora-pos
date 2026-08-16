@@ -1021,9 +1021,9 @@ Do not begin Nextera replication, Echo integration, reporting, companion apps or
 
 ## Completed in this checkpoint
 
+### Register / attendance lifecycle
 - Product / Fashion variant transaction identity connected.
 - Variant identity preserved through cart, transactions and linked returns.
-- Reports foundation connected.
 - Seller foundation created with Shay and Kobi test employees.
 - Seller assignment supported per sale line.
 - Current seller persists for following items until changed.
@@ -1031,100 +1031,162 @@ Do not begin Nextera replication, Echo integration, reporting, companion apps or
 - Linked-document returns inherit the original seller.
 - Attendance foundation connected.
 - Attendance panel available inside the POS.
-- Available sellers now derive from employees currently in attendance.
-- Seller selection policy:
-  - 0 sellers present -> no seller available.
-  - 1 seller present -> selected automatically.
-  - 2+ sellers present -> explicit seller selection required.
+- Available sellers derive from employees currently in attendance.
+- Register access and attendance are separated:
+  opening / entering the register does not automatically make the employee an available seller.
 - Seller requirement enforcement connected:
-  a sale item cannot enter the cart without a seller when seller assignment is active.
+  a sale item cannot enter the cart without a seller when seller assignment is required.
 - Register Gate connected.
 - Existing open shift detection connected.
-- Returning to login / refreshing does not require a second opening declaration.
-- Register shift persistence uses localStorage as the current source of truth.
+- Refresh / return to login does not create a second opening declaration.
+- Register shift persistence currently uses localStorage.
 - Transactions are bound to the active shift using shiftId.
-- Shift transaction binding verified with transaction S-000054.
-- X Report foundation and viewer connected.
-- X report uses only transactions belonging to the active shift.
-- Exchange reporting rule connected:
-  positive exchange -> sale,
-  negative exchange -> return/credit,
-  zero exchange -> exchange.
-- Payment reporting terminology changed to transaction count.
-- Close Shift foundation connected.
-- Close Register flow connected.
-- Employees still in attendance are warned and clocked out during register close.
-- Cash Declaration domain model created.
-- ILS denomination foundation created.
-- Cash Declaration table created for banknotes and coins.
-- RegisterShift extended to preserve detailed opening/closing cash declarations.
-- Open Register Gate restored as a full clean component.
-- Opening flow supports denomination-based cash declaration.
 
-## Known issue
+### Cash declarations
+- Cash Declaration domain model completed.
+- ILS denomination foundation completed.
+- Opening declaration uses denomination-based counting.
+- Closing declaration uses denomination-based counting.
+- Opening and closing declaration snapshots preserved with the shift.
+- Expected cash calculation connected.
+- Declared closing cash and cash variance preserved.
 
-React currently reports:
+### X Report
+- X Report viewer connected.
+- X Report uses transactions belonging to the active shift.
+- Sales, returns, exchanges, discounts and payment totals included.
+- Thermal preview connected.
+- 57/58 mm profile verified.
+- 80/88 mm profile foundation available.
 
-Cannot update a component (SalePage) while rendering a different component (PricingProvider).
+### Z Report
+- Immutable ShiftZReport snapshot model created.
+- Z numbering created.
+- Z snapshot repository created.
+- Z generated from successfully closed shift data.
+- Z preserves:
+  register,
+  shift,
+  opening / closing employee,
+  timestamps,
+  transaction counts,
+  sales,
+  returns,
+  exchanges,
+  discounts,
+  payment totals,
+  cash payments,
+  opening declaration,
+  closing declaration,
+  expected cash,
+  cash variance.
+- Historical Z repository connected.
+- Z history viewer connected to Reports.
+- Historical Z viewing / reprint flow connected.
+- Z is shown on screen after closing before returning to register opening.
+- Thermal Z preview connected.
+- 57/58 mm thermal layout verified.
+- 80/88 mm profile foundation available.
 
-This is not blocking current development but must be resolved before release QA.
+### Thermal print foundation
+- Shared ThermalPrintDocument model created.
+- Shared ThermalPrintProfile created.
+- Thermal renderer created.
+- 57/58 mm layout profile created.
+- 80/88 mm layout profile created.
+- X and Z use the shared thermal renderer.
+- Browser print preview is the current test mechanism.
+- Physical printer integration intentionally deferred until test hardware exists.
+- Future hardware adapter must support ESC/POS or equivalent printer transport without changing report domain models.
+
+### Cash drawer foundation
+- CashDrawer domain model created.
+- CashDrawerAdapter contract created.
+- SimulatedCashDrawerAdapter created.
+- Drawer commands persist for test verification.
+- Drawer opening is independent from receipt printing.
+- Cash payment triggers drawer-open command immediately.
+- Split payment with cash triggers drawer-open command at the cash step, before transaction completion.
+- Cash change notification connected.
+- Closing register triggers drawer-open command before closing cash declaration.
+- Manual drawer-open button connected.
+- Current adapter status is simulated until physical printer / drawer hardware is available.
+- Future hardware adapter must support a drawer pulse through the printer without requiring a print job.
+
+### Pricing / React stability
+- Removed SalePage state updates from inside PricingProvider cart state updater callbacks.
+- Removed pricing-rule mutation from inside cart state updater.
+- React warning:
+  "Cannot update a component (SalePage) while rendering a different component (PricingProvider)"
+  is resolved.
+- Runtime test after hard refresh is clean.
+- Typecheck and production build are green.
+
+## External blockers
+
+### Credit transmission / SHVA
+- Deferred until a real test terminal or real provider sandbox/API is available.
+- Do not create fake credit transmission data that may not match the eventual terminal integration.
+- Credit transmission report remains:
+  BLOCKED — TEST TERMINAL / REAL INTEGRATION REQUIRED.
+
+### Physical printing
+- Thermal rendering foundation is complete.
+- Physical printer transport, ESC/POS, cutter and physical paper calibration are deferred until hardware is available.
 
 ## Remaining roadmap
 
-### 1. Register lifecycle completion
-- Verify denomination-based opening declaration end-to-end.
-- Verify denomination-based closing declaration end-to-end.
-- Preserve opening and closing declaration snapshots.
-- Calculate expected vs declared cash difference.
+### 1. Register operations completion
+- Cash in / cash out operational movements.
+- Controlled non-sale drawer operations and reasons.
+- Include cash movements in expected cash calculation.
+- Register operational audit history.
+- Manager authorization rules where required.
 
-### 2. Z Report
-- Create immutable Z Snapshot model.
-- Create Z numbering.
-- Generate Z automatically on register close.
-- Preserve register, shift, employee, sales, returns, discounts and payment totals.
-- Preserve opening and closing cash declarations.
-- Preserve expected cash and cash variance.
-- Historical Z repository.
-- Z history viewer.
-- Historical reprint.
-
-### 3. Credit transmission report
-- Generate automatically during register close.
-- Preserve immutable transmission snapshot.
-- Historical viewing and reprint.
-
-### 4. POS report printing
-- Shared report output architecture.
-- 57/58 mm printer layout.
-- 80/88 mm printer layout.
-- X printing.
-- Z printing.
-- Credit transmission printing.
-- Reprint support.
-
-### 5. Reports
+### 2. Reports
 - Complete seller report using net sales.
 - Returns linked to source transaction reduce original seller sales.
 - Multi-seller transaction reporting.
 - Date / time / register / employee / payment filters.
 - Current day remains default reporting period.
+- Continue report foundation without final visual polish.
 
-### 6. Attendance security
+### 3. Attendance security
 - Employee PIN / badge authentication.
 - Prevent buddy punching.
 - Manager override.
 - Attendance audit history.
 - Controlled retrospective corrections.
 
-### 7. Business policy configuration
+### 4. Business policy configuration
 - Seller required per transaction / line.
 - Customer required according to tenant policy.
 - Document policies.
 - Delivery channel priorities.
 - Register and employee policies.
+- Cash drawer and cash movement policies.
 
-### 8. Operational QA
+### 5. Payment / credit hardware integration
+- Test terminal integration.
+- Real credit payment flow.
+- Split payment with real terminal.
+- Cancel / retry / failure handling.
+- Credit transmission snapshot and report.
+- SHVA / provider-specific requirements only after real integration is available.
+
+### 6. Physical printer / drawer integration
+- Printer transport adapter.
+- ESC/POS or vendor adapter.
+- X physical printing.
+- Z physical printing.
+- Historical reprint.
+- Drawer pulse without print job.
+- Cutter support.
+- 58 / 80 mm physical calibration.
+
+### 7. Operational QA
 - Sale.
+- Seller enforcement.
 - Discounts and promotions.
 - Returns.
 - Exchanges.
@@ -1132,35 +1194,45 @@ This is not blocking current development but must be resolved before release QA.
 - Stored value.
 - Customers.
 - Register lifecycle.
+- Attendance.
+- Cash declarations.
 - X / Z.
-- Printing.
+- Cash drawer.
+- Split payments.
+- Printing preview.
 
-### 9. Integrations
+### 8. Integrations
 - Echo payment integration.
 - Optional Nextera back-office integration.
 - Generic API / replication layer.
 - Preserve Lumora standalone and offline operation.
 
-### 10. Offline / replication
+### 9. Offline / replication
 - Durable local persistence.
 - Queue and retry.
 - Synchronization.
 - Conflict handling.
 - Connectivity status.
 
-### 11. UI / design
+### 10. UI / design
 - Unified Lumora visual cleanup after functional flows stabilize.
-- RTL/LTR.
+- RTL / LTR.
 - Hebrew / English completion.
 - Greek readiness.
+- Final visual structure intentionally deferred until functional flows are stable.
 
-### 12. Release
+### 11. Release
 - Full regression.
-- Fix React warnings.
+- Console / runtime error pass.
 - Build optimization.
 - Demo environment.
 - Release candidate.
 
 ## Exact next action
 
-Build Z Snapshot Repository V1 and connect Z creation to successful register closing.
+Complete the current checkpoint and push it.
+
+After the checkpoint is preserved, continue with Cash Movement V1:
+cash in / cash out events during an active register shift, including amount, reason, employee, timestamp and effect on expected cash.
+
+Do not resume credit transmission or physical printer integration until real test hardware or a real provider sandbox is available.

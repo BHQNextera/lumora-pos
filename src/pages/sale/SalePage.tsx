@@ -463,8 +463,28 @@ function SalePage({
     const addProduct = (
         product: Product,
     ) => {
+        const existing =
+            pricing.lines.find(
+                (line) =>
+                    line.kind === "sale" &&
+                    line.source === "catalog" &&
+                    line.product.id ===
+                    product.id &&
+                    !line.descriptionOverride &&
+                    line.originalUnitPrice ===
+                    undefined,
+            );
+
+        const newLineId =
+            crypto.randomUUID();
+
+        setSelectedLineId(
+            existing?.id ??
+            newLineId,
+        );
+
         updateCartLines((current) => {
-            const existing =
+            const currentExisting =
                 current.find(
                     (line) =>
                         line.kind === "sale" &&
@@ -476,14 +496,10 @@ function SalePage({
                         undefined,
                 );
 
-            if (existing) {
-                setSelectedLineId(
-                    existing.id,
-                );
-
+            if (currentExisting) {
                 return current.map(
                     (line) =>
-                        line.id === existing.id
+                        line.id === currentExisting.id
                             ? {
                                 ...line,
                                 quantity:
@@ -495,7 +511,7 @@ function SalePage({
 
             const newLine: CartLine = {
                 id:
-                    crypto.randomUUID(),
+                    newLineId,
 
                 kind: "sale",
                 source: "catalog",
@@ -522,10 +538,6 @@ function SalePage({
                 allocatedSaleDiscountAmount:
                     0,
             };
-
-            setSelectedLineId(
-                newLine.id,
-            );
 
             return [
                 ...current,
@@ -554,9 +566,31 @@ function SalePage({
                 variant.stockOnHand,
         };
 
+        const existing =
+            pricing.lines.find(
+                (line) =>
+                    line.kind ===
+                        "sale" &&
+                    line.source ===
+                        "catalog" &&
+                    line.product.id ===
+                        product.id &&
+                    line.variant
+                        ?.variantId ===
+                        variant.variantId,
+            );
+
+        const newLineId =
+            crypto.randomUUID();
+
+        setSelectedLineId(
+            existing?.id ??
+            newLineId,
+        );
+
         updateCartLines(
             (current) => {
-                const existing =
+                const currentExisting =
                     current.find(
                         (line) =>
                             line.kind ===
@@ -570,15 +604,12 @@ function SalePage({
                                 variant.variantId,
                     );
 
-                if (existing) {
-                    setSelectedLineId(
-                        existing.id,
-                    );
+                if (currentExisting) {
 
                     return current.map(
                         (line) =>
                             line.id ===
-                                existing.id
+                                currentExisting.id
                                 ? {
                                     ...line,
                                     quantity:
@@ -592,7 +623,7 @@ function SalePage({
                 const line:
                     CartLine = {
                     id:
-                        crypto.randomUUID(),
+                        newLineId,
 
                     kind:
                         "sale",
@@ -641,9 +672,6 @@ function SalePage({
                         0,
                 };
 
-                setSelectedLineId(
-                    line.id,
-                );
 
                 return [
                     ...current,
@@ -817,6 +845,21 @@ function SalePage({
     const decreaseQuantity = (
         lineId: string,
     ) => {
+        const currentLine =
+            pricing.lines.find(
+                (line) =>
+                    line.id === lineId,
+            );
+
+        if (
+            currentLine &&
+            currentLine.quantity <= 1
+        ) {
+            removePricingRule(
+                `line-discount-${lineId}`,
+            );
+        }
+
         updateCartLines(
             (current) =>
                 current.flatMap(
@@ -830,9 +873,6 @@ function SalePage({
                         if (
                             line.quantity <= 1
                         ) {
-                            removePricingRule(
-                                `line-discount-${line.id}`,
-                            );
 
                             return [];
                         }
@@ -848,11 +888,6 @@ function SalePage({
                 ),
         );
 
-        const currentLine =
-            pricing.lines.find(
-                (line) =>
-                    line.id === lineId,
-            );
 
         if (
             currentLine &&

@@ -26,6 +26,8 @@ import {
     getActiveBusinessConfiguration,
 } from "../../config/ActiveBusinessConfiguration";
 
+import ShiftZHistory from "../../components/shift/ShiftZHistory";
+
 import "./reports-page.css";
 
 function ReportsPage() {
@@ -35,6 +37,17 @@ function ReportsPage() {
     ] =
         useState<ReportId>(
             "sales-summary",
+        );
+
+    const [
+        reportMode,
+        setReportMode,
+    ] =
+        useState<
+            "standard" |
+            "z-history"
+        >(
+            "standard",
         );
 
     const [
@@ -377,11 +390,15 @@ function ReportsPage() {
                                         ? "reports-page__report-button reports-page__report-button--active"
                                         : "reports-page__report-button"
                                 }
-                                onClick={() =>
+                                onClick={() => {
+                                    setReportMode(
+                                        "standard",
+                                    );
+
                                     setSelectedReportId(
                                         definition.id,
-                                    )
-                                }
+                                    );
+                                }}
                             >
                                 <strong>
                                     {
@@ -397,8 +414,37 @@ function ReportsPage() {
                             </button>
                         ),
                     )}
+
+                    <button
+                        type="button"
+                        className={
+                            reportMode ===
+                            "z-history"
+                                ? "reports-page__report-button reports-page__report-button--active"
+                                : "reports-page__report-button"
+                        }
+                        onClick={() =>
+                            setReportMode(
+                                "z-history",
+                            )
+                        }
+                    >
+                        <strong>
+                            היסטוריית Z
+                        </strong>
+
+                        <span>
+                            צפייה והדפסה חוזרת של דוחות סגירת קופה
+                        </span>
+                    </button>
                 </aside>
 
+                {reportMode ===
+                    "z-history" ? (
+                    <article className="reports-page__report">
+                        <ShiftZHistory />
+                    </article>
+                ) : (
                 <article className="reports-page__report">
                     <header>
                         <div>
@@ -530,6 +576,7 @@ function ReportsPage() {
                             </footer>
                         )}
                 </article>
+                )}
             </div>
         </section>
     );

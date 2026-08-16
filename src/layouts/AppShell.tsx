@@ -7,6 +7,7 @@ import {
 import Sidebar from "../components/layout/Sidebar";
 import AttendancePanel from "../components/attendance/AttendancePanel";
 import ShiftXReportDialog from "../components/shift/ShiftXReportDialog";
+import ShiftZReportDialog from "../components/shift/ShiftZReportDialog";
 import CloseRegisterShiftDialog from "../components/shift/CloseRegisterShiftDialog";
 import OpenRegisterShiftDialog from "../components/shift/OpenRegisterShiftDialog";
 import StatusBar from "../components/layout/StatusBar";
@@ -21,6 +22,18 @@ import {
   clockOutEmployee,
   getPresentAttendance,
 } from "../models/attendance/AttendanceRepository";
+
+import {
+  createShiftZReport,
+} from "../models/shift/ShiftZReportRepository";
+
+import {
+  requestCashDrawerOpen,
+} from "../models/drawer/CashDrawerService";
+
+import type {
+  ShiftZReport,
+} from "../models/shift/ShiftZReport";
 import {
   findByDocumentNumber,
 } from "../models/document/DocumentLookupService";
@@ -257,6 +270,14 @@ function AppShell() {
   ] =
     useState(false);
 
+  const [
+    completedZReport,
+    setCompletedZReport,
+  ] =
+    useState<ShiftZReport | null>(
+      null,
+    );
+
   return (
     <div className="pos-app-shell">
       <Sidebar
@@ -284,11 +305,15 @@ function AppShell() {
             true,
           )
         }
-        onCloseRegisterShift={() =>
+        onCloseRegisterShift={() => {
+          requestCashDrawerOpen(
+            "closing_count",
+          );
+
           setShowCloseShift(
             true,
-          )
-        }
+          );
+        }}
       />
 
       <div
@@ -399,7 +424,14 @@ function AppShell() {
                 closingCashDeclaration,
               });
 
-            void closed;
+            const zReport =
+              createShiftZReport(
+                closed,
+              );
+
+            setCompletedZReport(
+              zReport,
+            );
 
             setShowCloseShift(
               false,
@@ -407,10 +439,6 @@ function AppShell() {
 
             setActiveShift(
               undefined,
-            );
-
-            setShowOpenShiftDialog(
-              true,
             );
           }}
         />
@@ -439,7 +467,24 @@ function AppShell() {
         />
       )}
 
-      {showOpenShiftDialog && (
+      {completedZReport && (
+        <ShiftZReportDialog
+          report={
+            completedZReport
+          }
+          onClose={() => {
+            setCompletedZReport(
+              null,
+            );
+
+            setShowOpenShiftDialog(
+              true,
+            );
+          }}
+        />
+      )}
+
+      {showOpenShiftDialog && !completedZReport && (
         <OpenRegisterShiftDialog
           onEnter={(shift) => {
             setActiveShift(

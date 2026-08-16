@@ -7,12 +7,8 @@ import {
 } from "../../models/PaymentMethod";
 
 import type {
-    RegisterShift,
-} from "../../models/shift/RegisterShift";
-
-import {
-    generateShiftXReport,
-} from "../../models/shift/ShiftReportService";
+    ShiftZReport,
+} from "../../models/shift/ShiftZReport";
 
 import {
     openThermalPrintPreview,
@@ -30,8 +26,8 @@ import type {
     ThermalPrintDocument,
 } from "../../models/printing/ThermalPrintDocument";
 
-type ShiftXReportDialogProps = {
-    shift: RegisterShift;
+type ShiftZReportDialogProps = {
+    report: ShiftZReport;
     onClose: () => void;
 };
 
@@ -41,15 +37,10 @@ function money(
     return `₪${value.toFixed(2)}`;
 }
 
-function ShiftXReportDialog({
-    shift,
+function ShiftZReportDialog({
+    report,
     onClose,
-}: ShiftXReportDialogProps) {
-    const report =
-        generateShiftXReport(
-            shift,
-        );
-
+}: ShiftZReportDialogProps) {
     const [
         printProfileId,
         setPrintProfileId,
@@ -68,55 +59,65 @@ function ShiftXReportDialog({
 
     const createPrintDocument =
         (): ThermalPrintDocument => ({
-            id:
-                `x-${report.shiftId}-${report.generatedAt}`,
+            id: report.id,
 
             documentType:
-                "shift-x",
+                "shift-z",
 
             title:
-                `דוח X קופה ${report.registerCode}`,
+                `דוח Z ${report.number}`,
 
             direction:
                 "rtl",
 
             blocks: [
                 {
-                    type: "text",
-                    value: "LUMORA",
-                    bold: true,
-                    alignment: "center",
-                },
-                {
-                    type: "text",
-                    value: "דוח X",
-                    bold: true,
-                    alignment: "center",
-                },
-                {
-                    type: "text",
+                    type:
+                        "text",
                     value:
-                        new Date(
-                            report.generatedAt,
-                        ).toLocaleString(
-                            "he-IL",
-                        ),
-                    alignment: "center",
+                        "LUMORA",
+                    bold:
+                        true,
+                    alignment:
+                        "center",
+                },
+                {
+                    type:
+                        "text",
+                    value:
+                        "דוח Z",
+                    bold:
+                        true,
+                    alignment:
+                        "center",
+                },
+                {
+                    type:
+                        "text",
+                    value:
+                        report.number,
+                    alignment:
+                        "center",
                 },
 
                 {
-                    type: "separator",
+                    type:
+                        "separator",
                 },
 
                 {
-                    type: "row",
-                    label: "קופה",
+                    type:
+                        "row",
+                    label:
+                        "קופה",
                     value:
                         report.registerCode,
                 },
                 {
-                    type: "row",
-                    label: "נפתחה",
+                    type:
+                        "row",
+                    label:
+                        "פתיחה",
                     value:
                         new Date(
                             report.openedAt,
@@ -125,43 +126,76 @@ function ShiftXReportDialog({
                         ),
                 },
                 {
-                    type: "row",
-                    label: "פותח",
+                    type:
+                        "row",
+                    label:
+                        "סגירה",
                     value:
-                        report.openedBy.employeeName,
+                        new Date(
+                            report.closedAt,
+                        ).toLocaleString(
+                            "he-IL",
+                        ),
+                },
+                {
+                    type:
+                        "row",
+                    label:
+                        "פותח",
+                    value:
+                        report.openedBy
+                            .employeeName,
+                },
+                {
+                    type:
+                        "row",
+                    label:
+                        "סוגר",
+                    value:
+                        report.closedBy
+                            .employeeName,
                 },
 
                 {
-                    type: "separator",
+                    type:
+                        "separator",
                 },
 
                 {
-                    type: "row",
-                    label: "עסקאות",
+                    type:
+                        "row",
+                    label:
+                        "עסקאות",
                     value:
                         String(
                             report.transactionCount,
                         ),
                 },
                 {
-                    type: "row",
-                    label: "מספר מכירות",
+                    type:
+                        "row",
+                    label:
+                        "מכירות",
                     value:
                         String(
                             report.saleCount,
                         ),
                 },
                 {
-                    type: "row",
-                    label: "החזרות",
+                    type:
+                        "row",
+                    label:
+                        "החזרות",
                     value:
                         String(
                             report.returnCount,
                         ),
                 },
                 {
-                    type: "row",
-                    label: "החלפות",
+                    type:
+                        "row",
+                    label:
+                        "החלפות",
                     value:
                         String(
                             report.exchangeCount,
@@ -169,19 +203,23 @@ function ShiftXReportDialog({
                 },
 
                 {
-                    type: "separator",
+                    type:
+                        "separator",
                 },
 
                 {
-                    type: "row",
-                    label: "סה״כ מכירות",
+                    type:
+                        "row",
+                    label:
+                        "מכירות",
                     value:
                         money(
                             report.grossSales,
                         ),
                 },
                 {
-                    type: "row",
+                    type:
+                        "row",
                     label:
                         "החזרות / זיכויים",
                     value:
@@ -190,17 +228,22 @@ function ShiftXReportDialog({
                         ),
                 },
                 {
-                    type: "row",
-                    label: "מחזור נטו",
+                    type:
+                        "row",
+                    label:
+                        "מחזור נטו",
                     value:
                         money(
                             report.netSales,
                         ),
-                    bold: true,
+                    bold:
+                        true,
                 },
                 {
-                    type: "row",
-                    label: "הנחות",
+                    type:
+                        "row",
+                    label:
+                        "הנחות",
                     value:
                         money(
                             report.discountTotal,
@@ -208,7 +251,8 @@ function ShiftXReportDialog({
                 },
 
                 {
-                    type: "separator",
+                    type:
+                        "separator",
                 },
 
                 ...report.paymentTotals.flatMap(
@@ -229,26 +273,29 @@ function ShiftXReportDialog({
                             type:
                                 "text" as const,
                             value:
-                                `מספר עסקאות: ${payment.paymentCount}`,
+                                `${payment.paymentCount} עסקאות`,
                         },
                     ],
                 ),
 
                 {
-                    type: "separator",
+                    type:
+                        "separator",
                 },
 
                 {
-                    type: "row",
+                    type:
+                        "row",
                     label:
-                        "יתרת פתיחה",
+                        "הצהרת פתיחה",
                     value:
                         money(
                             report.openingCash,
                         ),
                 },
                 {
-                    type: "row",
+                    type:
+                        "row",
                     label:
                         "תקבולי מזומן",
                     value:
@@ -257,24 +304,48 @@ function ShiftXReportDialog({
                         ),
                 },
                 {
-                    type: "row",
+                    type:
+                        "row",
                     label:
-                        "מזומן צפוי בקופה",
+                        "מזומן צפוי",
                     value:
                         money(
                             report.expectedCash,
                         ),
-                    bold: true,
                 },
-
                 {
-                    type: "separator",
-                },
-
-                {
-                    type: "text",
+                    type:
+                        "row",
+                    label:
+                        "הצהרת סגירה",
                     value:
-                        "סוף דוח X",
+                        money(
+                            report.closingCash,
+                        ),
+                },
+                {
+                    type:
+                        "row",
+                    label:
+                        "הפרש מזומן",
+                    value:
+                        money(
+                            report.cashVariance,
+                        ),
+                    bold:
+                        true,
+                },
+
+                {
+                    type:
+                        "separator",
+                },
+
+                {
+                    type:
+                        "text",
+                    value:
+                        "סוף דוח Z",
                     alignment:
                         "center",
                 },
@@ -295,14 +366,20 @@ function ShiftXReportDialog({
         <div
             dir="rtl"
             style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 14000,
-                display: "grid",
-                placeItems: "center",
-                padding: "24px",
+                position:
+                    "fixed",
+                inset:
+                    0,
+                zIndex:
+                    16000,
+                display:
+                    "grid",
+                placeItems:
+                    "center",
+                padding:
+                    "24px",
                 background:
-                    "rgba(15,23,42,.42)",
+                    "rgba(15,23,42,.46)",
             }}
         >
             <section
@@ -310,7 +387,7 @@ function ShiftXReportDialog({
                     width:
                         "min(720px, 95vw)",
                     maxHeight:
-                        "88vh",
+                        "90vh",
                     overflow:
                         "auto",
                     padding:
@@ -323,10 +400,12 @@ function ShiftXReportDialog({
             >
                 <header
                     style={{
-                        display: "flex",
+                        display:
+                            "flex",
                         justifyContent:
                             "space-between",
-                        gap: "20px",
+                        gap:
+                            "20px",
                         marginBottom:
                             "22px",
                     }}
@@ -340,7 +419,7 @@ function ShiftXReportDialog({
                                     800,
                             }}
                         >
-                            X REPORT
+                            Z REPORT
                         </div>
 
                         <h2
@@ -349,34 +428,20 @@ function ShiftXReportDialog({
                                     "4px 0",
                             }}
                         >
-                            דוח X
+                            דוח Z
                         </h2>
 
                         <div>
+                            {
+                                report.number
+                            }
+                            {" · "}
                             קופה{" "}
                             {
                                 report.registerCode
                             }
-                            {" · "}
-                            נפתחה{" "}
-                            {
-                                new Date(
-                                    report.openedAt,
-                                ).toLocaleString(
-                                    "he-IL",
-                                )
-                            }
                         </div>
                     </div>
-
-                    <button
-                        type="button"
-                        onClick={
-                            onClose
-                        }
-                    >
-                        ✕
-                    </button>
                 </header>
 
                 <table
@@ -390,7 +455,61 @@ function ShiftXReportDialog({
                     <tbody>
                         <tr>
                             <td>
-                                עסקאות
+                                פתיחת משמרת
+                            </td>
+                            <td>
+                                {
+                                    new Date(
+                                        report.openedAt,
+                                    ).toLocaleString(
+                                        "he-IL",
+                                    )
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                סגירת משמרת
+                            </td>
+                            <td>
+                                {
+                                    new Date(
+                                        report.closedAt,
+                                    ).toLocaleString(
+                                        "he-IL",
+                                    )
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                פותח
+                            </td>
+                            <td>
+                                {
+                                    report.openedBy
+                                        .employeeName
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                סוגר
+                            </td>
+                            <td>
+                                {
+                                    report.closedBy
+                                        .employeeName
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                מספר עסקאות
                             </td>
                             <td>
                                 {
@@ -401,7 +520,7 @@ function ShiftXReportDialog({
 
                         <tr>
                             <td>
-                                מספר מכירות
+                                מכירות
                             </td>
                             <td>
                                 {
@@ -434,7 +553,7 @@ function ShiftXReportDialog({
 
                         <tr>
                             <td>
-                                סה״כ מכירות
+                                מכירות
                             </td>
                             <td>
                                 {
@@ -488,7 +607,7 @@ function ShiftXReportDialog({
 
                         <tr>
                             <td>
-                                יתרת פתיחה
+                                הצהרת פתיחה
                             </td>
                             <td>
                                 {
@@ -514,13 +633,39 @@ function ShiftXReportDialog({
 
                         <tr>
                             <td>
-                                מזומן צפוי בקופה
+                                מזומן צפוי
+                            </td>
+                            <td>
+                                {
+                                    money(
+                                        report.expectedCash,
+                                    )
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                הצהרת סגירה
+                            </td>
+                            <td>
+                                {
+                                    money(
+                                        report.closingCash,
+                                    )
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                הפרש מזומן
                             </td>
                             <td>
                                 <strong>
                                     {
                                         money(
-                                            report.expectedCash,
+                                            report.cashVariance,
                                         )
                                     }
                                 </strong>
@@ -624,13 +769,13 @@ function ShiftXReportDialog({
                         }}
                     >
                         <label
-                            htmlFor="x-paper-profile"
+                            htmlFor="z-paper-profile"
                         >
                             רוחב נייר
                         </label>
 
                         <select
-                            id="x-paper-profile"
+                            id="z-paper-profile"
                             value={
                                 printProfileId
                             }
@@ -691,4 +836,4 @@ function ShiftXReportDialog({
     );
 }
 
-export default ShiftXReportDialog;
+export default ShiftZReportDialog;

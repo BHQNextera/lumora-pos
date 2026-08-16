@@ -1,6 +1,10 @@
 import {
   getActiveBusinessOperatingProfile,
 } from "../../config/ActiveBusinessConfiguration";
+
+import {
+  requestCashDrawerOpen,
+} from "../../models/drawer/CashDrawerService";
 import type {
   AppView,
 } from "../../layouts/AppShell";
@@ -245,6 +249,11 @@ function Sidebar({
         <button
           type="button"
           className="pos-sidebar__drawer-button"
+          onClick={() => {
+            requestCashDrawerOpen(
+              "manual",
+            );
+          }}
         >
           <span aria-hidden="true">
             ▱

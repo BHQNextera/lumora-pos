@@ -12,10 +12,6 @@ import {
 } from "../../models/employee/EmployeeSeed";
 
 import {
-    clockInEmployee,
-} from "../../models/attendance/AttendanceRepository";
-
-import {
     getActiveRegisterShift,
     openRegisterShift,
 } from "../../models/shift/RegisterShiftRepository";
@@ -80,18 +76,6 @@ function OpenRegisterShiftDialog({
             return;
         }
 
-        /*
-         * Register gate also records attendance.
-         * Attendance remains independent from
-         * register ownership.
-         */
-        clockInEmployee({
-            employeeId:
-                selectedEmployee.id,
-
-            employeeName:
-                selectedEmployee.name,
-        });
 
         /*
          * An already-open register does not

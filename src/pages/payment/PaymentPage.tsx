@@ -5,6 +5,10 @@ import {
 
 import PaymentMethodRenderer from "../../components/payment/PaymentMethodRenderer";
 import PaymentSummary from "../../components/payment/PaymentSummary";
+
+import {
+    requestCashDrawerOpen,
+} from "../../models/drawer/CashDrawerService";
 import {
     getMonetaryValue,
 } from "../../models/monetary-value/MonetaryValueRepository";
@@ -119,10 +123,62 @@ function PaymentPage({
                 new Date().toISOString(),
         };
 
-        finalizeOrStore([
+        /*
+         * Drawer opening is triggered by the approved
+         * cash payment itself, not by receipt printing.
+         *
+         * This is important for split payments:
+         * cash may be accepted while the transaction
+         * remains open for another payment method.
+         */
+        requestCashDrawerOpen(
+            "cash_payment",
+        );
+
+        const nextPayments = [
             ...payments,
             payment,
-        ]);
+        ];
+
+        const nextTotals =
+            calculatePaymentTotals(
+                total,
+                nextPayments,
+            );
+
+        /*
+         * When change must be returned, preserve the
+         * payment immediately and stop on the change
+         * notice before continuing/completing.
+         */
+        if (
+            cashPayment.changeAmount >
+            0
+        ) {
+            setPayments(
+                nextPayments,
+            );
+
+            setPendingCompletionPayments(
+                nextTotals.isFullyPaid
+                    ? nextPayments
+                    : null,
+            );
+
+            setCashChangeNotice(
+                cashPayment.changeAmount,
+            );
+
+            setSelectedMethod(
+                null,
+            );
+
+            return;
+        }
+
+        finalizeOrStore(
+            nextPayments,
+        );
     };
 
     const addElectronicPayment = (
@@ -524,7 +580,7 @@ function PaymentPage({
 
             {cashChangeNotice !== null &&
                 noticeShell(
-                    "החזר במזומן",
+                    "עודף ללקוח",
                     <div
                         style={{
                             display: "flex",
@@ -539,7 +595,7 @@ function PaymentPage({
                         }}
                     >
                         <span>
-                            סכום להחזרה
+                            עודף להחזרה
                         </span>
 
                         <strong>
