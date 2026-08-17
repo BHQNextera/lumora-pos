@@ -1,10 +1,18 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
 import type {
     Sale,
 } from "../sale/Sale";
 
 import {
-    getRuntimeStorage,
-} from "../../runtime/storage";
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
 
 const STORAGE_KEY =
     "lumora.transactions";
@@ -19,9 +27,46 @@ let transactions:
     Sale[] = [];
 
 /*
+ * Transactions use platform-specific persistence:
+ *
+ * Browser development:
+ *     localStorage
+ *
+ * Tauri desktop runtime:
+ *     SQLite
+ *
+ * Customers and register shifts are intentionally
+ * NOT moved to SQLite yet.
+ */
+let transactionStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getTransactionStorage():
+Promise<RuntimeStorage> {
+    if (!transactionStoragePromise) {
+        transactionStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return transactionStoragePromise;
+}
+
+/*
  * Persistence writes are serialized so a later write cannot
- * overtake an earlier one when the runtime adapter becomes
- * truly asynchronous (SQLite, filesystem, etc.).
+ * overtake an earlier asynchronous SQLite write.
  */
 let persistenceQueue:
     Promise<void> =
@@ -50,7 +95,7 @@ function parseTransactions(
 export async function hydrateTransactions():
 Promise<void> {
     const storage =
-        getRuntimeStorage();
+        await getTransactionStorage();
 
     const raw =
         await storage.getItem(
@@ -71,7 +116,6 @@ function enqueuePersistence(
             .catch(() => {
                 /*
                  * Keep the queue usable after a failed write.
-                 * The original failure is logged below.
                  */
             })
             .then(operation);
@@ -89,9 +133,6 @@ function enqueuePersistence(
 function persistTransactions(
     nextTransactions: Sale[],
 ): void {
-    /*
-     * Snapshot now, not when the async operation later runs.
-     */
     const serialized =
         JSON.stringify(
             nextTransactions,
@@ -99,11 +140,13 @@ function persistTransactions(
 
     enqueuePersistence(
         async () => {
-            await getRuntimeStorage()
-                .setItem(
-                    STORAGE_KEY,
-                    serialized,
-                );
+            const storage =
+                await getTransactionStorage();
+
+            await storage.setItem(
+                STORAGE_KEY,
+                serialized,
+            );
         },
     );
 }
@@ -160,18 +203,16 @@ export function clearTransactions() {
 
     enqueuePersistence(
         async () => {
-            await getRuntimeStorage()
-                .removeItem(
-                    STORAGE_KEY,
-                );
+            const storage =
+                await getTransactionStorage();
+
+            await storage.removeItem(
+                STORAGE_KEY,
+            );
         },
     );
 }
 
-/*
- * Critical flows will use this later before declaring
- * durable completion when SQLite becomes the active adapter.
- */
 export async function flushTransactionPersistence():
 Promise<void> {
     await persistenceQueue;

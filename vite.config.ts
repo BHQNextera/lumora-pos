@@ -1,7 +1,29 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import {
+  defineConfig,
+} from "vite";
 
-// https://vite.dev/config/
+import react from "@vitejs/plugin-react";
+
 export default defineConfig({
-  plugins: [react()],
-})
+  plugins: [
+    react(),
+  ],
+
+  clearScreen: false,
+
+  server: {
+    port: 5173,
+    strictPort: true,
+
+    watch: {
+      /*
+       * Rust/Tauri build output lives below src-tauri.
+       * Vite must not watch it or Windows may report
+       * EBUSY while Cargo is compiling executables.
+       */
+      ignored: [
+        "**/src-tauri/**",
+      ],
+    },
+  },
+});

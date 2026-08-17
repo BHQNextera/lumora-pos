@@ -1579,3 +1579,215 @@ First:
 
 Do not migrate every repository at once.
 Prove SQLite durability with transactions first, then expand domain-by-domain.
+
+# Checkpoint — 2026-08-17 — Windows Runtime + SQLite Transactions V1
+
+## Completed in this checkpoint
+
+### Tauri Windows Runtime
+- Tauri V2 foundation connected to Lumora.
+- Windows desktop runtime smoke test passed.
+- Lumora launches as an independent Windows application window.
+- Existing POS UI loads successfully inside the Tauri runtime.
+- Rust/Cargo environment verified and available for Tauri development.
+
+### SQLite Runtime Foundation
+- Installed @tauri-apps/plugin-sql.
+- Installed Rust tauri-plugin-sql dependency.
+- Enabled SQLite feature only.
+- Added required SQL execute capability for the desktop runtime.
+- Added SQLiteRuntimeStorageAdapter implementing the existing RuntimeStorage contract.
+- SQLite database:
+  - sqlite:lumora.db
+- Runtime storage table created automatically:
+  - runtime_storage
+  - storage_key
+  - value
+  - updated_at
+
+### Transactions SQLite Migration
+- Transactions are the first domain migrated to production-style local SQLite persistence.
+- Existing synchronous TransactionRepository API remains unchanged.
+- Existing in-memory transaction cache remains unchanged.
+- Existing serialized persistence queue remains unchanged.
+- Browser runtime continues using BrowserLocalStorageAdapter.
+- Tauri Windows runtime uses SQLiteRuntimeStorageAdapter for Transactions only.
+- Customers and Register Shifts have intentionally NOT been migrated yet.
+- No broad repository migration was performed.
+
+### Runtime verification
+PASS:
+- TypeScript build.
+- Vite production build.
+- Tauri Windows boot with SQLite plugin.
+- New transaction created successfully inside Windows runtime.
+- Transaction visible immediately after completion.
+- Lumora closed completely.
+- Tauri runtime restarted.
+- Transaction remained available after full application restart.
+
+Result:
+
+TRANSACTIONS SQLITE RESTART GREEN
+
+This proves the first real durable local SQLite persistence path in Lumora.
+
+## Important scope decisions
+
+- Do not migrate every repository to SQLite at once.
+- Continue domain-by-domain.
+- Cash Movement History is deferred to post-Go-Live enhancements and is NOT a Pilot blocker.
+- Nextera and Echo remain outside the standalone Pilot dependency chain.
+- Physical printer / drawer certification and live credit integration remain hardware/provider dependent.
+- No new feature expansion during Go-Live hardening unless a real Pilot blocker is identified.
+
+## Current Go-Live position
+
+Lumora is beyond prototype.
+
+Working core includes:
+- Sale flow
+- Seller
+- Fashion variants
+- Discounts / promotions foundation
+- Returns / exchanges
+- Cash and split payments
+- Register / shift
+- Attendance
+- Opening and closing cash declarations
+- X / Z
+- Cash drawer foundation
+- Cash movements
+- Accounting document foundation
+- Thermal preview
+- Runtime hydration
+- Windows Tauri runtime
+- First SQLite-backed production persistence path
+
+## Pilot Definition of Done
+
+Controlled standalone Pilot Release:
+
+Open day
+-> real sale
+-> cash / split
+-> return / exchange
+-> cash movement
+-> X
+-> close register
+-> Z
+-> restart / reopen
+
+Required:
+- operational data survives restart,
+- trading-day state is not lost,
+- no active runtime/console blocker,
+- standalone operation does not depend on Nextera or Echo.
+
+## Remaining Go-Live blockers / roadmap
+
+### 1. Expand durable local persistence
+CURRENT NEXT AREA
+
+- Register Shift -> SQLite
+- Customers -> SQLite
+- Identify other Pilot-critical operational repositories still using browser persistence.
+- Migrate only Pilot-critical state.
+- Preserve existing domain APIs.
+
+### 2. Restart / recovery verification
+- Open shift survives complete application restart.
+- Active trading-day state survives restart.
+- Cash declarations survive restart.
+- Customer state survives restart.
+- Completed sales remain durable.
+- Z / closed-shift history remains durable.
+- No duplicate initialization after restart.
+- Verify controlled recovery from interrupted startup/write where practical.
+
+### 3. First-run / provisioning
+- Clean tenant identity.
+- Store identity.
+- Register identity.
+- Controlled predefined Pilot business profile.
+- Defined first-run state.
+- Reset / recovery path for Pilot environment.
+
+### 4. Core operational QA
+Full end-to-end regression:
+
+Sale
+-> Payment
+-> Return / Exchange
+-> Cash Movement
+-> X
+-> Register Close
+-> Z
+-> Restart
+-> Reopen
+
+Also verify:
+- variants,
+- discounts / promotions recalculation,
+- document numbering,
+- document policies,
+- seller assignment,
+- customer optional/required policy,
+- cash calculations.
+
+### 5. UI / RTL cleanup
+Blocker-level cleanup only:
+- negative currency RTL rendering,
+- dialog consistency,
+- critical layout defects,
+- Hebrew regression.
+
+Do not perform broad visual redesign before Pilot.
+
+### 6. Release hardening
+- Clean active console/runtime errors.
+- TypeScript PASS.
+- Production build PASS.
+- Tauri production build.
+- Controlled Pilot seed/configuration.
+- Recovery/reset procedure.
+- Release candidate checkpoint.
+
+### 7. Pilot acceptance
+Run complete real operating scenario on the Windows runtime.
+
+Fix blockers only.
+
+## Deferred / post-Pilot
+
+Unless they become real Pilot blockers:
+- Cash Movement History
+- Advanced audit UI
+- AI reports
+- Advanced BI
+- Detailed admin permissions
+- Nextera replication
+- Echo integration
+- Greek
+- Perfect visual polish
+- Physical printer integration
+- SHVA / live credit terminal integration
+- Advanced multi-register / multi-branch synchronization
+
+## Exact next action
+
+Migrate Register Shift persistence to SQLite as the second Pilot-critical domain.
+
+Before changing code:
+- inspect RegisterShiftRepository,
+- preserve its current synchronous API and hydration model,
+- do not modify Transactions,
+- do not migrate Customers in the same step.
+
+After implementation:
+- TypeScript build,
+- production build,
+- Windows runtime test,
+- open register,
+- fully restart Lumora,
+- verify the same active register shift is restored without requesting a second opening declaration.
