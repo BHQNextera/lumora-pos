@@ -1440,3 +1440,142 @@ After this checkpoint is pushed, build Cash Movement History V1:
 a register operational audit view showing every deposit and withdrawal with amount, reason, employee, note and timestamp.
 
 Do not resume SHVA or physical printer integration until real test hardware or a real provider sandbox is available.
+---
+
+# Checkpoint — 2026-08-17 — Runtime Storage + Customer Policy Foundation
+
+## Completed in this checkpoint
+
+### Runtime Storage Boundary V1
+- Added RuntimeStorage abstraction.
+- Added BrowserLocalStorageAdapter as temporary development adapter.
+- Added RuntimeStorageService with replaceable active storage adapter.
+- Runtime/domain repositories can now migrate away from direct browser localStorage access.
+- Boundary is asynchronous to support future SQLite / installed runtimes.
+
+### Startup Hydration V1
+- Added RuntimeBootstrap hydration registry.
+- Lumora now completes registered runtime hydration before rendering the POS UI.
+- Startup failures are caught before the operational POS is rendered.
+- Added explicit runtime hydrator registration.
+
+### Transaction runtime migration
+- TransactionRepository migrated from direct localStorage access to RuntimeStorage.
+- Added synchronous in-memory transaction cache.
+- Added asynchronous startup hydration.
+- Added serialized persistence queue.
+- Added persistence flush capability for future durable-completion boundaries.
+- Existing synchronous transaction API preserved for current POS flows.
+- Runtime verification passed:
+  - existing transactions survive hard refresh.
+  - newly completed transactions survive hard refresh.
+
+### Register shift runtime migration
+- RegisterShiftRepository migrated to RuntimeStorage.
+- Added synchronous shift cache.
+- Added startup hydration.
+- Added serialized persistence queue.
+- Added persistence flush capability.
+- Existing synchronous register lifecycle API preserved.
+- Runtime verification passed:
+  - open register shift survives hard refresh.
+  - Lumora does not incorrectly request a second opening declaration after restart.
+  - closing shift remains compatible with existing Z flow.
+
+### Customer runtime migration
+- CustomerRepository migrated to RuntimeStorage.
+- Added synchronous customer cache.
+- Added startup hydration.
+- Added serialized persistence queue.
+- Existing customer API preserved.
+- Customer edits / new customer data survive hard refresh.
+
+### Customer Policy V1
+- Added dedicated CustomerPolicy to BusinessOperatingProfile.
+- Policy is separate from feature/capability flags.
+- Current policy options:
+  - requireCustomerId
+  - requireCustomerBirthDate
+  - uniqueActivePhone
+  - uniqueActiveCustomerId
+- Defaults:
+  - customer ID required: true
+  - birth date required: false
+  - active phone unique: true
+  - active customer ID unique: true
+- Customer Policy connected to Calculator / Retail / Fashion profiles.
+
+### Customer validation
+- Added Israel-first phone normalization and validation.
+- Israeli +972 phone representation is normalized to local format.
+- Added Israeli ID normalization and checksum validation.
+- Active customer duplicate-ID protection added.
+- Active customer duplicate-phone protection added.
+- Validation is policy-driven rather than universally hard-coded.
+- Walk-in customer remains a system customer and is exempt from normal customer-master requirements.
+
+### Customer birth date
+- Added birthDate to Customer model.
+- Added birth-date validation.
+- Future dates are rejected.
+- Birth-date requirement is controlled by CustomerPolicy.
+- Customer management form supports entering/editing birth date.
+- Foundation is ready for future birthday-benefit / loyalty functionality.
+
+## Runtime architecture direction
+
+Target runtime sequence:
+
+Lumora Domain
+-> Runtime Storage Boundary
+-> Runtime Hydration / Cache
+-> Platform Storage Adapter
+-> SQLite
+
+Production direction:
+- Windows installed runtime first.
+- Android remains P1 after Windows foundation.
+- Same business/domain core across platforms.
+- Platform concerns remain behind adapters.
+
+## Important remaining production issue
+
+BrowserLocalStorageAdapter is still the active adapter.
+
+The new architecture provides the migration boundary, but production-critical persistence is not complete until SQLite becomes the active installed-runtime persistence implementation.
+
+Do not interpret the current RuntimeStorage migration as production database completion.
+
+## Go-Live blockers from current state
+
+1. SQLite / durable local database.
+2. Installed Windows runtime.
+3. Unprovisioned first-run state.
+4. Clean tenant/store/register provisioning.
+5. Customer onboarding / business setup flow.
+6. Startup/restart/crash recovery verification against SQLite.
+7. Remaining end-to-end operational QA.
+8. Release packaging.
+
+## Deferred / post-pilot items
+
+- Cash Movement History UI.
+- Advanced customer CRM.
+- Birthday campaign engine.
+- Advanced customer segmentation.
+- Nextera synchronization.
+- Android runtime implementation.
+- Advanced audit/report enhancements unless they become pilot blockers.
+
+## Exact next action
+
+Begin SQLite Runtime Foundation V1.
+
+First:
+- select/install the Windows runtime shell and SQLite adapter,
+- preserve RuntimeStorage as the application boundary,
+- create the first real SQLite-backed adapter,
+- migrate transactions through the new adapter without changing transaction-domain APIs.
+
+Do not migrate every repository at once.
+Prove SQLite durability with transactions first, then expand domain-by-domain.

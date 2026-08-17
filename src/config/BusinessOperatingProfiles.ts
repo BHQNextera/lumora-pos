@@ -1,4 +1,4 @@
-﻿import type {
+import type {
     BusinessOperatingProfile,
     OperatingModel,
 } from "./BusinessOperatingProfile";
@@ -130,6 +130,19 @@ function createProfile(
                     calculator:
                         true,
                 },
+                customerPolicy: {
+                    requireCustomerId:
+                        true,
+
+                    requireCustomerBirthDate:
+                        false,
+
+                    uniqueActivePhone:
+                        true,
+
+                    uniqueActiveCustomerId:
+                        true,
+                },
 
                 pos: {
                     catalogMode:
@@ -256,6 +269,19 @@ function createProfile(
                     calculator:
                         false,
                 },
+                customerPolicy: {
+                    requireCustomerId:
+                        true,
+
+                    requireCustomerBirthDate:
+                        false,
+
+                    uniqueActivePhone:
+                        true,
+
+                    uniqueActiveCustomerId:
+                        true,
+                },
 
                 pos: {
                     catalogMode:
@@ -379,6 +405,19 @@ function createProfile(
                         true,
 
                     calculator:
+                        true,
+                },
+                customerPolicy: {
+                    requireCustomerId:
+                        true,
+
+                    requireCustomerBirthDate:
+                        false,
+
+                    uniqueActivePhone:
+                        true,
+
+                    uniqueActiveCustomerId:
                         true,
                 },
 

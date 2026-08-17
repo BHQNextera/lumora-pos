@@ -32,6 +32,7 @@ type CustomerDraft = {
     phone: string;
     email: string;
     externalId: string;
+    birthDate: string;
     address: string;
     notes: string;
     groupIds: CustomerGroupId[];
@@ -44,6 +45,7 @@ const emptyDraft: CustomerDraft = {
     phone: "",
     email: "",
     externalId: "",
+    birthDate: "",
     address: "",
     notes: "",
     groupIds: [],
@@ -216,6 +218,9 @@ function CustomerManagementPage() {
             externalId:
                 customer.externalId ??
                 "",
+            birthDate:
+                customer.birthDate ??
+                "",
             address:
                 customer.address ??
                 "",
@@ -314,6 +319,10 @@ function CustomerManagementPage() {
                 draft.externalId.trim() ||
                 undefined,
 
+            birthDate:
+                draft.birthDate.trim() ||
+                undefined,
+
             address:
                 draft.address.trim() ||
                 undefined,
@@ -341,9 +350,88 @@ function CustomerManagementPage() {
                 now,
         };
 
-        saveCustomer(
-            customer,
-        );
+        try {
+            saveCustomer(
+                customer,
+            );
+        }
+        catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "";
+
+            if (
+                message ===
+                "CUSTOMER_INVALID_PHONE"
+            ) {
+                setError(
+                    "יש להזין מספר טלפון סלולרי ישראלי תקין.",
+                );
+                return;
+            }
+
+            if (
+                message ===
+                "CUSTOMER_ID_REQUIRED"
+            ) {
+                setError(
+                    "יש להזין ת״ז.",
+                );
+                return;
+            }
+
+            if (
+                message ===
+                "CUSTOMER_BIRTH_DATE_REQUIRED"
+            ) {
+                setError(
+                    "יש להזין תאריך לידה.",
+                );
+                return;
+            }
+
+            if (
+                message ===
+                "CUSTOMER_INVALID_BIRTH_DATE"
+            ) {
+                setError(
+                    "יש להזין תאריך לידה תקין.",
+                );
+                return;
+            }
+
+            if (
+                message ===
+                "CUSTOMER_ACTIVE_DUPLICATE_PHONE"
+            ) {
+                setError(
+                    "כבר קיים לקוח פעיל עם מספר טלפון זה.",
+                );
+                return;
+            }
+            if (
+                message ===
+                "CUSTOMER_INVALID_ISRAELI_ID"
+            ) {
+                setError(
+                    "יש להזין ת״ז ישראלית תקינה.",
+                );
+                return;
+            }
+
+            if (
+                message ===
+                "CUSTOMER_ACTIVE_DUPLICATE_ID"
+            ) {
+                setError(
+                    "כבר קיים לקוח פעיל עם ת״ז זו.",
+                );
+                return;
+            }
+
+            throw error;
+        }
 
         setCustomers(
             getCustomers() as ManagedCustomer[],
@@ -692,6 +780,32 @@ function CustomerManagementPage() {
                                             ) => ({
                                                 ...current,
                                                 externalId:
+                                                    event
+                                                        .target
+                                                        .value,
+                                            }),
+                                        )
+                                    }
+                                />
+                            </label>
+
+                            <label>
+                                תאריך לידה
+                                <input
+                                    type="date"
+                                    dir="ltr"
+                                    value={
+                                        draft.birthDate
+                                    }
+                                    onChange={(
+                                        event,
+                                    ) =>
+                                        setDraft(
+                                            (
+                                                current,
+                                            ) => ({
+                                                ...current,
+                                                birthDate:
                                                     event
                                                         .target
                                                         .value,

@@ -1,9 +1,15 @@
 import type {
     CashDeclaration,
 } from "../cash/CashDeclaration";
+
 import {
     getActiveBusinessConfiguration,
 } from "../../config/ActiveBusinessConfiguration";
+
+import {
+    getRuntimeStorage,
+} from "../../runtime/storage";
+
 import type {
     RegisterShift,
 } from "./RegisterShift";
@@ -11,27 +17,26 @@ import type {
 const STORAGE_KEY =
     "lumora.register-shifts";
 
-function loadShifts():
-RegisterShift[] {
+let shifts:
+    RegisterShift[] = [];
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function parseShifts(
+    raw: string | null,
+): RegisterShift[] {
+    if (!raw) {
+        return [];
+    }
+
     try {
-        const raw =
-            window.localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return [];
-        }
-
         const parsed =
-            JSON.parse(
-                raw,
-            );
+            JSON.parse(raw);
 
-        return Array.isArray(
-            parsed,
-        )
-            ? parsed
+        return Array.isArray(parsed)
+            ? parsed as RegisterShift[]
             : [];
     }
     catch {
@@ -39,26 +44,73 @@ RegisterShift[] {
     }
 }
 
+export async function hydrateRegisterShifts():
+Promise<void> {
+    const raw =
+        await getRuntimeStorage()
+            .getItem(
+                STORAGE_KEY,
+            );
+
+    shifts =
+        parseShifts(
+            raw,
+        );
+}
+
+function enqueuePersistence(
+    operation: () => Promise<void>,
+): void {
+    persistenceQueue =
+        persistenceQueue
+            .catch(() => {
+                /*
+                 * Keep later writes usable if
+                 * one persistence operation fails.
+                 */
+            })
+            .then(operation);
+
+    void persistenceQueue.catch(
+        (error) => {
+            console.error(
+                "LUMORA_REGISTER_SHIFT_PERSISTENCE_FAILED",
+                error,
+            );
+        },
+    );
+}
+
 function persist(
-    shifts: RegisterShift[],
-) {
-    window.localStorage.setItem(
-        STORAGE_KEY,
+    nextShifts: RegisterShift[],
+): void {
+    const serialized =
         JSON.stringify(
-            shifts,
-        ),
+            nextShifts,
+        );
+
+    enqueuePersistence(
+        async () => {
+            await getRuntimeStorage()
+                .setItem(
+                    STORAGE_KEY,
+                    serialized,
+                );
+        },
     );
 }
 
 export function getRegisterShifts() {
-    return loadShifts();
+    return [
+        ...shifts,
+    ];
 }
 
 export function getActiveRegisterShift() {
     const configuration =
         getActiveBusinessConfiguration();
 
-    return loadShifts().find(
+    return shifts.find(
         (shift) =>
             shift.status ===
                 "open" &&
@@ -140,13 +192,18 @@ export function openRegisterShift(
             input.openingCashDeclaration,
     };
 
-    persist([
+    shifts = [
         shift,
-        ...loadShifts(),
-    ]);
+        ...shifts,
+    ];
+
+    persist(
+        shifts,
+    );
 
     return shift;
 }
+
 export type CloseRegisterShiftInput = {
     employeeId: string;
     employeeName: string;
@@ -183,11 +240,12 @@ export function closeRegisterShift(
         new Date()
             .toISOString();
 
-    const closedShift = {
+    const closedShift:
+        RegisterShift = {
         ...activeShift,
 
         status:
-            "closed" as const,
+            "closed",
 
         closedAt:
             now,
@@ -207,8 +265,8 @@ export function closeRegisterShift(
             input.closingCashDeclaration,
     };
 
-    const nextShifts =
-        loadShifts().map(
+    shifts =
+        shifts.map(
             (shift) =>
                 shift.id ===
                     activeShift.id
@@ -217,8 +275,13 @@ export function closeRegisterShift(
         );
 
     persist(
-        nextShifts,
+        shifts,
     );
 
     return closedShift;
+}
+
+export async function flushRegisterShiftPersistence():
+Promise<void> {
+    await persistenceQueue;
 }

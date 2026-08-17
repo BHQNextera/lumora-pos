@@ -1,89 +1,196 @@
 import type {
     Customer,
 } from "./Customer";
+
 import {
     testCustomers,
 } from "./CustomerSeed";
 
+import {
+    getRuntimeStorage,
+} from "../../runtime/storage";
+
+import {
+    normalizeIsraeliId,
+    normalizeIsraeliPhone,
+    validateCustomerForSave,
+} from "./CustomerValidation";
+
 const STORAGE_KEY =
     "lumora.customers.v1";
 
-function readCustomers(): Customer[] {
+let customers:
+    Customer[] = [];
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function parseCustomers(
+    raw: string | null,
+): Customer[] {
+    if (!raw) {
+        return [
+            ...testCustomers,
+        ];
+    }
+
     try {
-        const raw =
-            localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return testCustomers;
-        }
-
         const parsed =
             JSON.parse(raw);
 
         return Array.isArray(parsed)
-            ? (parsed as Customer[])
-            : testCustomers;
-    } catch {
-        return testCustomers;
+            ? parsed as Customer[]
+            : [
+                  ...testCustomers,
+              ];
+    }
+    catch {
+        return [
+            ...testCustomers,
+        ];
     }
 }
 
-function writeCustomers(
-    customers: Customer[],
-) {
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(customers),
+export async function hydrateCustomers():
+Promise<void> {
+    const raw =
+        await getRuntimeStorage()
+            .getItem(
+                STORAGE_KEY,
+            );
+
+    customers =
+        parseCustomers(
+            raw,
+        );
+}
+
+function enqueuePersistence(
+    operation: () => Promise<void>,
+): void {
+    persistenceQueue =
+        persistenceQueue
+            .catch(() => {
+                /*
+                 * Keep the queue available
+                 * after a failed write.
+                 */
+            })
+            .then(operation);
+
+    void persistenceQueue.catch(
+        (error) => {
+            console.error(
+                "LUMORA_CUSTOMER_PERSISTENCE_FAILED",
+                error,
+            );
+        },
+    );
+}
+
+function persistCustomers(
+    nextCustomers:
+        Customer[],
+): void {
+    const serialized =
+        JSON.stringify(
+            nextCustomers,
+        );
+
+    enqueuePersistence(
+        async () => {
+            await getRuntimeStorage()
+                .setItem(
+                    STORAGE_KEY,
+                    serialized,
+                );
+        },
     );
 }
 
 export function getCustomers() {
-    return readCustomers();
+    return [
+        ...customers,
+    ];
 }
 
 export function saveCustomer(
     customer: Customer,
 ) {
-    const current =
-        readCustomers();
+    validateCustomerForSave(
+        customer,
+        customers,
+    );
+
+    const normalizedCustomer:
+        Customer = {
+        ...customer,
+
+        phone:
+            customer.id ===
+                "walk-in"
+                ? customer.phone
+                : normalizeIsraeliPhone(
+                      customer.phone!,
+                  ),
+
+        externalId:
+            customer.id ===
+                "walk-in"
+                ? customer.externalId
+                : customer.externalId
+                      ?.trim()
+                    ? normalizeIsraeliId(
+                          customer.externalId,
+                      )
+                    : undefined,
+    };
 
     const exists =
-        current.some(
+        customers.some(
             (item) =>
                 item.id ===
-                customer.id,
+                normalizedCustomer.id,
         );
 
-    const next =
+    customers =
         exists
-            ? current.map(
+            ? customers.map(
                   (item) =>
                       item.id ===
-                      customer.id
-                          ? customer
+                      normalizedCustomer.id
+                          ? normalizedCustomer
                           : item,
               )
             : [
-                  ...current,
-                  customer,
+                  ...customers,
+                  normalizedCustomer,
               ];
 
-    writeCustomers(next);
+    persistCustomers(
+        customers,
+    );
 
-    return customer;
+    return normalizedCustomer;
 }
 
 export function removeCustomer(
     customerId: string,
 ) {
-    const next =
-        readCustomers().filter(
+    customers =
+        customers.filter(
             (customer) =>
                 customer.id !==
                 customerId,
         );
 
-    writeCustomers(next);
+    persistCustomers(
+        customers,
+    );
+}
+
+export async function flushCustomerPersistence():
+Promise<void> {
+    await persistenceQueue;
 }

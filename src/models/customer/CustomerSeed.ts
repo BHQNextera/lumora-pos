@@ -8,24 +8,29 @@ export const testCustomers: Customer[] = [
         name: "לקוח מזדמן",
         groupIds: [],
         isClubMember: false,
+        isActive: true,
     },
     {
         id: "club-test",
         name: "לקוח מועדון טסט",
         phone: "0500000001",
+        externalId: "100000009",
         groupIds: [
             "club",
         ],
         isClubMember: true,
+        isActive: true,
     },
     {
         id: "vip-test",
         name: "לקוח VIP טסט",
         phone: "0500000002",
+        externalId: "100000017",
         groupIds: [
             "club",
             "vip",
         ],
         isClubMember: true,
+        isActive: true,
     },
 ];

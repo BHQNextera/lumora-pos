@@ -47,6 +47,30 @@ export type BusinessFeatures = {
     calculator: boolean;
 };
 
+export type CustomerPolicy = {
+    /*
+     * Israel-first default.
+     * Can be disabled per business during provisioning/onboarding.
+     */
+    requireCustomerId: boolean;
+
+    /*
+     * Useful for customer clubs / birthday benefits.
+     * Optional by default.
+     */
+    requireCustomerBirthDate: boolean;
+
+    /*
+     * Active customers may not share the same normalized phone.
+     */
+    uniqueActivePhone: boolean;
+
+    /*
+     * When an ID exists, active customers may not share it.
+     */
+    uniqueActiveCustomerId: boolean;
+};
+
 export type ProductOperatingProfile = {
     model:
         ProductModel;
@@ -124,6 +148,9 @@ export type BusinessOperatingProfile = {
 
     features:
         BusinessFeatures;
+
+    customerPolicy:
+        CustomerPolicy;
 
     pos:
         PosCapabilities;
@@ -229,6 +256,19 @@ export const defaultBusinessOperatingProfile:
             true,
 
         calculator:
+            true,
+    },
+    customerPolicy: {
+        requireCustomerId:
+            true,
+
+        requireCustomerBirthDate:
+            false,
+
+        uniqueActivePhone:
+            true,
+
+        uniqueActiveCustomerId:
             true,
     },
 
