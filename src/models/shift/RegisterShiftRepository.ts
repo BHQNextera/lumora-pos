@@ -1,3 +1,7 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
 import type {
     CashDeclaration,
 } from "../cash/CashDeclaration";
@@ -7,8 +11,12 @@ import {
 } from "../../config/ActiveBusinessConfiguration";
 
 import {
-    getRuntimeStorage,
-} from "../../runtime/storage";
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
 
 import type {
     RegisterShift,
@@ -19,6 +27,44 @@ const STORAGE_KEY =
 
 let shifts:
     RegisterShift[] = [];
+
+/*
+ * Register Shift platform persistence:
+ *
+ * Browser development:
+ *     localStorage
+ *
+ * Tauri desktop runtime:
+ *     SQLite
+ *
+ * Customers remain intentionally outside this
+ * SQLite migration step.
+ */
+let registerShiftStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getRegisterShiftStorage():
+Promise<RuntimeStorage> {
+    if (!registerShiftStoragePromise) {
+        registerShiftStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return registerShiftStoragePromise;
+}
 
 let persistenceQueue:
     Promise<void> =
@@ -46,11 +92,13 @@ function parseShifts(
 
 export async function hydrateRegisterShifts():
 Promise<void> {
+    const storage =
+        await getRegisterShiftStorage();
+
     const raw =
-        await getRuntimeStorage()
-            .getItem(
-                STORAGE_KEY,
-            );
+        await storage.getItem(
+            STORAGE_KEY,
+        );
 
     shifts =
         parseShifts(
@@ -91,11 +139,13 @@ function persist(
 
     enqueuePersistence(
         async () => {
-            await getRuntimeStorage()
-                .setItem(
-                    STORAGE_KEY,
-                    serialized,
-                );
+            const storage =
+                await getRegisterShiftStorage();
+
+            await storage.setItem(
+                STORAGE_KEY,
+                serialized,
+            );
         },
     );
 }

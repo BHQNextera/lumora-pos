@@ -1791,3 +1791,33 @@ After implementation:
 - open register,
 - fully restart Lumora,
 - verify the same active register shift is restored without requesting a second opening declaration.
+
+# Checkpoint — 2026-08-17 — Register Shift SQLite V1
+
+## Completed
+- RegisterShiftRepository migrated to platform-specific persistence.
+- Browser runtime continues using localStorage.
+- Tauri Windows runtime uses SQLite.
+- Existing synchronous Register Shift API preserved.
+- Customers were intentionally not migrated in this step.
+
+## Verified
+- TypeScript: PASS
+- Production build: PASS
+- Open register shift created in Windows runtime.
+- Lumora closed completely.
+- Windows runtime restarted.
+- Same active register shift restored.
+- No second opening declaration requested.
+
+Result:
+
+REGISTER SHIFT SQLITE RESTART GREEN
+
+## Exact next action
+Migrate Customers to SQLite as the next Pilot-critical runtime domain.
+
+Before changing code:
+- inspect CustomerRepository,
+- preserve current API and hydration behavior,
+- do not modify Transactions or Register Shift.
