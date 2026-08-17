@@ -195,3 +195,25 @@
     color: #a33d3d;
     font-size: 10px;
 }
+/* Go-Live fix: keep customer dialog actions reachable on desktop runtimes. */
+.customer-management__overlay {
+    padding: 16px;
+}
+
+.customer-management__dialog {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.customer-management__dialog header,
+.customer-management__dialog footer {
+    flex: 0 0 auto;
+}
+
+.customer-management__form {
+    min-height: 0;
+    overflow-y: auto;
+}

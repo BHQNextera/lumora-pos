@@ -1,3 +1,7 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
 import type {
     Customer,
 } from "./Customer";
@@ -7,8 +11,12 @@ import {
 } from "./CustomerSeed";
 
 import {
-    getRuntimeStorage,
-} from "../../runtime/storage";
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
 
 import {
     normalizeIsraeliId,
@@ -21,6 +29,41 @@ const STORAGE_KEY =
 
 let customers:
     Customer[] = [];
+
+/*
+ * Customer platform persistence:
+ *
+ * Browser development:
+ *     localStorage
+ *
+ * Tauri desktop runtime:
+ *     SQLite
+ */
+let customerStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getCustomerStorage():
+Promise<RuntimeStorage> {
+    if (!customerStoragePromise) {
+        customerStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return customerStoragePromise;
+}
 
 let persistenceQueue:
     Promise<void> =
@@ -54,11 +97,13 @@ function parseCustomers(
 
 export async function hydrateCustomers():
 Promise<void> {
+    const storage =
+        await getCustomerStorage();
+
     const raw =
-        await getRuntimeStorage()
-            .getItem(
-                STORAGE_KEY,
-            );
+        await storage.getItem(
+            STORAGE_KEY,
+        );
 
     customers =
         parseCustomers(
@@ -100,11 +145,13 @@ function persistCustomers(
 
     enqueuePersistence(
         async () => {
-            await getRuntimeStorage()
-                .setItem(
-                    STORAGE_KEY,
-                    serialized,
-                );
+            const storage =
+                await getCustomerStorage();
+
+            await storage.setItem(
+                STORAGE_KEY,
+                serialized,
+            );
         },
     );
 }

@@ -1821,3 +1821,34 @@ Before changing code:
 - inspect CustomerRepository,
 - preserve current API and hydration behavior,
 - do not modify Transactions or Register Shift.
+
+# Checkpoint — 2026-08-17 — Customers SQLite V1 + Customer Modal Go-Live Fix
+
+## Completed
+- CustomerRepository migrated to SQLite in Tauri Windows runtime.
+- Browser runtime continues using localStorage.
+- Existing customer API, validation and normalization preserved.
+- Customer modal now fits the Windows viewport.
+- Form scrolls internally and Save remains accessible.
+
+## Verified
+- TypeScript: PASS
+- Production build: PASS
+- Customer create/save: PASS
+- Full Lumora restart: PASS
+- Newly created customer remained available after restart.
+
+Result:
+
+CUSTOMERS SQLITE RESTART GREEN
+
+## Current durable SQLite domains
+- Transactions
+- Register Shift
+- Customers
+
+## Exact next action
+Audit remaining Pilot-critical repositories that still use browser/local persistence.
+
+Do not migrate everything automatically.
+Cash Movement History remains deferred and is not a Go-Live blocker.
