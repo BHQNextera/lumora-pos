@@ -1,8 +1,9 @@
-import {
+﻿import {
     useState,
 } from "react";
 
 import CashDeclarationTable from "../cash/CashDeclarationTable";
+
 import type {
     CashDeclaration,
 } from "../../models/cash/CashDeclaration";
@@ -21,7 +22,7 @@ type CloseRegisterShiftDialogProps = {
     onConfirm: (
         declaration:
             CashDeclaration,
-    ) => void;
+    ) => void | Promise<void>;
 
     onClose: () => void;
 };
@@ -33,6 +34,7 @@ function CloseRegisterShiftDialog({
 }: CloseRegisterShiftDialogProps) {
     const present =
         getPresentAttendance();
+
     const [
         closingCashDeclaration,
         setClosingCashDeclaration,
@@ -49,19 +51,59 @@ function CloseRegisterShiftDialog({
             null,
         );
 
-    const submit = () => {
-        if (!closingCashDeclaration) {
+    const [
+        isSubmitting,
+        setIsSubmitting,
+    ] =
+        useState(
+            false,
+        );
+
+    const submit =
+        async () => {
+            if (
+                !closingCashDeclaration ||
+                isSubmitting
+            ) {
+                if (
+                    !closingCashDeclaration
+                ) {
+                    setError(
+                        "יש לבצע הצהרת מזומן.",
+                    );
+                }
+
+                return;
+            }
+
             setError(
-                "יש לבצע הצהרת מזומן.",
+                null,
             );
 
-            return;
-        }
+            setIsSubmitting(
+                true,
+            );
 
-        onConfirm(
-            closingCashDeclaration,
-        );
-    };
+            try {
+                await onConfirm(
+                    closingCashDeclaration,
+                );
+            }
+            catch (submitError) {
+                console.error(
+                    "LUMORA_REGISTER_CLOSE_FAILED",
+                    submitError,
+                );
+
+                setError(
+                    "סגירת הקופה נכשלה. הקופה לא סומנה כסגורה.",
+                );
+
+                setIsSubmitting(
+                    false,
+                );
+            }
+        };
 
     return (
         <div
@@ -72,7 +114,7 @@ function CloseRegisterShiftDialog({
                 zIndex: 15000,
                 display: "grid",
                 placeItems: "center",
-                padding: "24px",
+                padding: "16px",
                 background:
                     "rgba(15,23,42,.44)",
             }}
@@ -81,100 +123,142 @@ function CloseRegisterShiftDialog({
                 style={{
                     width:
                         "min(500px, 94vw)",
-                    padding: "26px",
+                    maxHeight:
+                        "calc(100dvh - 32px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
                     borderRadius: "18px",
                     background: "#fff",
                 }}
             >
-                <h2>
-                    סגירת קופה
-                </h2>
+                <div
+                    style={{
+                        padding:
+                            "26px 26px 14px",
+                        flex: "0 0 auto",
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginTop: 0,
+                        }}
+                    >
+                        סגירת קופה
+                    </h2>
 
-                <div>
-                    קופה{" "}
-                    {
-                        shift.registerCode
-                    }
+                    <div>
+                        קופה{" "}
+                        {
+                            shift.registerCode
+                        }
+                    </div>
                 </div>
 
                 <div
                     style={{
-                        marginTop:
-                            "18px",
+                        minHeight: 0,
+                        overflowY: "auto",
+                        padding:
+                            "0 26px 20px",
                     }}
                 >
-                    <strong>
-                        הצהרת מזומן סוף יום
-                    </strong>
-
-                    <CashDeclarationTable
-                        onChange={(declaration) => {
-                            setClosingCashDeclaration(
-                                declaration,
-                            );
-
-                            setError(
-                                null,
-                            );
-                        }}
-                    />
-                </div>
-
-                {present.length > 0 && (
                     <div
                         style={{
-                            marginTop: "18px",
-                            padding: "12px",
-                            border:
-                                "1px solid #f59e0b",
-                            borderRadius: "10px",
+                            marginTop:
+                                "18px",
                         }}
                     >
                         <strong>
-                            קיימים עובדים בנוכחות
+                            הצהרת מזומן סוף יום
                         </strong>
 
+                        <CashDeclarationTable
+                            onChange={(declaration) => {
+                                if (
+                                    isSubmitting
+                                ) {
+                                    return;
+                                }
+
+                                setClosingCashDeclaration(
+                                    declaration,
+                                );
+
+                                setError(
+                                    null,
+                                );
+                            }}
+                        />
+                    </div>
+
+                    {present.length > 0 && (
                         <div
                             style={{
-                                marginTop: "6px",
+                                marginTop:
+                                    "18px",
+                                padding:
+                                    "12px",
+                                border:
+                                    "1px solid #f59e0b",
+                                borderRadius:
+                                    "10px",
                             }}
                         >
-                            סגירת הקופה תוציא אותם מנוכחות:
+                            <strong>
+                                קיימים עובדים בנוכחות
+                            </strong>
+
+                            <div
+                                style={{
+                                    marginTop:
+                                        "6px",
+                                }}
+                            >
+                                סגירת הקופה תוציא אותם מנוכחות:
+                            </div>
+
+                            <ul>
+                                {present.map(
+                                    (entry) => (
+                                        <li
+                                            key={
+                                                entry.id
+                                            }
+                                        >
+                                            {
+                                                entry.employeeName
+                                            }
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
                         </div>
+                    )}
 
-                        <ul>
-                            {present.map(
-                                (entry) => (
-                                    <li
-                                        key={
-                                            entry.id
-                                        }
-                                    >
-                                        {
-                                            entry.employeeName
-                                        }
-                                    </li>
-                                ),
-                            )}
-                        </ul>
-                    </div>
-                )}
-
-                {error && (
-                    <div
-                        style={{
-                            marginTop: "12px",
-                        }}
-                    >
-                        {error}
-                    </div>
-                )}
+                    {error && (
+                        <div
+                            style={{
+                                marginTop:
+                                    "12px",
+                            }}
+                        >
+                            {error}
+                        </div>
+                    )}
+                </div>
 
                 <div
                     style={{
                         display: "flex",
                         gap: "8px",
-                        marginTop: "20px",
+                        padding:
+                            "16px 26px 20px",
+                        borderTop:
+                            "1px solid #e5e7eb",
+                        background:
+                            "#fff",
+                        flex: "0 0 auto",
                     }}
                 >
                     <button
@@ -182,14 +266,24 @@ function CloseRegisterShiftDialog({
                         onClick={
                             submit
                         }
+                        disabled={
+                            isSubmitting
+                        }
                     >
-                        אישור וסגירת קופה
+                        {
+                            isSubmitting
+                                ? "שומר וסוגר..."
+                                : "אישור וסגירת קופה"
+                        }
                     </button>
 
                     <button
                         type="button"
                         onClick={
                             onClose
+                        }
+                        disabled={
+                            isSubmitting
                         }
                     >
                         ביטול

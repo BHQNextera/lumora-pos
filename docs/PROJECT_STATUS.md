@@ -1888,3 +1888,76 @@ CASH MOVEMENT SQLITE RESTART GREEN
 Audit Shift Z Report persistence and determine whether closed-shift/Z history is still dependent on browser localStorage.
 
 Do not change Z behavior before inspecting ShiftZReportRepository.
+
+# Checkpoint — 2026-08-18 — Durable Z Close + Z SQLite V1
+
+## Completed
+
+### Z SQLite persistence
+- ShiftZReportRepository migrated from direct localStorage access to runtime persistence.
+- Browser runtime continues using localStorage.
+- Tauri Windows runtime uses SQLite.
+- Z report history now uses synchronous in-memory cache with startup hydration.
+- Existing synchronous Z repository API preserved.
+- Z sequence persistence migrated together with Z history.
+- Z remains immutable per closed shift.
+- Added flushShiftZReportPersistence.
+
+### Durable end-of-day close
+- Close Register Shift flow is now asynchronous and guarded against duplicate submission.
+- Operator cannot cancel or submit twice while durable close is in progress.
+- Transactions and Cash Movements are flushed before closing the shift.
+- Closed Register Shift and Z snapshot are flushed before the UI exposes the close as complete.
+- Register-close failure remains visible to the operator instead of silently completing the UI flow.
+
+Durable close order:
+
+Transactions / Cash Movements flush
+-> Close Register Shift
+-> Create immutable Z
+-> Register Shift / Z flush
+-> Clock out present employees
+-> Complete UI close
+
+### Reports desktop runtime fix
+- Reports page now supports vertical scrolling in the Windows runtime.
+- Z history remains reachable on smaller desktop windows.
+- Print layout keeps normal overflow behavior.
+
+## Verified
+- TypeScript: PASS
+- Production build: PASS
+- Register close completed successfully.
+- Z created:
+  Z-01-02-000001
+- Lumora closed completely.
+- Windows runtime restarted.
+- Closed shift remained closed.
+- Z-01-02-000001 remained available in Z history after restart.
+- Z history scrolling verified in Windows runtime.
+
+Result:
+
+Z SQLITE RESTART GREEN
+
+## Current durable SQLite domains
+- Transactions
+- Register Shift
+- Customers
+- Cash Movements
+- Z Reports
+- Z sequence
+
+## Exact next action
+Continue the Pilot-critical persistence audit.
+
+Prioritize only state that can break the controlled Pilot flow after restart.
+
+Next candidates to inspect:
+- Accounting Documents + document numbering
+- Returns
+- Attendance
+- Active Business Configuration
+
+Do not migrate all remaining localStorage usage automatically.
+Cash Movement History remains deferred and is not a Go-Live blocker.

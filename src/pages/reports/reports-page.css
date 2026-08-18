@@ -106,3 +106,21 @@
         border: 0;
     }
 }
+/* Go-Live fix: reports must remain vertically reachable in desktop runtime. */
+.reports-page {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.reports-page__report {
+    min-height: 0;
+}
+
+@media print {
+    .reports-page {
+        height: auto;
+        overflow: visible;
+    }
+}

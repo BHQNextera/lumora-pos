@@ -15,6 +15,7 @@ import StatusBar from "../components/layout/StatusBar";
 import {
   getActiveRegisterShift,
   closeRegisterShift,
+  flushRegisterShiftPersistence,
 } from "../models/shift/RegisterShiftRepository";
 import type {
   RegisterShift,
@@ -26,7 +27,16 @@ import {
 
 import {
   createShiftZReport,
+  flushShiftZReportPersistence,
 } from "../models/shift/ShiftZReportRepository";
+
+import {
+  flushCashMovementPersistence,
+} from "../models/cash-movement/CashMovementRepository";
+
+import {
+  flushTransactionPersistence,
+} from "../models/transaction/TransactionRepository";
 
 import {
   requestCashDrawerOpen,
@@ -410,17 +420,15 @@ function AppShell() {
               false,
             )
           }
-          onConfirm={(closingCashDeclaration) => {
-            const present =
-              getPresentAttendance();
-
-            present.forEach(
-              (entry) => {
-                clockOutEmployee(
-                  entry.employeeId,
-                );
-              },
-            );
+          onConfirm={async (closingCashDeclaration) => {
+            /*
+             * Make sure all trading activity already queued for
+             * persistence is durable before closing the shift.
+             */
+            await Promise.all([
+              flushTransactionPersistence(),
+              flushCashMovementPersistence(),
+            ]);
 
             const closed =
               closeRegisterShift({
@@ -440,6 +448,27 @@ function AppShell() {
               createShiftZReport(
                 closed,
               );
+
+            /*
+             * A completed close is not exposed to the operator
+             * until the closed shift and immutable Z snapshot
+             * are durable.
+             */
+            await Promise.all([
+              flushRegisterShiftPersistence(),
+              flushShiftZReportPersistence(),
+            ]);
+
+            const present =
+              getPresentAttendance();
+
+            present.forEach(
+              (entry) => {
+                clockOutEmployee(
+                  entry.employeeId,
+                );
+              },
+            );
 
             setCompletedZReport(
               zReport,

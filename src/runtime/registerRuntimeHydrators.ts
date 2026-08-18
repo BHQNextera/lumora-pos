@@ -15,6 +15,10 @@ import {
 } from "../models/cash-movement/CashMovementRepository";
 
 import {
+    hydrateShiftZReports,
+} from "../models/shift/ShiftZReportRepository";
+
+import {
     registerRuntimeHydrator,
 } from "./RuntimeBootstrap";
 
@@ -47,5 +51,10 @@ void {
     registerRuntimeHydrator(
         "cash-movements",
         hydrateCashMovements,
+    );
+
+    registerRuntimeHydrator(
+        "shift-z-reports",
+        hydrateShiftZReports,
     );
 }

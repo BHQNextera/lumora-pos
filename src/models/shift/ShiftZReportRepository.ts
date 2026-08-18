@@ -1,6 +1,18 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
 import {
     getActiveBusinessConfiguration,
 } from "../../config/ActiveBusinessConfiguration";
+
+import {
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
 
 import type {
     RegisterShift,
@@ -20,6 +32,42 @@ const STORAGE_KEY =
 const SEQUENCE_KEY =
     "lumora.shift-z-report.sequence";
 
+let reports:
+    ShiftZReport[] = [];
+
+let nextSequence =
+    1;
+
+let shiftZStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getShiftZStorage():
+Promise<RuntimeStorage> {
+    if (!shiftZStoragePromise) {
+        shiftZStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return shiftZStoragePromise;
+}
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
 function roundMoney(
     value: number,
 ) {
@@ -31,18 +79,14 @@ function roundMoney(
     );
 }
 
-function loadReports():
-ShiftZReport[] {
+function parseReports(
+    raw: string | null,
+): ShiftZReport[] {
+    if (!raw) {
+        return [];
+    }
+
     try {
-        const raw =
-            window.localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return [];
-        }
-
         const parsed =
             JSON.parse(
                 raw,
@@ -51,7 +95,7 @@ ShiftZReport[] {
         return Array.isArray(
             parsed,
         )
-            ? parsed
+            ? parsed as ShiftZReport[]
             : [];
     }
     catch {
@@ -59,43 +103,115 @@ ShiftZReport[] {
     }
 }
 
-function persist(
-    reports: ShiftZReport[],
+function parseSequence(
+    raw: string | null,
 ) {
-    window.localStorage.setItem(
-        STORAGE_KEY,
+    const value =
+        Number(
+            raw ?? "1",
+        );
+
+    return (
+        Number.isFinite(
+            value,
+        ) &&
+        value > 0
+    )
+        ? Math.floor(
+              value,
+          )
+        : 1;
+}
+
+export async function hydrateShiftZReports():
+Promise<void> {
+    const storage =
+        await getShiftZStorage();
+
+    const [
+        rawReports,
+        rawSequence,
+    ] =
+        await Promise.all([
+            storage.getItem(
+                STORAGE_KEY,
+            ),
+            storage.getItem(
+                SEQUENCE_KEY,
+            ),
+        ]);
+
+    reports =
+        parseReports(
+            rawReports,
+        );
+
+    nextSequence =
+        parseSequence(
+            rawSequence,
+        );
+}
+
+function enqueuePersistence(
+    operation: () => Promise<void>,
+): void {
+    persistenceQueue =
+        persistenceQueue
+            .catch(() => {
+                /*
+                 * Keep later writes usable after
+                 * a failed persistence operation.
+                 */
+            })
+            .then(operation);
+
+    void persistenceQueue.catch(
+        (error) => {
+            console.error(
+                "LUMORA_SHIFT_Z_PERSISTENCE_FAILED",
+                error,
+            );
+        },
+    );
+}
+
+function persistState(): void {
+    const serializedReports =
         JSON.stringify(
             reports,
-        ),
+        );
+
+    const serializedSequence =
+        String(
+            nextSequence,
+        );
+
+    enqueuePersistence(
+        async () => {
+            const storage =
+                await getShiftZStorage();
+
+            await storage.setItem(
+                STORAGE_KEY,
+                serializedReports,
+            );
+
+            await storage.setItem(
+                SEQUENCE_KEY,
+                serializedSequence,
+            );
+        },
     );
 }
 
 function getNextSequence() {
     const current =
-        Number(
-            window.localStorage.getItem(
-                SEQUENCE_KEY,
-            ) ?? "1",
-        );
+        nextSequence;
 
-    const safeCurrent =
-        Number.isFinite(
-            current,
-        ) &&
-        current > 0
-            ? Math.floor(
-                current,
-            )
-            : 1;
+    nextSequence +=
+        1;
 
-    window.localStorage.setItem(
-        SEQUENCE_KEY,
-        String(
-            safeCurrent + 1,
-        ),
-    );
-
-    return safeCurrent;
+    return current;
 }
 
 function createZNumber() {
@@ -120,7 +236,7 @@ function createZNumber() {
 
 export function getShiftZReports() {
     return [
-        ...loadReports(),
+        ...reports,
     ];
 }
 
@@ -128,7 +244,7 @@ export function getShiftZReportById(
     id: string,
 ) {
     return (
-        loadReports().find(
+        reports.find(
             (report) =>
                 report.id === id,
         ) ?? null
@@ -139,7 +255,7 @@ export function getShiftZReportByShiftId(
     shiftId: string,
 ) {
     return (
-        loadReports().find(
+        reports.find(
             (report) =>
                 report.shiftId ===
                     shiftId,
@@ -175,14 +291,6 @@ export function createShiftZReport(
         );
     }
 
-    /*
-     * Reuse the proven shift aggregation
-     * rules currently used by X.
-     *
-     * The resulting values are copied into
-     * the Z snapshot and will never be
-     * recalculated when viewing history.
-     */
     const summary =
         generateShiftXReport(
             shift,
@@ -291,10 +399,17 @@ export function createShiftZReport(
             ),
     };
 
-    persist([
+    reports = [
         report,
-        ...loadReports(),
-    ]);
+        ...reports,
+    ];
+
+    persistState();
 
     return report;
+}
+
+export async function flushShiftZReportPersistence():
+Promise<void> {
+    await persistenceQueue;
 }
