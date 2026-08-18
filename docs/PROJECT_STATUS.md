@@ -1986,3 +1986,28 @@ Validation:
 
 Go-Live sequence remains:
 Durability -> End-to-End Functional QA -> UI/UX Polish -> Release Hardening -> Pilot.
+
+# Checkpoint — 2026-08-18 — Sale + Document + Return Durability V1
+
+Completed:
+- Sale numbering moved to runtime storage / SQLite in Tauri.
+- Accounting document numbering moved to runtime storage / SQLite in Tauri.
+- Accounting documents and document output events moved to runtime storage / SQLite in Tauri.
+- Returns moved to runtime storage / SQLite in Tauri.
+- Added startup hydration for sale numbering, document numbering, documents and returns.
+- Sale completion is now async and waits for durable persistence before completion UI.
+- Transaction, return linkage, accounting documents and allocated numbering are flushed before the sale is considered complete.
+- Legacy Tauri WebView localStorage compatibility migration added for newly migrated domains.
+
+Validation:
+- TypeScript: GREEN
+- Production build: GREEN
+- git diff --check: GREEN
+- Sale restart durability: GREEN
+- Sale sequence continuity after restart: GREEN
+- Accounting document restart durability: GREEN
+- Accounting document numbering continuity after restart: GREEN
+- Return restart durability and original-document linkage: GREEN
+
+Go-Live sequence remains:
+Durability -> End-to-End Functional QA -> UI/UX Polish -> Release Hardening -> Pilot.
