@@ -1,9 +1,23 @@
 import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
+import {
+    BrowserLocalStorageAdapter,
+} from "../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../runtime/storage/RuntimeStorage";
+
+import {
     getBusinessOperatingProfile,
 } from "./BusinessOperatingProfiles";
+
 import type {
     BusinessOperatingProfile,
 } from "./BusinessOperatingProfile";
+
 import type {
     BusinessOperatingProfileId,
 } from "./BusinessOperatingProfiles";
@@ -30,34 +44,67 @@ const STORAGE_KEY =
 
 const defaultConfiguration:
     ActiveBusinessConfiguration = {
-    tenantId:
-        "coffee-time-demo",
+        tenantId:
+            "coffee-time-demo",
 
-    storeCode:
-        "01",
+        storeCode:
+            "01",
 
-    registerCode:
-        "02",
+        registerCode:
+            "02",
 
-    profileId:
-        "retail",
+        profileId:
+            "retail",
 
-    source:
-        "local",
-};
+        source:
+            "local",
+    };
 
-function loadConfiguration():
-    ActiveBusinessConfiguration {
+let activeConfiguration:
+    ActiveBusinessConfiguration = {
+        ...defaultConfiguration,
+    };
+
+let configurationStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getConfigurationStorage():
+Promise<RuntimeStorage> {
+    if (!configurationStoragePromise) {
+        configurationStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return configurationStoragePromise;
+}
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function parseConfiguration(
+    raw: string | null,
+): ActiveBusinessConfiguration {
+    if (!raw) {
+        return {
+            ...defaultConfiguration,
+        };
+    }
+
     try {
-        const raw =
-            window.localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return defaultConfiguration;
-        }
-
         const parsed =
             JSON.parse(
                 raw,
@@ -70,7 +117,9 @@ function loadConfiguration():
             !parsed.profileId ||
             !parsed.source
         ) {
-            return defaultConfiguration;
+            return {
+                ...defaultConfiguration,
+            };
         }
 
         return {
@@ -89,16 +138,78 @@ function loadConfiguration():
             source:
                 parsed.source,
         };
-    } catch {
-        return defaultConfiguration;
+    }
+    catch {
+        return {
+            ...defaultConfiguration,
+        };
     }
 }
 
-let activeConfiguration =
-    loadConfiguration();
+export async function hydrateActiveBusinessConfiguration():
+Promise<void> {
+    const storage =
+        await getConfigurationStorage();
+
+    let raw =
+        await storage.getItem(
+            STORAGE_KEY,
+        );
+
+    // One-time compatibility path from the
+    // previous Tauri WebView localStorage storage.
+    if (
+        raw === null &&
+        isTauri()
+    ) {
+        const legacy =
+            window.localStorage.getItem(
+                STORAGE_KEY,
+            );
+
+        if (legacy !== null) {
+            raw = legacy;
+
+            await storage.setItem(
+                STORAGE_KEY,
+                legacy,
+            );
+        }
+    }
+
+    activeConfiguration =
+        parseConfiguration(
+            raw,
+        );
+}
+
+function persistConfiguration() {
+    const snapshot =
+        JSON.stringify(
+            activeConfiguration,
+        );
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getConfigurationStorage();
+
+                await storage.setItem(
+                    STORAGE_KEY,
+                    snapshot,
+                );
+            },
+        );
+}
+
+export function flushActiveBusinessConfigurationPersistence():
+Promise<void> {
+    return persistenceQueue;
+}
 
 export function getActiveBusinessConfiguration():
-    ActiveBusinessConfiguration {
+ActiveBusinessConfiguration {
     return {
         ...activeConfiguration,
     };
@@ -112,12 +223,7 @@ export function saveActiveBusinessConfiguration(
         ...configuration,
     };
 
-    window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(
-            activeConfiguration,
-        ),
-    );
+    persistConfiguration();
 
     return getActiveBusinessConfiguration();
 }
@@ -127,15 +233,29 @@ export function resetActiveBusinessConfiguration() {
         ...defaultConfiguration,
     };
 
-    window.localStorage.removeItem(
-        STORAGE_KEY,
-    );
+    if (isTauri()) {
+        window.localStorage.removeItem(
+            STORAGE_KEY,
+        );
+    }
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getConfigurationStorage();
+
+                await storage.removeItem(
+                    STORAGE_KEY,
+                );
+            },
+        );
 
     return getActiveBusinessConfiguration();
 }
 
 export function getActiveBusinessOperatingProfile():
-    BusinessOperatingProfile {
+BusinessOperatingProfile {
     return getBusinessOperatingProfile(
         activeConfiguration.profileId,
     );

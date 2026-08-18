@@ -2011,3 +2011,24 @@ Validation:
 
 Go-Live sequence remains:
 Durability -> End-to-End Functional QA -> UI/UX Polish -> Release Hardening -> Pilot.
+
+# Checkpoint — 2026-08-18 — Runtime Identity Durability V1
+
+Completed:
+- Active Business Configuration moved to runtime storage / SQLite in Tauri.
+- Tenant / Store / Register / operating profile identity now hydrates before dependent runtime domains.
+- Legacy Tauri WebView localStorage migration preserved for active business configuration.
+- Removed unused internal ReturnDocument CN numbering.
+- Return identity remains based on transaction identity, accounting document identity and internal UUID linkage.
+- Runtime startup ordering remains deterministic and sequential.
+
+Validation:
+- TypeScript: GREEN
+- Production build: GREEN
+- git diff --check: GREEN
+- Tauri runtime startup: GREEN
+- Existing shift/history preserved: GREEN
+- Store 01 / Register 02 identity preserved: GREEN
+
+Next:
+- Batch B: Catalog + Promotions + Coupons durability.

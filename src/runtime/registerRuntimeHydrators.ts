@@ -1,4 +1,8 @@
 import {
+    hydrateActiveBusinessConfiguration,
+} from "../config/ActiveBusinessConfiguration";
+
+import {
     hydrateSaleNumbering,
 } from "../models/sale/SaleNumbering";
 
@@ -48,6 +52,11 @@ void {
     }
 
     registered = true;
+
+    registerRuntimeHydrator(
+        "active-business-configuration",
+        hydrateActiveBusinessConfiguration,
+    );
 
     registerRuntimeHydrator(
         "sale-numbering",

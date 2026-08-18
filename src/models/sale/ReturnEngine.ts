@@ -1,49 +1,27 @@
-import { calculateIncludedTax } from "../tax/TaxPolicy";
-import type { Sale } from "./Sale";
+import {
+    calculateIncludedTax,
+} from "../tax/TaxPolicy";
+
+import type {
+    Sale,
+} from "./Sale";
+
 import type {
     ReturnDocument,
     ReturnLine,
 } from "./Return";
 
-const RETURN_SEQUENCE_KEY =
-    "lumora.return.sequence";
-
-function getNextSequence() {
-    const current = Number(
-        localStorage.getItem(
-            RETURN_SEQUENCE_KEY,
-        ) ?? "1",
-    );
-
-    const safeCurrent =
-        Number.isFinite(current) &&
-            current > 0
-            ? Math.floor(current)
-            : 1;
-
-    localStorage.setItem(
-        RETURN_SEQUENCE_KEY,
-        String(safeCurrent + 1),
-    );
-
-    return safeCurrent;
-}
-
-function createReturnNumber() {
-    const sequence = getNextSequence();
-
-    return `CN-${sequence
-        .toString()
-        .padStart(6, "0")}`;
-}
-
 export function validateReturn(
     sale: Sale,
     lines: ReturnLine[],
 ): string[] {
-    const errors: string[] = [];
+    const errors:
+        string[] = [];
 
-    for (const line of lines) {
+    for (
+        const line
+        of lines
+    ) {
         const original =
             sale.lines.find(
                 (item) =>
@@ -59,7 +37,9 @@ export function validateReturn(
             continue;
         }
 
-        if (line.quantity <= 0) {
+        if (
+            line.quantity <= 0
+        ) {
             errors.push(
                 `${original.productName}: invalid quantity`,
             );
@@ -144,10 +124,8 @@ export function createReturn(
         );
 
     return {
-        id: crypto.randomUUID(),
-
-        number:
-            createReturnNumber(),
+        id:
+            crypto.randomUUID(),
 
         originalSaleId:
             sale.id,
@@ -157,11 +135,15 @@ export function createReturn(
         subtotal,
         discount,
 
-        tax: calculateIncludedTax(total),
+        tax:
+            calculateIncludedTax(
+                total,
+            ),
 
         total,
 
         createdAt:
-            new Date().toISOString(),
+            new Date()
+                .toISOString(),
     };
 }

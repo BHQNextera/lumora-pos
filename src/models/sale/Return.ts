@@ -27,8 +27,6 @@ export type ReturnLine = {
 export type ReturnDocument = {
     id: string;
 
-    number: string;
-
     originalSaleId: string;
 
     lines: ReturnLine[];
