@@ -1,3 +1,15 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
+import {
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
+
 import type {
     CashMovement,
     CashMovementReason,
@@ -7,23 +19,52 @@ import type {
 const STORAGE_KEY =
     "lumora.cash-movements";
 
-function readAll():
-    CashMovement[] {
+let movements:
+    CashMovement[] = [];
+
+let cashMovementStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getCashMovementStorage():
+Promise<RuntimeStorage> {
+    if (!cashMovementStoragePromise) {
+        cashMovementStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return cashMovementStoragePromise;
+}
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function parseMovements(
+    raw: string | null,
+): CashMovement[] {
+    if (!raw) {
+        return [];
+    }
+
     try {
-        const raw =
-            localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return [];
-        }
-
         const parsed =
             JSON.parse(raw);
 
         return Array.isArray(parsed)
-            ? parsed
+            ? parsed as CashMovement[]
             : [];
     }
     catch {
@@ -31,15 +72,64 @@ function readAll():
     }
 }
 
+export async function hydrateCashMovements():
+Promise<void> {
+    const storage =
+        await getCashMovementStorage();
+
+    const raw =
+        await storage.getItem(
+            STORAGE_KEY,
+        );
+
+    movements =
+        parseMovements(
+            raw,
+        );
+}
+
+function enqueuePersistence(
+    operation: () => Promise<void>,
+): void {
+    persistenceQueue =
+        persistenceQueue
+            .catch(() => {
+                /*
+                 * Keep later writes usable after
+                 * a failed persistence operation.
+                 */
+            })
+            .then(operation);
+
+    void persistenceQueue.catch(
+        (error) => {
+            console.error(
+                "LUMORA_CASH_MOVEMENT_PERSISTENCE_FAILED",
+                error,
+            );
+        },
+    );
+}
+
 function persist(
-    movements:
+    nextMovements:
         CashMovement[],
-) {
-    localStorage.setItem(
-        STORAGE_KEY,
+): void {
+    const serialized =
         JSON.stringify(
-            movements,
-        ),
+            nextMovements,
+        );
+
+    enqueuePersistence(
+        async () => {
+            const storage =
+                await getCashMovementStorage();
+
+            await storage.setItem(
+                STORAGE_KEY,
+                serialized,
+            );
+        },
     );
 }
 
@@ -121,10 +211,14 @@ export function createCashMovement(
                 .toISOString(),
     };
 
-    persist([
+    movements = [
         movement,
-        ...readAll(),
-    ]);
+        ...movements,
+    ];
+
+    persist(
+        movements,
+    );
 
     return movement;
 }
@@ -132,7 +226,7 @@ export function createCashMovement(
 export function getCashMovementsForShift(
     shiftId: string,
 ) {
-    return readAll()
+    return movements
         .filter(
             (movement) =>
                 movement.shiftId ===
@@ -147,5 +241,12 @@ export function getCashMovementsForShift(
 }
 
 export function getAllCashMovements() {
-    return readAll();
+    return [
+        ...movements,
+    ];
+}
+
+export async function flushCashMovementPersistence():
+Promise<void> {
+    await persistenceQueue;
 }

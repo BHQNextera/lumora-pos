@@ -1,4 +1,4 @@
-import {
+﻿import {
     hydrateTransactions,
 } from "../models/transaction/TransactionRepository";
 
@@ -9,6 +9,10 @@ import {
 import {
     hydrateCustomers,
 } from "../models/customer/CustomerRepository";
+
+import {
+    hydrateCashMovements,
+} from "../models/cash-movement/CashMovementRepository";
 
 import {
     registerRuntimeHydrator,
@@ -38,5 +42,10 @@ void {
     registerRuntimeHydrator(
         "customers",
         hydrateCustomers,
+    );
+
+    registerRuntimeHydrator(
+        "cash-movements",
+        hydrateCashMovements,
     );
 }

@@ -1852,3 +1852,39 @@ Audit remaining Pilot-critical repositories that still use browser/local persist
 
 Do not migrate everything automatically.
 Cash Movement History remains deferred and is not a Go-Live blocker.
+
+# Checkpoint — 2026-08-17 — Cash Movements SQLite V1
+
+## Completed
+- CashMovementRepository migrated from direct localStorage access to runtime persistence.
+- Browser runtime continues using localStorage.
+- Tauri Windows runtime uses SQLite.
+- Existing synchronous Cash Movement API preserved.
+- Added startup hydration for Cash Movements.
+- Existing ShiftReportService / X calculations were not changed.
+- Cash Movement History UI remains deferred.
+
+## Verified
+- TypeScript: PASS
+- Production build: PASS
+- Cash deposit created during active register shift.
+- X report reflected the cash movement correctly.
+- Lumora closed completely.
+- Windows runtime restarted.
+- Same cash movement remained available.
+- X report continued to calculate the movement correctly after restart.
+
+Result:
+
+CASH MOVEMENT SQLITE RESTART GREEN
+
+## Current durable SQLite domains
+- Transactions
+- Register Shift
+- Customers
+- Cash Movements
+
+## Exact next action
+Audit Shift Z Report persistence and determine whether closed-shift/Z history is still dependent on browser localStorage.
+
+Do not change Z behavior before inspecting ShiftZReportRepository.
