@@ -2,13 +2,23 @@ import { calculateIncludedTax } from "../tax/TaxPolicy";
 import {
     createAccountingDocuments,
 } from "../document/DocumentFactory";
+
+import {
+    flushDocumentPersistence,
+} from "../document/DocumentRepository";
+
+import {
+    flushDocumentNumberPersistence,
+} from "../document/DocumentNumbering";
 import type {
     Payment,
 } from "../Payment";
 import {
+    flushReturnPersistence,
     saveReturn,
 } from "../transaction/ReturnRepository";
 import {
+    flushTransactionPersistence,
     getTransaction,
     saveSale,
 } from "../transaction/TransactionRepository";
@@ -27,8 +37,12 @@ import type {
     SaleLine,
 } from "./SaleLine";
 
-const SALE_SEQUENCE_KEY =
-    "lumora.sale.sequence";
+import {
+    allocateSaleNumber,
+    flushSaleNumberPersistence,
+    peekNextSaleNumber,
+} from "./SaleNumbering";
+
 
 function roundMoney(
     value: number,
@@ -39,36 +53,6 @@ function roundMoney(
             100,
         ) / 100
     );
-}
-
-function getNextSequence() {
-    const current = Number(
-        localStorage.getItem(
-            SALE_SEQUENCE_KEY,
-        ) ?? "1",
-    );
-
-    const safeCurrent =
-        Number.isFinite(current) &&
-            current > 0
-            ? Math.floor(current)
-            : 1;
-
-    localStorage.setItem(
-        SALE_SEQUENCE_KEY,
-        String(safeCurrent + 1),
-    );
-
-    return safeCurrent;
-}
-
-function createSaleNumber() {
-    const sequence =
-        getNextSequence();
-
-    return `S-${sequence
-        .toString()
-        .padStart(6, "0")}`;
 }
 
 function determineTransactionType(
@@ -257,14 +241,14 @@ export type CompleteSaleOptions = {
     coupon?: AppliedSaleCoupon;
 };
 
-export function completeSale(
+export async function completeSale(
     lines: SaleLine[],
     payments: Payment[],
     customer: Sale["customer"] = {
         name: "לקוח מזדמן",
     },
     options: CompleteSaleOptions = {},
-): Sale {
+): Promise<Sale> {
     const now =
         new Date().toISOString();
 
@@ -328,7 +312,7 @@ export function completeSale(
             crypto.randomUUID(),
 
         number:
-            createSaleNumber(),
+            allocateSaleNumber(),
 
         status:
             "completed",
@@ -382,23 +366,26 @@ export function completeSale(
         sale,
     );
 
+    // Persist allocated numbers first.
+    // If the runtime is interrupted mid-save, a skipped
+    // number is safer than reusing an already allocated one.
+    await Promise.all([
+        flushSaleNumberPersistence(),
+        flushDocumentNumberPersistence(),
+    ]);
+
+    // The sale is not considered complete until its
+    // transaction, linked returns and accounting documents
+    // are durable.
+    await Promise.all([
+        flushTransactionPersistence(),
+        flushReturnPersistence(),
+        flushDocumentPersistence(),
+    ]);
+
     return sale;
 }
 
 export function getNextSaleNumber() {
-    const current = Number(
-        localStorage.getItem(
-            SALE_SEQUENCE_KEY,
-        ) ?? "1",
-    );
-
-    const safeCurrent =
-        Number.isFinite(current) &&
-            current > 0
-            ? Math.floor(current)
-            : 1;
-
-    return `S-${safeCurrent
-        .toString()
-        .padStart(6, "0")}`;
+    return peekNextSaleNumber();
 }

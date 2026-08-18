@@ -1186,7 +1186,7 @@ function SalePage({
                 },
             );
 
-    const completeTransaction = (
+    const completeTransaction = async (
         payments: Payment[],
     ) => {
         const transactionId =
@@ -1235,7 +1235,7 @@ function SalePage({
         }
 
         const sale =
-            completeSale(
+            await completeSale(
                 createSaleLines(),
                 payments,
                 {

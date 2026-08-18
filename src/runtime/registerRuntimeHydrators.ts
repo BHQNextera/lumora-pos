@@ -1,6 +1,22 @@
-﻿import {
+import {
+    hydrateSaleNumbering,
+} from "../models/sale/SaleNumbering";
+
+import {
+    hydrateDocumentNumbering,
+} from "../models/document/DocumentNumbering";
+
+import {
+    hydrateDocuments,
+} from "../models/document/DocumentRepository";
+
+import {
     hydrateTransactions,
 } from "../models/transaction/TransactionRepository";
+
+import {
+    hydrateReturns,
+} from "../models/transaction/ReturnRepository";
 
 import {
     hydrateRegisterShifts,
@@ -34,8 +50,28 @@ void {
     registered = true;
 
     registerRuntimeHydrator(
+        "sale-numbering",
+        hydrateSaleNumbering,
+    );
+
+    registerRuntimeHydrator(
+        "document-numbering",
+        hydrateDocumentNumbering,
+    );
+
+    registerRuntimeHydrator(
+        "documents",
+        hydrateDocuments,
+    );
+
+    registerRuntimeHydrator(
         "transactions",
         hydrateTransactions,
+    );
+
+    registerRuntimeHydrator(
+        "returns",
+        hydrateReturns,
     );
 
     registerRuntimeHydrator(
