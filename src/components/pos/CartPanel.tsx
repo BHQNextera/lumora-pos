@@ -115,6 +115,11 @@ function CartPanel({
         useState("");
 
     const [
+        couponDialogOpen,
+        setCouponDialogOpen,
+    ] = useState(false);
+
+    const [
         sellerTargetEmployeeId,
         setSellerTargetEmployeeId,
     ] =
@@ -696,67 +701,110 @@ function CartPanel({
                     </label>
                 </div>
 
-                <div
-                    style={{
-                        padding: "10px 12px",
-                        borderTop:
-                            "1px solid #e2e4e7",
-                    }}
-                >
+                <div className="lumora-cart__coupon-compact">
                     {appliedCoupon ? (
-                        <div
-                            style={{
-                                display:
-                                    "flex",
-                                alignItems:
-                                    "center",
-                                justifyContent:
-                                    "space-between",
-                                gap: "8px",
-                                fontSize:
-                                    "10px",
-                            }}
-                        >
-                            <span>
-                                קופון:{" "}
-                                <strong>
-                                    {appliedCoupon.code}
-                                </strong>
-                            </span>
+                        <>
+                            <div className="lumora-cart__coupon-active">
+                                <span>
+                                    קופון{" "}
+                                    <strong>
+                                        {appliedCoupon.code}
+                                    </strong>
+                                </span>
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    onRemoveCoupon();
-                                    setCouponCode("");
-                                    setCouponError("");
-                                }}
-                            >
-                                הסר
-                            </button>
-                        </div>
+                                {couponDiscountAmount > 0 && (
+                                    <strong>
+                                        ‎-₪
+                                        {couponDiscountAmount.toFixed(
+                                            2,
+                                        )}
+                                    </strong>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onRemoveCoupon();
+                                        setCouponCode("");
+                                        setCouponError("");
+                                    }}
+                                >
+                                    הסר
+                                </button>
+                            </div>
+                        </>
                     ) : (
-                        <div
-                            style={{
-                                display:
-                                    "flex",
-                                gap: "6px",
+                        <button
+                            type="button"
+                            className="lumora-cart__coupon-trigger"
+                            onClick={() => {
+                                setCouponError("");
+                                setCouponDialogOpen(
+                                    true,
+                                );
                             }}
                         >
+                            קופון
+                        </button>
+                    )}
+                </div>
+
+                {couponDialogOpen && (
+                    <div
+                        className="lumora-cart__coupon-overlay"
+                        role="presentation"
+                        onMouseDown={() =>
+                            setCouponDialogOpen(
+                                false,
+                            )
+                        }
+                    >
+                        <section
+                            className="lumora-cart__coupon-dialog"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="הפעלת קופון"
+                            onMouseDown={(
+                                event,
+                            ) =>
+                                event.stopPropagation()
+                            }
+                        >
+                            <div className="lumora-cart__coupon-dialog-header">
+                                <div>
+                                    <strong>
+                                        הפעלת קופון
+                                    </strong>
+
+                                    <span>
+                                        סרוק או הקלד קוד
+                                    </span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCouponDialogOpen(
+                                            false,
+                                        )
+                                    }
+                                >
+                                    ×
+                                </button>
+                            </div>
+
                             <input
+                                autoFocus
                                 type="text"
-                                value={
-                                    couponCode
-                                }
-                                placeholder="קוד קופון"
+                                value={couponCode}
+                                placeholder="סרוק או הקלד קוד קופון"
                                 onChange={(
                                     event,
                                 ) => {
                                     setCouponCode(
-                                        event
-                                            .target
-                                            .value,
+                                        event.target.value,
                                     );
+
                                     setCouponError(
                                         "",
                                     );
@@ -781,63 +829,77 @@ function CartPanel({
                                     ) {
                                         setCouponError(
                                             result.reason ??
-                                            "קופון לא תקף",
+                                                "קופון לא תקף",
                                         );
+
+                                        return;
                                     }
-                                }}
-                                style={{
-                                    flex: 1,
-                                    minWidth: 0,
-                                    height:
-                                        "34px",
-                                    padding:
-                                        "0 9px",
-                                    border:
-                                        "1px solid #d8dade",
-                                    borderRadius:
-                                        "8px",
+
+                                    setCouponError(
+                                        "",
+                                    );
+
+                                    setCouponDialogOpen(
+                                        false,
+                                    );
                                 }}
                             />
 
-                            <button
-                                type="button"
-                                disabled={
-                                    !couponCode.trim()
-                                }
-                                onClick={() => {
-                                    const result =
-                                        onApplyCoupon(
-                                            couponCode,
-                                        );
+                            {couponError && (
+                                <div className="lumora-cart__coupon-error">
+                                    {couponError}
+                                </div>
+                            )}
 
-                                    if (
-                                        !result.success
-                                    ) {
-                                        setCouponError(
-                                            result.reason ??
-                                            "קופון לא תקף",
-                                        );
+                            <div className="lumora-cart__coupon-dialog-actions">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCouponDialogOpen(
+                                            false,
+                                        )
                                     }
-                                }}
-                            >
-                                החל
-                            </button>
-                        </div>
-                    )}
+                                >
+                                    ביטול
+                                </button>
 
-                    {couponError && (
-                        <div
-                            style={{
-                                marginTop:
-                                    "5px",
-                                fontSize:
-                                    "9px",
-                            }}
-                        >
-                            {couponError}
-                        </div>
-                    )}
-                </div>
+                                <button
+                                    type="button"
+                                    disabled={
+                                        !couponCode.trim()
+                                    }
+                                    onClick={() => {
+                                        const result =
+                                            onApplyCoupon(
+                                                couponCode,
+                                            );
+
+                                        if (
+                                            !result.success
+                                        ) {
+                                            setCouponError(
+                                                result.reason ??
+                                                    "קופון לא תקף",
+                                            );
+
+                                            return;
+                                        }
+
+                                        setCouponError(
+                                            "",
+                                        );
+
+                                        setCouponDialogOpen(
+                                            false,
+                                        );
+                                    }}
+                                >
+                                    הפעל
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                )}
 
                 <div className="lumora-cart__summary">
                     <div>

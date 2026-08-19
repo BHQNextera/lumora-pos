@@ -2063,3 +2063,143 @@ Next:
 - Show only fields relevant to the selected promotion type.
 - Add human-readable promotion preview.
 - Keep advanced settings such as priority and stacking secondary.
+
+# Checkpoint — 2026-08-19 — Promotion Builder V1 Runtime
+
+Completed in this push:
+- Promotion Builder V1 rebuilt around business-oriented promotion configuration.
+- Promotion targets now support combined populations:
+  products + categories - exclusions.
+- Multiple unrelated products and multiple categories can be selected in one promotion.
+- Searchable checkbox population selector added for faster multi-selection.
+- Separate qualifying population A and reward population B added for buy-A-get-B promotions.
+- Per-population product/category exclusions supported.
+- Human-readable promotion preview added.
+- Basket tier promotion creation remains disabled until its dedicated Builder is implemented.
+- Promotion Repository now publishes live changes to PricingProvider.
+- Newly saved/edited promotions affect the active cart without application restart.
+- Multi-population category/product/exclusion promotion runtime test: GREEN.
+- Buy-A-get-B runtime test with separate A/B populations: GREEN.
+- Promotion persistence across restart remains GREEN.
+- Compact coupon entry UX added to reduce permanent cart UI footprint.
+- Coupon calculation/service behavior was not redesigned; existing coupon engine remains in use.
+- Final coupon placement under "More actions" is deferred to UI/UX Polish.
+- Seller assignment is present on cart lines and survives original-document return reconstruction.
+- Seller persistence therefore has runtime evidence; invoice/output presentation remains deferred to document/UI polish.
+
+Validation:
+- TypeScript: GREEN
+- Production build: GREEN
+- git diff --check: GREEN
+- Promotion Builder save/edit runtime: GREEN
+- Promotion live cart synchronization: GREEN
+- Multi-population pricing runtime: GREEN
+- Buy-A-get-B pricing runtime: GREEN
+- Compact coupon UX build validation: GREEN
+
+Deferred / UI-UX Polish:
+- Rebalance Catalog / Cart width; current cart is too narrow.
+- Move customer selection out of the cart.
+- Move coupon activation into "More actions".
+- Implement "More actions" as a real action menu.
+- Review duplicate-looking seller presentation.
+- Show seller appropriately on invoice/document output.
+- Full RTL, spacing, typography, modal and responsive cleanup.
+
+Complete remaining roadmap:
+1. Standalone durability completion
+   - Monetary Values / credits / gift cards persistence and restart recovery.
+   - Attendance persistence and restart recovery.
+   - Coupon persistence validation only if coupons remain required for Pilot.
+
+2. Standalone end-to-end functional completion
+   - Open day/register.
+   - Employees and customers.
+   - Sale with promotions.
+   - Cash / split / card flow.
+   - Credits and gift cards.
+   - Return / exchange.
+   - Cash movement.
+   - X report.
+   - Register close and Z.
+   - Restart/reopen/new trading day with correct durable state.
+
+3. Nextera replication foundation
+   - Local inbox/outbox.
+   - pending / synced / failed lifecycle.
+   - retry.
+   - idempotency.
+   - reconnect recovery.
+   - source/conflict metadata.
+   - POS remains fully operational offline.
+
+4. Nextera -> Lumora master replication
+   - products / variants / categories.
+   - prices.
+   - promotions.
+   - customers.
+   - employees.
+   - credits / gift cards.
+   - Connected Mode uses Nextera as master while Lumora caches locally/offline.
+
+5. Lumora -> Nextera operational replication
+   - sales and sale lines including seller assignment.
+   - payments.
+   - accounting documents.
+   - returns / exchanges.
+   - inventory movements.
+   - attendance.
+   - shifts.
+   - X / Z.
+   - customer create/update.
+   - duplicate-safe retry/reconnect behavior.
+
+6. Payment provider / Echo flow
+   - regular card payment.
+   - installments under provider capability + merchant policy.
+   - approve / decline / cancel.
+   - retry / idempotency.
+   - VOID where provider supports it.
+   - refunds.
+   - pending / reconciliation.
+   - duplicate-charge protection.
+   - real Tranzila tests when sandbox/live access is available.
+
+7. Offline / recovery QA
+   - offline sale.
+   - restart with pending operations.
+   - reconnect and automatic replication.
+   - no duplicate operations.
+   - offline return/exchange recovery.
+   - durable Z and operational state.
+
+8. Integrated E2E QA
+   - Lumora Standalone.
+   - Lumora + Nextera.
+   - same Lumora Core in both modes.
+
+9. UI/UX Polish
+   - Sale/cart layout and hierarchy.
+   - customer/coupon/action placement.
+   - seller/document presentation.
+   - RTL/LTR.
+   - typography.
+   - modal sizing/scrolling.
+   - button/disabled/loading states.
+   - branding consistency.
+
+10. Release Hardening
+    - clean builds.
+    - no active console errors.
+    - restart/recovery validation.
+    - release packaging.
+    - Pilot acceptance for Standalone and Connected modes.
+
+11. Delivery / Adoption Layer
+    - short process-specific training videos after UI reaches Release Candidate stability.
+
+Next exact action:
+- Commit Promotion Builder V1 separately.
+- Commit compact coupon UX + this status update separately.
+- Push both commits.
+- Begin Monetary Values durability.
