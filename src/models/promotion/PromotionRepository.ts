@@ -20,6 +20,40 @@ const STORAGE_KEY =
 let promotions:
     Promotion[] = [];
 
+type PromotionSubscriber = (
+    promotions: Promotion[],
+) => void;
+
+const promotionSubscribers =
+    new Set<PromotionSubscriber>();
+
+function notifyPromotionSubscribers() {
+    const snapshot = [
+        ...promotions,
+    ];
+
+    promotionSubscribers.forEach(
+        (subscriber) =>
+            subscriber(
+                snapshot,
+            ),
+    );
+}
+
+export function subscribePromotions(
+    subscriber: PromotionSubscriber,
+) {
+    promotionSubscribers.add(
+        subscriber,
+    );
+
+    return () => {
+        promotionSubscribers.delete(
+            subscriber,
+        );
+    };
+}
+
 let promotionStoragePromise:
     Promise<RuntimeStorage> | null =
         null;
@@ -107,6 +141,8 @@ Promise<void> {
         parsePromotions(
             raw,
         );
+
+    notifyPromotionSubscribers();
 }
 
 function persistPromotions() {
@@ -179,6 +215,7 @@ export function savePromotion(
         ];
     }
 
+    notifyPromotionSubscribers();
     persistPromotions();
 }
 
@@ -189,6 +226,7 @@ export function savePromotions(
         ...nextPromotions,
     ];
 
+    notifyPromotionSubscribers();
     persistPromotions();
 }
 
@@ -202,11 +240,14 @@ export function removePromotion(
                 promotionId,
         );
 
+    notifyPromotionSubscribers();
     persistPromotions();
 }
 
 export function clearPromotions() {
     promotions = [];
+
+    notifyPromotionSubscribers();
 
     if (isTauri()) {
         localStorage.removeItem(

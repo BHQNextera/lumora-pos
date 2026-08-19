@@ -1,4 +1,4 @@
-﻿import {
+import {
     useCallback,
     useEffect,
     useMemo,
@@ -39,6 +39,7 @@ import {
     removePromotion as removePromotionFromRepository,
     savePromotion,
     savePromotions,
+    subscribePromotions,
 } from "../models/promotion/PromotionRepository";
 import {
     seedPromotionsIfEmpty,
@@ -81,6 +82,14 @@ function PricingProvider({
             () =>
                 seedPromotionsIfEmpty(),
         );
+
+    useEffect(
+        () =>
+            subscribePromotions(
+                setPromotionsState,
+            ),
+        [],
+    );
 
     const [
         appliedCoupon,

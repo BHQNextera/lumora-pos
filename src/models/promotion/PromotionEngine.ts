@@ -280,56 +280,61 @@ function isPromotionActive(
     );
 }
 
-function isPromotionExcluded(
+function matchesPopulation(
     line: CartLine,
-    promotion: Promotion,
+    population: Promotion["target"],
+    legacyExcludedProductIds: string[] = [],
+    legacyExcludedCategoryIds: string[] = [],
 ) {
     if (
-        promotion.excludedProductIds?.includes(
+        population.excludedProductIds?.includes(
             line.product.id,
-        )
-    ) {
-        return true;
-    }
-
-    if (
-        promotion.excludedCategoryIds?.includes(
-            line.product.category,
-        )
-    ) {
-        return true;
-    }
-
-    return false;
-}
-
-function matchesPromotionTarget(
-    line: CartLine,
-    promotion: Promotion,
-) {
-    if (
-        isPromotionExcluded(
-            line,
-            promotion,
+        ) ||
+        legacyExcludedProductIds.includes(
+            line.product.id,
         )
     ) {
         return false;
     }
 
     if (
-        promotion.target.type ===
-        "product"
+        population.excludedCategoryIds?.includes(
+            line.product.category,
+        ) ||
+        legacyExcludedCategoryIds.includes(
+            line.product.category,
+        )
     ) {
-        return promotion.target.productIds.includes(
-            line.product.id,
-        );
+        return false;
     }
 
-    return promotion.target.categoryIds.includes(
-        line.product.category,
+    const matchesProduct =
+        population.productIds?.includes(
+            line.product.id,
+        ) ?? false;
+
+    const matchesCategory =
+        population.categoryIds?.includes(
+            line.product.category,
+        ) ?? false;
+
+    return (
+        matchesProduct ||
+        matchesCategory
     );
 }
 
+function matchesPromotionTarget(
+    line: CartLine,
+    promotion: Promotion,
+) {
+    return matchesPopulation(
+        line,
+        promotion.target,
+        promotion.excludedProductIds ?? [],
+        promotion.excludedCategoryIds ?? [],
+    );
+}
 function createUnits(
     promotion: Promotion,
     lines: CartLine[],
@@ -900,15 +905,6 @@ function matchesRewardTarget(
     line: CartLine,
     promotion: Promotion,
 ) {
-    if (
-        isPromotionExcluded(
-            line,
-            promotion,
-        )
-    ) {
-        return false;
-    }
-
     const rewardTarget =
         promotion.rewardTarget;
 
@@ -916,20 +912,13 @@ function matchesRewardTarget(
         return false;
     }
 
-    if (
-        rewardTarget.type ===
-        "product"
-    ) {
-        return rewardTarget.productIds.includes(
-            line.product.id,
-        );
-    }
-
-    return rewardTarget.categoryIds.includes(
-        line.product.category,
+    return matchesPopulation(
+        line,
+        rewardTarget,
+        promotion.excludedProductIds ?? [],
+        promotion.excludedCategoryIds ?? [],
     );
 }
-
 function buildBuyAGetBApplications(
     promotion: Promotion,
     lines: CartLine[],

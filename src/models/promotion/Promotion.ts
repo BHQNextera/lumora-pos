@@ -1,4 +1,4 @@
-export type PromotionType =
+﻿export type PromotionType =
     | "buy_x_get_y"
     | "buy_a_get_b"
     | "bundle_price"
@@ -9,34 +9,44 @@ export type PromotionType =
     | "basket_discount"
     | "basket_tier_discount";
 
+type PromotionPopulationBase = {
+    excludedProductIds?: string[];
+    excludedCategoryIds?: string[];
+};
+
 export type PromotionTarget =
-    | {
-        type: "product";
-        productIds: string[];
-    }
-    | {
-        type: "category";
-        categoryIds: string[];
-    };
+    | (
+        PromotionPopulationBase & {
+            type: "product";
+            productIds: string[];
+            categoryIds?: string[];
+        }
+    )
+    | (
+        PromotionPopulationBase & {
+            type: "category";
+            categoryIds: string[];
+            productIds?: string[];
+        }
+    )
+    | (
+        PromotionPopulationBase & {
+            type: "mixed";
+            productIds: string[];
+            categoryIds: string[];
+        }
+    );
 
 export type PromotionRewardTarget =
-    | {
-        type: "product";
-        productIds: string[];
-    }
-    | {
-        type: "category";
-        categoryIds: string[];
-    };
+    PromotionTarget;
 
 export type PromotionTier = {
     minimumAmount: number;
     discountType:
-    | "percentage"
-    | "fixed_amount";
+        | "percentage"
+        | "fixed_amount";
     value: number;
 };
-
 
 export type PromotionSchedule = {
     /**
@@ -57,7 +67,8 @@ export type PromotionSchedule = {
      * Local store time in HH:mm.
      * Example: "12:00".
      *
-     * If endTime is earlier than startTime, the window crosses midnight.
+     * If endTime is earlier than startTime,
+     * the window crosses midnight.
      * Example: 22:00-02:00.
      */
     endTime?: string;
@@ -79,16 +90,18 @@ export type Promotion = {
     target: PromotionTarget;
 
     /**
-     * Optional exclusions inside the target population.
-     * Useful for category-wide promotions with specific products excluded.
+     * Legacy/global exclusions.
+     * Kept for backward compatibility with existing promotions.
+     * New promotion populations can keep exclusions directly
+     * on target / rewardTarget.
      */
     excludedProductIds?: string[];
 
     excludedCategoryIds?: string[];
 
     /**
-     * When present, the promotion applies only when the current customer
-     * belongs to at least one of these groups.
+     * When present, the promotion applies only when
+     * the current customer belongs to at least one group.
      */
     allowedCustomerGroupIds?: string[];
 
@@ -111,8 +124,6 @@ export type Promotion = {
 
     /**
      * Optional recurring weekly/hourly restriction.
-     * Example:
-     * Sunday-Thursday, 10:00-12:00.
      */
     schedule?: PromotionSchedule;
 
