@@ -1,3 +1,15 @@
+import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
+import {
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
+
 import type {
     Promotion,
 } from "./Promotion";
@@ -5,50 +17,127 @@ import type {
 const STORAGE_KEY =
     "lumora.promotions";
 
-function loadPromotions(): Promotion[] {
+let promotions:
+    Promotion[] = [];
+
+let promotionStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+function getPromotionStorage():
+Promise<RuntimeStorage> {
+    if (!promotionStoragePromise) {
+        promotionStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return promotionStoragePromise;
+}
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function parsePromotions(
+    raw: string | null,
+): Promotion[] {
+    if (!raw) {
+        return [];
+    }
+
     try {
-        const raw =
-            localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return [];
-        }
-
         const parsed =
             JSON.parse(raw);
 
-        if (
-            !Array.isArray(
-                parsed,
-            )
-        ) {
-            return [];
-        }
-
-        return parsed as Promotion[];
-    } catch {
+        return Array.isArray(parsed)
+            ? parsed as Promotion[]
+            : [];
+    }
+    catch {
         return [];
     }
 }
 
-function persistPromotions(
-    promotions: Promotion[],
-) {
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(
-            promotions,
-        ),
-    );
+export async function hydratePromotions():
+Promise<void> {
+    const storage =
+        await getPromotionStorage();
+
+    let raw =
+        await storage.getItem(
+            STORAGE_KEY,
+        );
+
+    if (
+        raw === null &&
+        isTauri()
+    ) {
+        const legacy =
+            localStorage.getItem(
+                STORAGE_KEY,
+            );
+
+        if (legacy !== null) {
+            await storage.setItem(
+                STORAGE_KEY,
+                legacy,
+            );
+
+            localStorage.removeItem(
+                STORAGE_KEY,
+            );
+
+            raw = legacy;
+        }
+    }
+
+    promotions =
+        parsePromotions(
+            raw,
+        );
 }
 
-let promotions: Promotion[] =
-    loadPromotions();
+function persistPromotions() {
+    const snapshot =
+        JSON.stringify(
+            promotions,
+        );
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getPromotionStorage();
+
+                await storage.setItem(
+                    STORAGE_KEY,
+                    snapshot,
+                );
+            },
+        );
+}
+
+export function flushPromotionPersistence():
+Promise<void> {
+    return persistenceQueue;
+}
 
 export function getPromotions() {
-    return [...promotions];
+    return [
+        ...promotions,
+    ];
 }
 
 export function getPromotion(
@@ -78,20 +167,19 @@ export function savePromotion(
             promotions.map(
                 (item) =>
                     item.id ===
-                        promotion.id
+                    promotion.id
                         ? promotion
                         : item,
             );
-    } else {
+    }
+    else {
         promotions = [
             ...promotions,
             promotion,
         ];
     }
 
-    persistPromotions(
-        promotions,
-    );
+    persistPromotions();
 }
 
 export function savePromotions(
@@ -101,9 +189,7 @@ export function savePromotions(
         ...nextPromotions,
     ];
 
-    persistPromotions(
-        promotions,
-    );
+    persistPromotions();
 }
 
 export function removePromotion(
@@ -116,15 +202,27 @@ export function removePromotion(
                 promotionId,
         );
 
-    persistPromotions(
-        promotions,
-    );
+    persistPromotions();
 }
 
 export function clearPromotions() {
     promotions = [];
 
-    localStorage.removeItem(
-        STORAGE_KEY,
-    );
+    if (isTauri()) {
+        localStorage.removeItem(
+            STORAGE_KEY,
+        );
+    }
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getPromotionStorage();
+
+                await storage.removeItem(
+                    STORAGE_KEY,
+                );
+            },
+        );
 }

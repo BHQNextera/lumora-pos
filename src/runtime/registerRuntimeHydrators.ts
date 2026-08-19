@@ -3,6 +3,15 @@ import {
 } from "../config/ActiveBusinessConfiguration";
 
 import {
+    hydrateCatalog,
+} from "../models/catalog/CatalogRepository";
+
+import {
+    hydratePromotions,
+} from "../models/promotion/PromotionRepository";
+
+
+import {
     hydrateSaleNumbering,
 } from "../models/sale/SaleNumbering";
 
@@ -57,6 +66,17 @@ void {
         "active-business-configuration",
         hydrateActiveBusinessConfiguration,
     );
+
+    registerRuntimeHydrator(
+        "catalog",
+        hydrateCatalog,
+    );
+
+    registerRuntimeHydrator(
+        "promotions",
+        hydratePromotions,
+    );
+
 
     registerRuntimeHydrator(
         "sale-numbering",

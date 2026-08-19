@@ -3,6 +3,7 @@ import {
     useMemo,
     useState,
 } from "react";
+
 import type {
     ReactNode,
 } from "react";
@@ -10,48 +11,16 @@ import type {
 import {
     CatalogContext,
 } from "./CatalogContext";
+
 import {
-    products as productSeed,
-} from "../data/products";
+    getCatalogProducts,
+    resetCatalogProducts,
+    saveCatalogProducts,
+} from "../models/catalog/CatalogRepository";
+
 import type {
     Product,
 } from "../types/product";
-
-const STORAGE_KEY =
-    "lumora.catalog.products.v1";
-
-function loadProducts(): Product[] {
-    try {
-        const raw =
-            window.localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return productSeed;
-        }
-
-        const parsed =
-            JSON.parse(raw);
-
-        if (!Array.isArray(parsed)) {
-            return productSeed;
-        }
-
-        return parsed as Product[];
-    } catch {
-        return productSeed;
-    }
-}
-
-function persistProducts(
-    products: Product[],
-) {
-    window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(products),
-    );
-}
 
 type CatalogProviderProps = {
     children: ReactNode;
@@ -65,37 +34,39 @@ function CatalogProvider({
         setProducts,
     ] =
         useState<Product[]>(
-            loadProducts,
+            () =>
+                getCatalogProducts(),
         );
 
-    const commit = useCallback(
-        (
-            updater:
-                | Product[]
-                | ((
-                      current: Product[],
-                  ) => Product[]),
-        ) => {
-            setProducts(
-                (current) => {
-                    const next =
-                        typeof updater ===
-                        "function"
-                            ? updater(
-                                  current,
-                              )
-                            : updater;
+    const commit =
+        useCallback(
+            (
+                updater:
+                    | Product[]
+                    | ((
+                          current: Product[],
+                      ) => Product[]),
+            ) => {
+                setProducts(
+                    (current) => {
+                        const next =
+                            typeof updater ===
+                            "function"
+                                ? updater(
+                                      current,
+                                  )
+                                : updater;
 
-                    persistProducts(
-                        next,
-                    );
+                        saveCatalogProducts(
+                            next,
+                        );
 
-                    return next;
-                },
-            );
-        },
-        [],
-    );
+                        return next;
+                    },
+                );
+            },
+            [],
+        );
 
     const addProduct =
         useCallback(
@@ -151,9 +122,14 @@ function CatalogProvider({
         );
 
     const resetCatalog =
-        useCallback(() => {
-            commit(productSeed);
-        }, [commit]);
+        useCallback(
+            () => {
+                setProducts(
+                    resetCatalogProducts(),
+                );
+            },
+            [],
+        );
 
     const value =
         useMemo(

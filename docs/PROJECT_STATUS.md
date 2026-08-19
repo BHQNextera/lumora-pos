@@ -2032,3 +2032,34 @@ Validation:
 
 Next:
 - Batch B: Catalog + Promotions + Coupons durability.
+
+# Checkpoint — 2026-08-19 — Catalog + Promotions Durability V1
+
+Completed:
+- Catalog moved to runtime storage / SQLite in Tauri.
+- Catalog hydrates before the React CatalogProvider initializes.
+- Legacy Tauri localStorage catalog migration preserved.
+- Promotions moved to runtime storage / SQLite in Tauri.
+- Promotions hydrate during runtime bootstrap.
+- Legacy Tauri localStorage promotion migration preserved.
+- Catalog restart persistence: GREEN.
+- Promotions restart persistence: GREEN.
+
+Validation:
+- TypeScript: GREEN
+- Production build: GREEN
+- git diff --check: GREEN
+- Tauri runtime restart: GREEN
+
+Deferred from this batch:
+- Coupon persistence runtime validation.
+- Coupon work will not block the current Lumora path.
+
+Next:
+- Promotion Builder V1.
+- Support combined promotion populations:
+  products + multiple categories + individual products + exclusions.
+- Support separate qualifying and reward populations for A -> B promotions.
+- Show only fields relevant to the selected promotion type.
+- Add human-readable promotion preview.
+- Keep advanced settings such as priority and stacking secondary.
