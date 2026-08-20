@@ -40,6 +40,12 @@ export type PromotionTarget =
 export type PromotionRewardTarget =
     PromotionTarget;
 
+export type PromotionBundleComponent = {
+    id: string;
+    quantity: number;
+    target: PromotionTarget;
+};
+
 export type PromotionTier = {
     minimumAmount: number;
     discountType:
@@ -110,9 +116,12 @@ export type Promotion = {
 
     rewardTarget?: PromotionRewardTarget;
     rewardDiscountPercentage?: number;
+    rewardDiscountAmount?: number;
 
     bundleQuantity?: number;
     bundlePrice?: number;
+    bundleComponents?:
+        PromotionBundleComponent[];
 
     minimumQuantity?: number;
     discountPercentage?: number;

@@ -1,4 +1,4 @@
-﻿import type {
+import type {
     Dispatch,
     SetStateAction,
 } from "react";
@@ -8,6 +8,7 @@ import type {
 } from "../../models/promotion/Promotion";
 
 import {
+    createEmptyBundleComponentDraft,
     promotionTypeOptions,
     type PromotionDraft,
 } from "./PromotionBuilderModel";
@@ -62,6 +63,15 @@ const groupOptions = [
         label: "עובדים",
     },
 ];
+
+function formatDiscountValue(
+    draft: PromotionDraft,
+) {
+    return draft.valueType ===
+        "percentage"
+        ? `${draft.value}%`
+        : `${draft.value} ₪`;
+}
 
 function toggleArrayValue<T>(
     values: T[],
@@ -184,30 +194,52 @@ function buildPreview(
             categories,
         );
 
+    const bundleSummary =
+        draft.bundleComponents
+            .map(
+                (component) =>
+                    `${component.quantity}× ${populationSummary(
+                        component.population
+                            .productIds,
+                        component.population
+                            .categoryIds,
+                        component.population
+                            .excludedProductIds,
+                        component.population
+                            .excludedCategoryIds,
+                        products,
+                        categories,
+                    )}`,
+            )
+            .join(" + ");
+
+    const discountValue =
+        formatDiscountValue(
+            draft,
+        );
+
     switch (draft.type) {
         case "category_discount":
-            return `${draft.value}% הנחה על ${target}`;
-
         case "fixed_amount_discount":
-            return `₪${draft.value} הנחה על ${target}`;
+            return `${discountValue} הנחה על ${target}`;
 
         case "quantity_discount":
-            return `בקניית ${draft.quantity} פריטים או יותר מתוך ${target} — ${draft.value}% הנחה`;
+            return `בקניית ${draft.quantity} פריטים או יותר מתוך ${target} — ${discountValue} הנחה`;
 
         case "bundle_price":
-            return `${draft.quantity} פריטים מתוך ${target} במחיר חבילה של ₪${draft.bundlePrice}`;
+            return `${bundleSummary} במחיר חבילה של ₪${draft.bundlePrice}`;
 
         case "mix_and_match":
             return `בחר ${draft.quantity} פריטים מתוך ${target} ושלם ₪${draft.bundlePrice}`;
 
         case "buy_x_get_y":
-            return `קנה ${draft.quantity} מתוך ${target} וקבל ${draft.getQuantity} נוספים ב־${draft.value}% הנחה`;
+            return `קנה ${draft.quantity} מתוך ${target} וקבל ${draft.getQuantity} נוספים ב־${discountValue} הנחה`;
 
         case "buy_a_get_b":
-            return `קנה ${draft.quantity} מתוך ${target} וקבל ${draft.getQuantity} מתוך ${reward} ב־${draft.value}% הנחה`;
+            return `קנה ${draft.quantity} מתוך ${target} וקבל ${draft.getQuantity} מתוך ${reward} ב־${discountValue} הנחה`;
 
         case "basket_discount":
-            return `בקנייה מעל ₪${draft.basketMinimumAmount} מתוך ${target} — ${draft.value}% הנחה`;
+            return `בקנייה מעל ₪${draft.basketMinimumAmount} מתוך ${target} — ${discountValue} הנחה`;
 
         case "basket_tier_discount":
             return "מדרגות סל עדיין אינן זמינות ב־Builder V1";
@@ -249,6 +281,62 @@ function PromotionBuilderDialog({
         );
     };
 
+    const addBundleComponent =
+        () => {
+            setDraft(
+                (current) => ({
+                    ...current,
+                    bundleComponents: [
+                        ...current.bundleComponents,
+                        createEmptyBundleComponentDraft(),
+                    ],
+                }),
+            );
+        };
+
+    const updateBundleComponent =
+        (
+            componentId: string,
+            patch: Partial<
+                PromotionDraft[
+                    "bundleComponents"
+                ][number]
+            >,
+        ) => {
+            setDraft(
+                (current) => ({
+                    ...current,
+                    bundleComponents:
+                        current.bundleComponents.map(
+                            (component) =>
+                                component.id ===
+                                componentId
+                                    ? {
+                                          ...component,
+                                          ...patch,
+                                      }
+                                    : component,
+                        ),
+                }),
+            );
+        };
+
+    const removeBundleComponent =
+        (componentId: string) => {
+            setDraft(
+                (current) => ({
+                    ...current,
+                    bundleComponents:
+                        current.bundleComponents
+                            .filter(
+                                (component) =>
+                                    component.id !==
+                                    componentId,
+                            ),
+                }),
+            );
+        };
+
     const preview =
         buildPreview(
             draft,
@@ -271,7 +359,6 @@ function PromotionBuilderDialog({
     const showsQuantity =
         [
             "quantity_discount",
-            "bundle_price",
             "mix_and_match",
             "buy_x_get_y",
             "buy_a_get_b",
@@ -297,14 +384,11 @@ function PromotionBuilderDialog({
 
     const valueLabel =
         draft.type ===
-        "fixed_amount_discount"
-            ? "סכום ההנחה (₪)"
-            : draft.type ===
-                  "buy_x_get_y" ||
-              draft.type ===
-                  "buy_a_get_b"
-              ? "הנחה על פריט ההטבה (%)"
-              : "אחוז הנחה (%)";
+            "buy_x_get_y" ||
+        draft.type ===
+            "buy_a_get_b"
+            ? "הנחה על פריט ההטבה"
+            : "ערך ההנחה";
 
     const quantityLabel =
         draft.type ===
@@ -405,29 +489,165 @@ function PromotionBuilderDialog({
                             <span>2</span>
                             <div>
                                 <strong>
-                                    על מה המבצע חל?
+                                    {draft.type ===
+                                    "bundle_price"
+                                        ? "מה מרכיבי החבילה?"
+                                        : "על מה המבצע חל?"}
                                 </strong>
                                 <small>
-                                    אפשר לשלב כמה קטגוריות וכמה פריטים
+                                    {draft.type ===
+                                    "bundle_price"
+                                        ? "כל רכיב מגדיר אוכלוסייה וכמות נדרשת"
+                                        : "אפשר לשלב כמה קטגוריות וכמה פריטים"}
                                 </small>
                             </div>
                         </div>
 
-                        <PromotionPopulationEditor
-                            title="אוכלוסיית המבצע"
-                            description="פריט ייכלל אם הוא נמצא באחת הבחירות. החרגה תמיד גוברת."
-                            value={
-                                draft.targetPopulation
-                            }
-                            products={products}
-                            categories={categories}
-                            onChange={(value) =>
-                                updateField(
-                                    "targetPopulation",
-                                    value,
-                                )
-                            }
-                        />
+                        {draft.type ===
+                            "bundle_price" ? (
+                            <div
+                                style={{
+                                    display:
+                                        "grid",
+                                    gap: 14,
+                                }}
+                            >
+                                {draft.bundleComponents.map(
+                                    (
+                                        component,
+                                        index,
+                                    ) => (
+                                        <div
+                                            key={
+                                                component.id
+                                            }
+                                            style={{
+                                                border:
+                                                    "1px solid rgba(15, 23, 42, 0.12)",
+                                                borderRadius:
+                                                    14,
+                                                padding:
+                                                    14,
+                                                display:
+                                                    "grid",
+                                                gap: 12,
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display:
+                                                        "flex",
+                                                    alignItems:
+                                                        "center",
+                                                    justifyContent:
+                                                        "space-between",
+                                                    gap: 12,
+                                                }}
+                                            >
+                                                <strong>
+                                                    רכיב{" "}
+                                                    {index +
+                                                        1}
+                                                </strong>
+
+                                                {draft
+                                                    .bundleComponents
+                                                    .length >
+                                                    2 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            removeBundleComponent(
+                                                                component.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        הסר
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <label>
+                                                כמות נדרשת
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    step="1"
+                                                    value={
+                                                        component.quantity
+                                                    }
+                                                    onChange={(
+                                                        event,
+                                                    ) =>
+                                                        updateBundleComponent(
+                                                            component.id,
+                                                            {
+                                                                quantity:
+                                                                    event
+                                                                        .target
+                                                                        .value,
+                                                            },
+                                                        )
+                                                    }
+                                                />
+                                            </label>
+
+                                            <PromotionPopulationEditor
+                                                title={`אוכלוסיית רכיב ${index + 1}`}
+                                                description="בחר פריטים ו/או קטגוריות שיכולים למלא את הרכיב. החרגה תמיד גוברת."
+                                                value={
+                                                    component.population
+                                                }
+                                                products={
+                                                    products
+                                                }
+                                                categories={
+                                                    categories
+                                                }
+                                                onChange={(
+                                                    value,
+                                                ) =>
+                                                    updateBundleComponent(
+                                                        component.id,
+                                                        {
+                                                            population:
+                                                                value,
+                                                        },
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    ),
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        addBundleComponent
+                                    }
+                                >
+                                    + הוסף רכיב לחבילה
+                                </button>
+                            </div>
+                        ) : (
+                            <PromotionPopulationEditor
+                                title="אוכלוסיית המבצע"
+                                description="פריט ייכלל אם הוא נמצא באחת הבחירות. החרגה תמיד גוברת."
+                                value={
+                                    draft.targetPopulation
+                                }
+                                products={products}
+                                categories={
+                                    categories
+                                }
+                                onChange={(value) =>
+                                    updateField(
+                                        "targetPopulation",
+                                        value,
+                                    )
+                                }
+                            />
+                        )}
                     </section>
 
                     <section className="promotion-builder__section">
@@ -487,20 +707,53 @@ function PromotionBuilderDialog({
                             {showsValue && (
                                 <label>
                                     {valueLabel}
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={
-                                            draft.value
-                                        }
-                                        onChange={(event) =>
-                                            updateField(
-                                                "value",
-                                                event.target.value,
-                                            )
-                                        }
-                                    />
+
+                                    <div
+                                        style={{
+                                            display:
+                                                "grid",
+                                            gridTemplateColumns:
+                                                "minmax(0, 1fr) 72px",
+                                            gap: 8,
+                                        }}
+                                    >
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={
+                                                draft.value
+                                            }
+                                            onChange={(event) =>
+                                                updateField(
+                                                    "value",
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
+
+                                        <select
+                                            value={
+                                                draft.valueType
+                                            }
+                                            onChange={(event) =>
+                                                updateField(
+                                                    "valueType",
+                                                    event.target.value as
+                                                        | "percentage"
+                                                        | "fixed_amount",
+                                                )
+                                            }
+                                        >
+                                            <option value="percentage">
+                                                %
+                                            </option>
+
+                                            <option value="fixed_amount">
+                                                ₪
+                                            </option>
+                                        </select>
+                                    </div>
                                 </label>
                             )}
 

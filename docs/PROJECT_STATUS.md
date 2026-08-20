@@ -2203,3 +2203,25 @@ Next exact action:
 - Commit compact coupon UX + this status update separately.
 - Push both commits.
 - Begin Monetary Values durability.
+
+# Checkpoint — 2026-08-20 — Promotions Functional QA Complete
+
+## Completed
+- Unified promotion discount value selector: percentage or fixed amount.
+- Item discount supports % / fixed amount.
+- Quantity discount supports aggregate quantity across eligible population and % / fixed amount.
+- Buy X Get Y supports % / fixed amount.
+- Buy A Get B supports separate A/B populations, overlap-safe unit consumption, and % / fixed amount.
+- Basket discount supports % / fixed amount.
+- Mix & Match runtime verified.
+- Bundle upgraded to component groups with required quantity per component and fixed bundle price.
+- Bundle supports multiple complete bundles and prevents the same unit from satisfying multiple component slots.
+- Promotion Builder population selection supports products, categories and exclusions.
+- Promotion runtime live-sync to pricing/cart verified.
+
+## Status
+PROMOTIONS FUNCTIONAL QA: GREEN
+PROMOTION BUILDER UX / POLISH: YELLOW — deferred to final UI/UX Polish phase.
+
+## Next
+Resume Monetary Values SQLite durability and restart/recovery QA.

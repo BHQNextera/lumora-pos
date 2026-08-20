@@ -24,11 +24,7 @@ export const promotionTypeOptions:
 PromotionTypeOption[] = [
     {
         value: "category_discount",
-        label: "אחוז הנחה על פריטים",
-    },
-    {
-        value: "fixed_amount_discount",
-        label: "סכום הנחה קבוע",
+        label: "הנחה על פריטים",
     },
     {
         value: "quantity_discount",
@@ -61,6 +57,23 @@ PromotionTypeOption[] = [
     },
 ];
 
+export type PromotionBundleComponentDraft = {
+    id: string;
+    quantity: string;
+    population:
+        PromotionPopulationDraft;
+};
+
+export function createEmptyBundleComponentDraft():
+PromotionBundleComponentDraft {
+    return {
+        id: crypto.randomUUID(),
+        quantity: "1",
+        population:
+            createEmptyPromotionPopulation(),
+    };
+}
+
 export type PromotionDraft = {
     name: string;
 
@@ -76,9 +89,15 @@ export type PromotionDraft = {
         string[];
 
     value: string;
+    valueType:
+        | "percentage"
+        | "fixed_amount";
+
     quantity: string;
     getQuantity: string;
     bundlePrice: string;
+    bundleComponents:
+        PromotionBundleComponentDraft[];
     basketMinimumAmount: string;
 
     priority: string;
@@ -145,9 +164,14 @@ PromotionDraft {
         allowedCustomerGroupIds: [],
 
         value: "10",
+        valueType: "percentage",
         quantity: "2",
         getQuantity: "1",
         bundlePrice: "20",
+        bundleComponents: [
+            createEmptyBundleComponentDraft(),
+            createEmptyBundleComponentDraft(),
+        ],
         basketMinimumAmount: "100",
 
         priority: "100",
@@ -172,7 +196,10 @@ export function promotionDraftFromPromotion(
             promotion.name,
 
         type:
-            promotion.type,
+            promotion.type ===
+            "fixed_amount_discount"
+                ? "category_discount"
+                : promotion.type,
 
         targetPopulation:
             promotionPopulationFromTarget(
@@ -203,8 +230,19 @@ export function promotionDraftFromPromotion(
                 promotion.discountPercentage ??
                 promotion.discountAmount ??
                 promotion.rewardDiscountPercentage ??
+                promotion.rewardDiscountAmount ??
                 10,
             ),
+
+        valueType:
+            promotion.discountAmount !==
+                undefined ||
+            promotion.rewardDiscountAmount !==
+                undefined ||
+            promotion.type ===
+                "fixed_amount_discount"
+                ? "fixed_amount"
+                : "percentage",
 
         quantity:
             String(
@@ -224,6 +262,50 @@ export function promotionDraftFromPromotion(
             String(
                 promotion.bundlePrice ??
                 20,
+            ),
+
+        bundleComponents:
+            promotion.bundleComponents
+                ?.map(
+                    (component) => ({
+                        id:
+                            component.id,
+                        quantity:
+                            String(
+                                component.quantity,
+                            ),
+                        population:
+                            promotionPopulationFromTarget(
+                                component.target,
+                            ),
+                    }),
+                ) ??
+            (
+                promotion.type ===
+                    "bundle_price"
+                    ? [
+                          {
+                              id:
+                                  crypto.randomUUID(),
+                              quantity:
+                                  String(
+                                      promotion.bundleQuantity ??
+                                      1,
+                                  ),
+                              population:
+                                  promotionPopulationFromTarget(
+                                      promotion.target,
+                                      promotion.excludedProductIds ??
+                                          [],
+                                      promotion.excludedCategoryIds ??
+                                          [],
+                                  ),
+                          },
+                      ]
+                    : [
+                          createEmptyBundleComponentDraft(),
+                          createEmptyBundleComponentDraft(),
+                      ]
             ),
 
         basketMinimumAmount:
@@ -295,6 +377,18 @@ function validPercentage(
     );
 }
 
+function validDiscountValue(
+    value: string,
+    valueType:
+        | "percentage"
+        | "fixed_amount",
+) {
+    return valueType ===
+        "percentage"
+        ? validPercentage(value)
+        : positiveNumber(value);
+}
+
 function positiveInteger(
     value: string,
 ) {
@@ -315,6 +409,8 @@ export function validatePromotionDraft(
     }
 
     if (
+        draft.type !==
+            "bundle_price" &&
         !promotionPopulationHasSelection(
             draft.targetPopulation,
         )
@@ -334,22 +430,17 @@ export function validatePromotionDraft(
 
     switch (draft.type) {
         case "category_discount":
-            if (
-                !validPercentage(
-                    draft.value,
-                )
-            ) {
-                return "אחוז ההנחה חייב להיות בין 0 ל־100.";
-            }
-            break;
-
         case "fixed_amount_discount":
             if (
-                !positiveNumber(
+                !validDiscountValue(
                     draft.value,
+                    draft.valueType,
                 )
             ) {
-                return "סכום ההנחה חייב להיות גדול מ־0.";
+                return draft.valueType ===
+                    "percentage"
+                    ? "אחוז ההנחה חייב להיות בין 0 ל־100."
+                    : "סכום ההנחה חייב להיות גדול מ־0.";
             }
             break;
 
@@ -363,15 +454,60 @@ export function validatePromotionDraft(
             }
 
             if (
-                !validPercentage(
+                !validDiscountValue(
                     draft.value,
+                    draft.valueType,
                 )
             ) {
-                return "אחוז ההנחה חייב להיות בין 0 ל־100.";
+                return draft.valueType ===
+                    "percentage"
+                    ? "אחוז ההנחה חייב להיות בין 0 ל־100."
+                    : "סכום ההנחה חייב להיות גדול מ־0.";
             }
             break;
 
         case "bundle_price":
+            if (
+                draft.bundleComponents.length <
+                2
+            ) {
+                return "מחיר חבילה דורש לפחות שני רכיבים.";
+            }
+
+            for (
+                const [
+                    index,
+                    component,
+                ] of
+                    draft.bundleComponents
+                        .entries()
+            ) {
+                if (
+                    !positiveInteger(
+                        component.quantity,
+                    )
+                ) {
+                    return `כמות רכיב ${index + 1} חייבת להיות מספר שלם גדול מ־0.`;
+                }
+
+                if (
+                    !promotionPopulationHasSelection(
+                        component.population,
+                    )
+                ) {
+                    return `יש לבחור אוכלוסייה לרכיב ${index + 1}.`;
+                }
+            }
+
+            if (
+                !positiveNumber(
+                    draft.bundlePrice,
+                )
+            ) {
+                return "מחיר החבילה חייב להיות גדול מ־0.";
+            }
+            break;
+
         case "mix_and_match":
             if (
                 !positiveInteger(
@@ -404,11 +540,15 @@ export function validatePromotionDraft(
             }
 
             if (
-                !validPercentage(
+                !validDiscountValue(
                     draft.value,
+                    draft.valueType,
                 )
             ) {
-                return "אחוז ההנחה על פריט ההטבה חייב להיות בין 0 ל־100.";
+                return draft.valueType ===
+                    "percentage"
+                    ? "אחוז ההנחה על פריט ההטבה חייב להיות בין 0 ל־100."
+                    : "סכום ההנחה על פריט ההטבה חייב להיות גדול מ־0.";
             }
             break;
 
@@ -422,11 +562,15 @@ export function validatePromotionDraft(
             }
 
             if (
-                !validPercentage(
+                !validDiscountValue(
                     draft.value,
+                    draft.valueType,
                 )
             ) {
-                return "אחוז ההנחה חייב להיות בין 0 ל־100.";
+                return draft.valueType ===
+                    "percentage"
+                    ? "אחוז ההנחה חייב להיות בין 0 ל־100."
+                    : "סכום ההנחה חייב להיות גדול מ־0.";
             }
             break;
 
@@ -443,7 +587,11 @@ export function promotionFromDraft(
 ): Promotion {
     const target =
         promotionPopulationToTarget(
-            draft.targetPopulation,
+            draft.type ===
+                "bundle_price"
+                ? draft.bundleComponents[0]
+                      .population
+                : draft.targetPopulation,
         );
 
     const priority =
@@ -535,24 +683,71 @@ export function promotionFromDraft(
 
     switch (draft.type) {
         case "category_discount":
-            promotion.discountPercentage =
-                value;
-            break;
-
         case "fixed_amount_discount":
-            promotion.discountAmount =
-                value;
+            if (
+                draft.valueType ===
+                "fixed_amount"
+            ) {
+                promotion.type =
+                    "fixed_amount_discount";
+                promotion.discountAmount =
+                    value;
+            }
+            else {
+                promotion.type =
+                    "category_discount";
+                promotion.discountPercentage =
+                    value;
+            }
             break;
 
         case "quantity_discount":
             promotion.minimumQuantity =
                 quantity;
 
-            promotion.discountPercentage =
-                value;
+            if (
+                draft.valueType ===
+                "fixed_amount"
+            ) {
+                promotion.discountAmount =
+                    value;
+            }
+            else {
+                promotion.discountPercentage =
+                    value;
+            }
             break;
 
         case "bundle_price":
+            promotion.bundleComponents =
+                draft.bundleComponents.map(
+                    (component) => ({
+                        id:
+                            component.id,
+                        quantity:
+                            Number(
+                                component.quantity,
+                            ),
+                        target:
+                            promotionPopulationToTarget(
+                                component.population,
+                            ),
+                    }),
+                );
+
+            promotion.bundleQuantity =
+                promotion.bundleComponents
+                    .reduce(
+                        (sum, component) =>
+                            sum +
+                            component.quantity,
+                        0,
+                    );
+
+            promotion.bundlePrice =
+                bundlePrice;
+            break;
+
         case "mix_and_match":
             promotion.bundleQuantity =
                 quantity;
@@ -568,8 +763,17 @@ export function promotionFromDraft(
             promotion.getQuantity =
                 getQuantity;
 
-            promotion.rewardDiscountPercentage =
-                value;
+            if (
+                draft.valueType ===
+                "fixed_amount"
+            ) {
+                promotion.rewardDiscountAmount =
+                    value;
+            }
+            else {
+                promotion.rewardDiscountPercentage =
+                    value;
+            }
             break;
 
         case "buy_a_get_b":
@@ -584,16 +788,34 @@ export function promotionFromDraft(
                     draft.rewardPopulation,
                 );
 
-            promotion.rewardDiscountPercentage =
-                value;
+            if (
+                draft.valueType ===
+                "fixed_amount"
+            ) {
+                promotion.rewardDiscountAmount =
+                    value;
+            }
+            else {
+                promotion.rewardDiscountPercentage =
+                    value;
+            }
             break;
 
         case "basket_discount":
             promotion.basketMinimumAmount =
                 basketMinimumAmount;
 
-            promotion.discountPercentage =
-                value;
+            if (
+                draft.valueType ===
+                "fixed_amount"
+            ) {
+                promotion.discountAmount =
+                    value;
+            }
+            else {
+                promotion.discountPercentage =
+                    value;
+            }
             break;
 
         case "basket_tier_discount":

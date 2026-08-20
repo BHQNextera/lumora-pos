@@ -1,4 +1,4 @@
-import type {
+﻿import type {
     PricingRule,
 } from "../pricing/PricingRule";
 import type {
@@ -561,15 +561,33 @@ function buildBuyXGetYApplications(
     const getQuantity =
         promotion.getQuantity ?? 0;
 
+    const fixedRewardAmount =
+        promotion.rewardDiscountAmount ?? 0;
+
     const rewardPercentage =
         promotion.rewardDiscountPercentage ??
-        100;
+        (
+            promotion.rewardDiscountAmount ===
+            undefined
+                ? 100
+                : 0
+        );
+
+    const usesFixedAmount =
+        promotion.rewardDiscountAmount !==
+        undefined;
 
     if (
         buyQuantity <= 0 ||
         getQuantity <= 0 ||
-        rewardPercentage <= 0 ||
-        rewardPercentage > 100
+        (
+            usesFixedAmount
+                ? fixedRewardAmount <= 0
+                : (
+                    rewardPercentage <= 0 ||
+                    rewardPercentage > 100
+                )
+        )
     ) {
         return [];
     }
@@ -632,11 +650,16 @@ function buildBuyXGetYApplications(
                                 unit.lineId,
 
                             amount:
-                                unit.unitPrice *
-                                (
-                                    rewardPercentage /
-                                    100
-                                ),
+                                usesFixedAmount
+                                    ? Math.min(
+                                        unit.unitPrice,
+                                        fixedRewardAmount,
+                                    )
+                                    : unit.unitPrice *
+                                    (
+                                        rewardPercentage /
+                                        100
+                                    ),
                         }),
                     ),
                 ),
@@ -647,6 +670,8 @@ function buildBuyXGetYApplications(
                 application,
             );
         }
+
+        groupIndex += 1;
     }
 
     return applications;
@@ -704,103 +729,426 @@ function buildQuantityDiscountApplications(
     lines: CartLine[],
 ) {
     const minimumQuantity =
-        promotion.minimumQuantity ??
-        0;
+        promotion.minimumQuantity ?? 0;
+
+    const fixedAmount =
+        promotion.discountAmount ?? 0;
 
     const percentage =
-        promotion.discountPercentage ??
-        0;
+        promotion.discountPercentage ?? 0;
+
+    const usesFixedAmount =
+        promotion.discountAmount !==
+        undefined;
 
     if (
         minimumQuantity <= 0 ||
-        percentage <= 0 ||
-        percentage > 100
+        (
+            usesFixedAmount
+                ? fixedAmount <= 0
+                : (
+                    percentage <= 0 ||
+                    percentage > 100
+                )
+        )
     ) {
         return [];
     }
 
-    const applications:
-        PromotionApplication[] =
-        [];
+    const eligibleLines =
+        lines.filter(
+            (line) =>
+                line.kind === "sale" &&
+                line.quantity > 0 &&
+                matchesPromotionTarget(
+                    line,
+                    promotion,
+                ),
+        );
 
-    for (const line of lines) {
-        if (
-            line.kind !== "sale" ||
-            line.quantity <
-            minimumQuantity ||
-            !matchesPromotionTarget(
-                line,
-                promotion,
-            )
-        ) {
-            continue;
-        }
+    const totalEligibleQuantity =
+        eligibleLines.reduce(
+            (sum, line) =>
+                sum + line.quantity,
+            0,
+        );
 
-        const units =
-            Array.from(
-                {
-                    length:
-                        line.quantity,
-                },
-                (_, index) => ({
-                    id:
-                        `${line.id}::${index}`,
-
-                    lineId:
-                        line.id,
-
-                    unitPrice:
-                        line.unitPrice,
-                }),
-            );
-
-        const application =
-            createApplication(
-                `${promotion.id}::${line.id}`,
-                promotion,
-                units,
-                [
-                    {
-                        lineId:
-                            line.id,
-
-                        amount:
-                            line.unitPrice *
-                            line.quantity *
-                            (
-                                percentage /
-                                100
-                            ),
-                    },
-                ],
-            );
-
-        if (application) {
-            applications.push(
-                application,
-            );
-        }
+    if (
+        totalEligibleQuantity <
+        minimumQuantity
+    ) {
+        return [];
     }
 
-    return applications;
-}
+    const units =
+        eligibleLines.flatMap(
+            (line) =>
+                Array.from(
+                    {
+                        length:
+                            line.quantity,
+                    },
+                    (_, index) => ({
+                        id:
+                            `${line.id}::${index}`,
+                        lineId:
+                            line.id,
+                        unitPrice:
+                            line.unitPrice,
+                    }),
+                ),
+        );
 
+    const discounts =
+        eligibleLines.map(
+            (line) => ({
+                lineId:
+                    line.id,
+
+                amount:
+                    usesFixedAmount
+                        ? line.quantity *
+                        Math.min(
+                            line.unitPrice,
+                            fixedAmount,
+                        )
+                        : line.unitPrice *
+                        line.quantity *
+                        (
+                            percentage /
+                            100
+                        ),
+            }),
+        );
+
+    const application =
+        createApplication(
+            `${promotion.id}::quantity`,
+            promotion,
+            units,
+            discounts,
+        );
+
+    return application
+        ? [application]
+        : [];
+}
 function buildBundlePriceApplications(
     promotion: Promotion,
     lines: CartLine[],
 ) {
-    const bundleQuantity =
-        promotion.bundleQuantity ??
-        0;
-
     const bundlePrice =
         promotion.bundlePrice ??
         0;
 
-    if (
-        bundleQuantity <= 0 ||
-        bundlePrice < 0
-    ) {
+    if (bundlePrice < 0) {
+        return [];
+    }
+
+    const components =
+        promotion.bundleComponents ??
+        [];
+
+    if (components.length > 0) {
+        if (
+            components.some(
+                (component) =>
+                    component.quantity <= 0,
+            )
+        ) {
+            return [];
+        }
+
+        const saleLines =
+            lines.filter(
+                (line) =>
+                    line.kind === "sale" &&
+                    line.quantity > 0,
+            );
+
+        const lineById =
+            new Map(
+                saleLines.map(
+                    (line) => [
+                        line.id,
+                        line,
+                    ] as const,
+                ),
+            );
+
+        const allUnits =
+            saleLines.flatMap(
+                (line) =>
+                    Array.from(
+                        {
+                            length:
+                                line.quantity,
+                        },
+                        (_, index) => ({
+                            id:
+                                `${line.id}::${index}`,
+                            lineId:
+                                line.id,
+                            unitPrice:
+                                line.unitPrice,
+                        }),
+                    ),
+            );
+
+        const remainingUnitIds =
+            new Set(
+                allUnits.map(
+                    (unit) =>
+                        unit.id,
+                ),
+            );
+
+        const applications:
+            PromotionApplication[] =
+            [];
+
+        let bundleIndex = 0;
+
+        while (true) {
+            const slots =
+                components
+                    .flatMap(
+                        (component) =>
+                            Array.from(
+                                {
+                                    length:
+                                        component.quantity,
+                                },
+                                (_, slotIndex) => ({
+                                    id:
+                                        `${component.id}::${slotIndex}`,
+                                    target:
+                                        component.target,
+                                }),
+                            ),
+                    )
+                    .map(
+                        (slot) => ({
+                            ...slot,
+                            candidateCount:
+                                allUnits.filter(
+                                    (unit) => {
+                                        if (
+                                            !remainingUnitIds.has(
+                                                unit.id,
+                                            )
+                                        ) {
+                                            return false;
+                                        }
+
+                                        const line =
+                                            lineById.get(
+                                                unit.lineId,
+                                            );
+
+                                        return Boolean(
+                                            line &&
+                                            matchesPopulation(
+                                                line,
+                                                slot.target,
+                                                promotion.excludedProductIds ??
+                                                    [],
+                                                promotion.excludedCategoryIds ??
+                                                    [],
+                                            ),
+                                        );
+                                    },
+                                ).length,
+                        }),
+                    )
+                    .sort(
+                        (a, b) =>
+                            a.candidateCount -
+                            b.candidateCount,
+                    );
+
+            if (
+                slots.length === 0 ||
+                slots.some(
+                    (slot) =>
+                        slot.candidateCount ===
+                        0,
+                )
+            ) {
+                break;
+            }
+
+            const selectedUnits:
+                typeof allUnits =
+                [];
+
+            const usedUnitIds =
+                new Set<string>();
+
+            const assignSlot = (
+                slotIndex: number,
+            ): boolean => {
+                if (
+                    slotIndex >=
+                    slots.length
+                ) {
+                    return true;
+                }
+
+                const slot =
+                    slots[slotIndex];
+
+                const candidates =
+                    allUnits
+                        .filter(
+                            (unit) => {
+                                if (
+                                    !remainingUnitIds.has(
+                                        unit.id,
+                                    ) ||
+                                    usedUnitIds.has(
+                                        unit.id,
+                                    )
+                                ) {
+                                    return false;
+                                }
+
+                                const line =
+                                    lineById.get(
+                                        unit.lineId,
+                                    );
+
+                                return Boolean(
+                                    line &&
+                                    matchesPopulation(
+                                        line,
+                                        slot.target,
+                                        promotion.excludedProductIds ??
+                                            [],
+                                        promotion.excludedCategoryIds ??
+                                            [],
+                                    ),
+                                );
+                            },
+                        )
+                        .sort(
+                            (a, b) =>
+                                b.unitPrice -
+                                a.unitPrice,
+                        );
+
+                for (
+                    const candidate of
+                    candidates
+                ) {
+                    usedUnitIds.add(
+                        candidate.id,
+                    );
+
+                    selectedUnits.push(
+                        candidate,
+                    );
+
+                    if (
+                        assignSlot(
+                            slotIndex + 1,
+                        )
+                    ) {
+                        return true;
+                    }
+
+                    selectedUnits.pop();
+
+                    usedUnitIds.delete(
+                        candidate.id,
+                    );
+                }
+
+                return false;
+            };
+
+            if (!assignSlot(0)) {
+                break;
+            }
+
+            const normalValue =
+                selectedUnits.reduce(
+                    (sum, unit) =>
+                        sum +
+                        unit.unitPrice,
+                    0,
+                );
+
+            const discount =
+                roundMoney(
+                    normalValue -
+                    bundlePrice,
+                );
+
+            if (discount <= 0) {
+                break;
+            }
+
+            const rawAllocations =
+                selectedUnits.map(
+                    (unit) => ({
+                        lineId:
+                            unit.lineId,
+
+                        amount:
+                            normalValue > 0
+                                ? discount *
+                                (
+                                    unit.unitPrice /
+                                    normalValue
+                                )
+                                : 0,
+                    }),
+                );
+
+            const application =
+                createApplication(
+                    `${promotion.id}::bundle-${bundleIndex}`,
+                    promotion,
+                    selectedUnits,
+                    groupAllocationsByLine(
+                        rawAllocations,
+                    ),
+                );
+
+            if (!application) {
+                break;
+            }
+
+            applications.push(
+                application,
+            );
+
+            for (
+                const unit of
+                selectedUnits
+            ) {
+                remainingUnitIds.delete(
+                    unit.id,
+                );
+            }
+
+            bundleIndex += 1;
+        }
+
+        return applications;
+    }
+
+    /*
+     * Legacy bundle fallback:
+     * older promotions used one eligible population
+     * plus one total bundle quantity.
+     */
+    const bundleQuantity =
+        promotion.bundleQuantity ??
+        0;
+
+    if (bundleQuantity <= 0) {
         return [];
     }
 
@@ -859,10 +1207,6 @@ function buildBundlePriceApplications(
             continue;
         }
 
-        /*
-         * Allocate the bundle discount proportionally to the participating
-         * units so the line display and later accounting remain traceable.
-         */
         const rawAllocations =
             bundle.map(
                 (unit) => ({
@@ -929,15 +1273,33 @@ function buildBuyAGetBApplications(
     const getQuantity =
         promotion.getQuantity ?? 0;
 
+    const fixedRewardAmount =
+        promotion.rewardDiscountAmount ?? 0;
+
     const rewardPercentage =
         promotion.rewardDiscountPercentage ??
-        100;
+        (
+            promotion.rewardDiscountAmount ===
+            undefined
+                ? 100
+                : 0
+        );
+
+    const usesFixedAmount =
+        promotion.rewardDiscountAmount !==
+        undefined;
 
     if (
         buyQuantity <= 0 ||
         getQuantity <= 0 ||
-        rewardPercentage <= 0 ||
-        rewardPercentage > 100 ||
+        (
+            usesFixedAmount
+                ? fixedRewardAmount <= 0
+                : (
+                    rewardPercentage <= 0 ||
+                    rewardPercentage > 100
+                )
+        ) ||
         !promotion.rewardTarget
     ) {
         return [];
@@ -988,55 +1350,128 @@ function buildBuyAGetBApplications(
                     a.unitPrice,
             );
 
-    const completeGroups =
-        Math.min(
-            Math.floor(
-                triggerUnits.length /
-                buyQuantity,
-            ),
-            Math.floor(
-                rewardUnits.length /
-                getQuantity,
-            ),
-        );
-
     const applications:
         PromotionApplication[] =
         [];
 
-    for (
-        let groupIndex = 0;
-        groupIndex <
-        completeGroups;
-        groupIndex += 1
-    ) {
-        const triggerStart =
-            groupIndex *
-            buyQuantity;
+    const consumedUnitIds =
+        new Set<string>();
 
-        const rewardStart =
-            groupIndex *
-            getQuantity;
+    let groupIndex = 0;
 
-        const consumedTriggerUnits =
-            triggerUnits.slice(
-                triggerStart,
-                triggerStart +
-                buyQuantity,
+    while (true) {
+        const availableTriggerUnits =
+            triggerUnits.filter(
+                (unit) =>
+                    !consumedUnitIds.has(
+                        unit.id,
+                    ),
             );
+
+        const availableRewardUnits =
+            rewardUnits.filter(
+                (unit) =>
+                    !consumedUnitIds.has(
+                        unit.id,
+                    ),
+            );
+
+        if (
+            availableTriggerUnits.length <
+                buyQuantity ||
+            availableRewardUnits.length <
+                getQuantity
+        ) {
+            break;
+        }
+
+        const availableTriggerIds =
+            new Set(
+                availableTriggerUnits.map(
+                    (unit) =>
+                        unit.id,
+                ),
+            );
+
+        const exclusiveRewardUnits =
+            availableRewardUnits.filter(
+                (unit) =>
+                    !availableTriggerIds.has(
+                        unit.id,
+                    ),
+            );
+
+        const overlappingRewardUnits =
+            availableRewardUnits
+                .filter(
+                    (unit) =>
+                        availableTriggerIds.has(
+                            unit.id,
+                        ),
+                )
+                .sort(
+                    (a, b) =>
+                        a.unitPrice -
+                        b.unitPrice,
+                );
 
         const consumedRewardUnits =
-            rewardUnits.slice(
-                rewardStart,
-                rewardStart +
+            [
+                ...exclusiveRewardUnits,
+                ...overlappingRewardUnits,
+            ].slice(
+                0,
                 getQuantity,
             );
+
+        if (
+            consumedRewardUnits.length <
+            getQuantity
+        ) {
+            break;
+        }
+
+        const rewardUnitIds =
+            new Set(
+                consumedRewardUnits.map(
+                    (unit) =>
+                        unit.id,
+                ),
+            );
+
+        const consumedTriggerUnits =
+            availableTriggerUnits
+                .filter(
+                    (unit) =>
+                        !rewardUnitIds.has(
+                            unit.id,
+                        ),
+                )
+                .slice(
+                    0,
+                    buyQuantity,
+                );
+
+        if (
+            consumedTriggerUnits.length <
+            buyQuantity
+        ) {
+            break;
+        }
 
         const consumedUnits =
             [
                 ...consumedTriggerUnits,
                 ...consumedRewardUnits,
             ];
+
+        for (
+            const unit of consumedUnits
+        ) {
+            consumedUnitIds.add(
+                unit.id,
+            );
+        }
 
         const allocations =
             groupAllocationsByLine(
@@ -1046,11 +1481,16 @@ function buildBuyAGetBApplications(
                             unit.lineId,
 
                         amount:
-                            unit.unitPrice *
-                            (
-                                rewardPercentage /
-                                100
-                            ),
+                            usesFixedAmount
+                                ? Math.min(
+                                    unit.unitPrice,
+                                    fixedRewardAmount,
+                                )
+                                : unit.unitPrice *
+                                (
+                                    rewardPercentage /
+                                    100
+                                ),
                     }),
                 ),
             );
