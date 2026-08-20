@@ -1,4 +1,4 @@
-import {
+﻿import {
     hydrateActiveBusinessConfiguration,
 } from "../config/ActiveBusinessConfiguration";
 
@@ -10,6 +10,9 @@ import {
     hydratePromotions,
 } from "../models/promotion/PromotionRepository";
 
+import {
+    hydrateMonetaryValues,
+} from "../models/monetary-value/MonetaryValueRepository";
 
 import {
     hydrateSaleNumbering,
@@ -77,6 +80,10 @@ void {
         hydratePromotions,
     );
 
+    registerRuntimeHydrator(
+        "monetary-values",
+        hydrateMonetaryValues,
+    );
 
     registerRuntimeHydrator(
         "sale-numbering",

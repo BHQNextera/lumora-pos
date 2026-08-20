@@ -1,3 +1,15 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
+import {
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
+
 import type {
     MonetaryValue,
     MonetaryValueMovement,
@@ -9,48 +21,183 @@ const VALUES_KEY =
 const MOVEMENTS_KEY =
     "lumora.monetary-value-movements";
 
-function readArray<T>(
-    key: string,
+let monetaryValues:
+    MonetaryValue[] = [];
+
+let monetaryValueMovements:
+    MonetaryValueMovement[] = [];
+
+let monetaryValueStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function getMonetaryValueStorage():
+Promise<RuntimeStorage> {
+    if (!monetaryValueStoragePromise) {
+        monetaryValueStoragePromise =
+            (async (): Promise<RuntimeStorage> => {
+                if (!isTauri()) {
+                    return new BrowserLocalStorageAdapter();
+                }
+
+                const {
+                    SQLiteRuntimeStorageAdapter,
+                } = await import(
+                    "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                );
+
+                return new SQLiteRuntimeStorageAdapter();
+            })();
+    }
+
+    return monetaryValueStoragePromise;
+}
+
+function parseArray<T>(
+    raw: string | null,
 ): T[] {
+    if (!raw) {
+        return [];
+    }
+
     try {
-        const raw =
-            localStorage.getItem(key);
-
-        if (!raw) {
-            return [];
-        }
-
         const parsed =
             JSON.parse(raw);
 
         return Array.isArray(parsed)
-            ? (parsed as T[])
+            ? parsed as T[]
             : [];
-    } catch {
+    }
+    catch {
         return [];
     }
 }
 
-function writeArray<T>(
+async function readStoredValue(
+    storage: RuntimeStorage,
     key: string,
-    value: T[],
-) {
-    localStorage.setItem(
-        key,
-        JSON.stringify(value),
-    );
+): Promise<string | null> {
+    let raw =
+        await storage.getItem(
+            key,
+        );
+
+    if (
+        raw === null &&
+        isTauri()
+    ) {
+        const legacy =
+            window.localStorage.getItem(
+                key,
+            );
+
+        if (legacy !== null) {
+            await storage.setItem(
+                key,
+                legacy,
+            );
+
+            window.localStorage.removeItem(
+                key,
+            );
+
+            raw = legacy;
+        }
+    }
+
+    return raw;
+}
+
+export async function hydrateMonetaryValues():
+Promise<void> {
+    const storage =
+        await getMonetaryValueStorage();
+
+    const [
+        valuesRaw,
+        movementsRaw,
+    ] =
+        await Promise.all([
+            readStoredValue(
+                storage,
+                VALUES_KEY,
+            ),
+            readStoredValue(
+                storage,
+                MOVEMENTS_KEY,
+            ),
+        ]);
+
+    monetaryValues =
+        parseArray<MonetaryValue>(
+            valuesRaw,
+        );
+
+    monetaryValueMovements =
+        parseArray<MonetaryValueMovement>(
+            movementsRaw,
+        );
+}
+
+function persistMonetaryValues() {
+    const snapshot =
+        JSON.stringify(
+            monetaryValues,
+        );
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getMonetaryValueStorage();
+
+                await storage.setItem(
+                    VALUES_KEY,
+                    snapshot,
+                );
+            },
+        );
+}
+
+function persistMonetaryValueMovements() {
+    const snapshot =
+        JSON.stringify(
+            monetaryValueMovements,
+        );
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getMonetaryValueStorage();
+
+                await storage.setItem(
+                    MOVEMENTS_KEY,
+                    snapshot,
+                );
+            },
+        );
+}
+
+export function flushMonetaryValuePersistence():
+Promise<void> {
+    return persistenceQueue;
 }
 
 export function getMonetaryValues() {
-    return readArray<MonetaryValue>(
-        VALUES_KEY,
-    );
+    return [
+        ...monetaryValues,
+    ];
 }
 
 export function getMonetaryValue(
     id: string,
 ) {
-    return getMonetaryValues().find(
+    return monetaryValues.find(
         (item) =>
             item.id === id,
     );
@@ -60,9 +207,11 @@ export function getMonetaryValueByNumber(
     number: string,
 ) {
     const normalized =
-        number.trim().toLowerCase();
+        number
+            .trim()
+            .toLowerCase();
 
-    return getMonetaryValues().find(
+    return monetaryValues.find(
         (item) =>
             item.number
                 .trim()
@@ -74,45 +223,40 @@ export function getMonetaryValueByNumber(
 export function saveMonetaryValue(
     value: MonetaryValue,
 ) {
-    const current =
-        getMonetaryValues();
-
     const exists =
-        current.some(
+        monetaryValues.some(
             (item) =>
                 item.id === value.id,
         );
 
-    const next = exists
-        ? current.map(
-            (item) =>
-                item.id === value.id
-                    ? value
-                    : item,
-        )
-        : [
-            value,
-            ...current,
-        ];
+    monetaryValues =
+        exists
+            ? monetaryValues.map(
+                (item) =>
+                    item.id === value.id
+                        ? value
+                        : item,
+            )
+            : [
+                value,
+                ...monetaryValues,
+            ];
 
-    writeArray(
-        VALUES_KEY,
-        next,
-    );
+    persistMonetaryValues();
 
     return value;
 }
 
 export function getMonetaryValueMovements() {
-    return readArray<MonetaryValueMovement>(
-        MOVEMENTS_KEY,
-    );
+    return [
+        ...monetaryValueMovements,
+    ];
 }
 
 export function getMovementsForMonetaryValue(
     monetaryValueId: string,
 ) {
-    return getMonetaryValueMovements()
+    return monetaryValueMovements
         .filter(
             (movement) =>
                 movement.monetaryValueId ===
@@ -132,16 +276,12 @@ export function getMovementsForMonetaryValue(
 export function saveMonetaryValueMovement(
     movement: MonetaryValueMovement,
 ) {
-    const current =
-        getMonetaryValueMovements();
+    monetaryValueMovements = [
+        movement,
+        ...monetaryValueMovements,
+    ];
 
-    writeArray(
-        MOVEMENTS_KEY,
-        [
-            movement,
-            ...current,
-        ],
-    );
+    persistMonetaryValueMovements();
 
     return movement;
 }

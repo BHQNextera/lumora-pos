@@ -2225,3 +2225,25 @@ PROMOTION BUILDER UX / POLISH: YELLOW — deferred to final UI/UX Polish phase.
 
 ## Next
 Resume Monetary Values SQLite durability and restart/recovery QA.
+
+# Checkpoint — 2026-08-20 — Monetary Values SQLite Durability
+
+## Completed
+- Monetary Values and movement history persist through the runtime storage layer / SQLite in Tauri.
+- Runtime hydration occurs before application use.
+- Gift Card issue survives restart.
+- Gift Card partial redemption survives restart with the updated balance.
+- Gift Card restore survives restart.
+- Credit Voucher issue survives restart.
+- Partial Credit Voucher redemption depletes the original voucher and creates a replacement voucher for the remaining balance.
+- Original/replacement voucher linkage survives restart without duplicate issuance.
+
+## Status
+MONETARY VALUES SQLITE DURABILITY: GREEN
+
+## Remaining E2E
+- Verify real return/refund flow restores payment to the original Gift Card where policy requires it.
+- Store Credit functional scenarios remain part of payment/E2E QA if enabled.
+
+## Next
+Attendance durability.
