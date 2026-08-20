@@ -52,6 +52,8 @@ customer: SaleCustomer;
 
     coupon?: AppliedSaleCoupon;
 
+    cancellationFeeAmount?: number;
+
     tax: number;
     total: number;
 

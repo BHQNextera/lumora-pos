@@ -135,6 +135,8 @@ export type AccountingDocumentData = {
     lines:
         AccountingDocumentLine[];
 
+    cancellationFeeAmount?: number;
+
     totals:
         AccountingDocumentTotals;
 

@@ -1,10 +1,8 @@
 import {
+    useMemo,
     useState,
 } from "react";
 
-import {
-    storedValuePolicy,
-} from "../../config/storedValuePolicy";
 import type {
     Payment,
 } from "../../models/Payment";
@@ -21,16 +19,58 @@ type RefundPageProps = {
     onBack: () => void;
     onComplete: (
         payments: Payment[],
-    ) => void;
+        applyCancellationFee?: boolean,
+    ) => void | Promise<void>;
 };
+
+const refundMethods: {
+    code: RefundMethod;
+    title: string;
+    description: string;
+}[] = [
+    {
+        code: "cash",
+        title: "מזומן",
+        description: "החזר מזומן",
+    },
+    {
+        code: "card_terminal",
+        title: "אשראי",
+        description: "זיכוי בכרטיס",
+    },
+    {
+        code: "credit_voucher",
+        title: "שובר זיכוי",
+        description: "הנפקת זיכוי ללקוח",
+    },
+];
+
+function roundMoney(
+    value: number,
+) {
+    return (
+        Math.round(
+            (value + Number.EPSILON) *
+            100,
+        ) / 100
+    );
+}
 
 function RefundPage({
     total,
     onBack,
     onComplete,
 }: RefundPageProps) {
-    const refundAmount =
-        Math.abs(total);
+    const grossRefundAmount =
+        roundMoney(
+            Math.abs(total),
+        );
+
+    const [
+        payments,
+        setPayments,
+    ] =
+        useState<Payment[]>([]);
 
     const [
         selectedMethod,
@@ -41,46 +81,136 @@ function RefundPage({
         );
 
     const [
-        smallRefundNotice,
-        setSmallRefundNotice,
+        amountInput,
+        setAmountInput,
+    ] =
+        useState("");
+
+    const [
+        cancellationFeeApplied,
+        setCancellationFeeApplied,
     ] =
         useState(false);
 
-    const voucherThreshold =
-        storedValuePolicy
-            .creditVoucherCashRemainderThreshold;
+    const [
+        error,
+        setError,
+    ] =
+        useState<string | null>(
+            null,
+        );
 
-    const isSmallRefund =
-        refundAmount > 0 &&
-        refundAmount <=
-            voucherThreshold;
+    const cancellationFeeAmount =
+        cancellationFeeApplied
+            ? Math.min(
+                  roundMoney(
+                      grossRefundAmount *
+                      0.05,
+                  ),
+                  100,
+              )
+            : 0;
+
+    const netRefundAmount =
+        roundMoney(
+            grossRefundAmount -
+            cancellationFeeAmount,
+        );
+
+    const allocatedAmount =
+        useMemo(
+            () =>
+                roundMoney(
+                    payments.reduce(
+                        (
+                            sum,
+                            payment,
+                        ) =>
+                            sum +
+                            Math.abs(
+                                payment.amount,
+                            ),
+                        0,
+                    ),
+                ),
+            [payments],
+        );
+
+    const remainingAmount =
+        roundMoney(
+            Math.max(
+                0,
+                netRefundAmount -
+                allocatedAmount,
+            ),
+        );
 
     const selectMethod = (
         method: RefundMethod,
     ) => {
+        setError(null);
+        setSelectedMethod(
+            method,
+        );
+        setAmountInput(
+            remainingAmount.toFixed(
+                2,
+            ),
+        );
+    };
+
+    const addAllocation = () => {
         if (
-            method ===
-                "credit_voucher" &&
-            isSmallRefund
+            !selectedMethod ||
+            remainingAmount <= 0
         ) {
-            setSelectedMethod(
-                "cash",
-            );
-            setSmallRefundNotice(
-                true,
+            return;
+        }
+
+        if (
+            payments.some(
+                (payment) =>
+                    payment.method ===
+                    selectedMethod,
+            )
+        ) {
+            setError(
+                "אמצעי ההחזר כבר הוקצה. ניתן להסיר אותו ולהזין מחדש.",
             );
             return;
         }
 
-        setSelectedMethod(
-            method,
-        );
-    };
+        const parsed =
+            Number(
+                amountInput,
+            );
 
-    const completeRefund = () => {
+        const amount =
+            roundMoney(
+                parsed,
+            );
+
         if (
-            !selectedMethod
+            !Number.isFinite(
+                amount,
+            ) ||
+            amount <= 0
         ) {
+            setError(
+                "יש להזין סכום החזר תקין.",
+            );
+            return;
+        }
+
+        if (
+            amount >
+            remainingAmount + 0.001
+        ) {
+            setError(
+                `לא ניתן לעבור את היתרה להחזר: ₪${remainingAmount.toFixed(
+                    2,
+                )}`,
+            );
             return;
         }
 
@@ -92,26 +222,89 @@ function RefundPage({
             status:
                 "approved",
             amount:
-                -refundAmount,
+                -amount,
             createdAt:
-                new Date().toISOString(),
+                new Date()
+                    .toISOString(),
         };
 
-        onComplete([
-            payment,
-        ]);
+        setPayments(
+            (current) => [
+                ...current,
+                payment,
+            ],
+        );
+
+        setSelectedMethod(
+            null,
+        );
+
+        setAmountInput("");
+        setError(null);
     };
+
+    const removeAllocation = (
+        paymentId: string,
+    ) => {
+        setPayments(
+            (current) =>
+                current.filter(
+                    (payment) =>
+                        payment.id !==
+                        paymentId,
+                ),
+        );
+
+        setError(null);
+    };
+
+    const toggleCancellationFee =
+        () => {
+            if (
+                payments.length >
+                0
+            ) {
+                return;
+            }
+
+            setCancellationFeeApplied(
+                (current) =>
+                    !current,
+            );
+
+            setSelectedMethod(
+                null,
+            );
+
+            setAmountInput("");
+            setError(null);
+        };
+
+    const completeRefund =
+        () => {
+            if (
+                payments.length ===
+                    0 ||
+                remainingAmount >
+                    0.001
+            ) {
+                return;
+            }
+
+            void onComplete(
+                payments,
+                cancellationFeeApplied,
+            );
+        };
 
     return (
         <section className="refund-page">
             <header className="refund-page__header">
                 <button
                     type="button"
-                    onClick={
-                        onBack
-                    }
+                    onClick={onBack}
                 >
-                    חזרה לעסקה
+                    חזרה
                 </button>
 
                 <div>
@@ -121,221 +314,240 @@ function RefundPage({
 
                     <h1>
                         ₪
-                        {refundAmount.toFixed(
+                        {grossRefundAmount.toFixed(
                             2,
                         )}
                     </h1>
                 </div>
             </header>
 
-            <div className="refund-page__methods">
-                <button
-                    type="button"
-                    className={
-                        selectedMethod ===
-                        "cash"
-                            ? "refund-method refund-method--active"
-                            : "refund-method"
-                    }
-                    onClick={() =>
-                        selectMethod(
-                            "cash",
-                        )
-                    }
-                >
-                    <strong>
-                        מזומן
-                    </strong>
-
+            <div className="refund-page__refund-summary">
+                <div>
                     <span>
-                        החזר במזומן
+                        החזר ברוטו
                     </span>
-                </button>
-
-                <button
-                    type="button"
-                    className={
-                        selectedMethod ===
-                        "card_terminal"
-                            ? "refund-method refund-method--active"
-                            : "refund-method"
-                    }
-                    onClick={() =>
-                        selectMethod(
-                            "card_terminal",
-                        )
-                    }
-                >
                     <strong>
-                        זיכוי אשראי
+                        ₪{grossRefundAmount.toFixed(2)}
                     </strong>
+                </div>
 
+                <div>
                     <span>
-                        החזר לכרטיס
+                        דמי ביטול
                     </span>
-                </button>
-
-                <button
-                    type="button"
-                    className={
-                        selectedMethod ===
-                        "credit_voucher"
-                            ? "refund-method refund-method--active"
-                            : "refund-method"
-                    }
-                    onClick={() =>
-                        selectMethod(
-                            "credit_voucher",
-                        )
-                    }
-                >
                     <strong>
-                        שובר זיכוי
+                        ₪{cancellationFeeAmount.toFixed(2)}
                     </strong>
+                </div>
 
+                <div>
                     <span>
-                        {isSmallRefund
-                            ? `עד ₪${voucherThreshold.toFixed(
-                                  2,
-                              )} מוחזר במזומן`
-                            : "לפי נהלי בית העסק"}
+                        להחזר נטו
                     </span>
-                </button>
+                    <strong>
+                        ₪{netRefundAmount.toFixed(2)}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>
+                        הוקצה
+                    </span>
+                    <strong>
+                        ₪{allocatedAmount.toFixed(2)}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>
+                        נותר
+                    </span>
+                    <strong>
+                        ₪{remainingAmount.toFixed(2)}
+                    </strong>
+                </div>
             </div>
+
+            <button
+                type="button"
+                className="refund-page__fee"
+                disabled={
+                    payments.length >
+                    0
+                }
+                onClick={
+                    toggleCancellationFee
+                }
+            >
+                {cancellationFeeApplied
+                    ? `הסר דמי ביטול · ₪${cancellationFeeAmount.toFixed(
+                          2,
+                      )}`
+                    : "החל דמי ביטול"}
+            </button>
+
+            <div className="refund-page__methods">
+                {refundMethods.map(
+                    (method) => {
+                        const used =
+                            payments.some(
+                                (
+                                    payment,
+                                ) =>
+                                    payment.method ===
+                                    method.code,
+                            );
+
+                        return (
+                            <button
+                                key={
+                                    method.code
+                                }
+                                type="button"
+                                disabled={
+                                    used ||
+                                    remainingAmount <=
+                                        0
+                                }
+                                className={
+                                    selectedMethod ===
+                                    method.code
+                                        ? "refund-method refund-method--active"
+                                        : "refund-method"
+                                }
+                                onClick={() =>
+                                    selectMethod(
+                                        method.code,
+                                    )
+                                }
+                            >
+                                <strong>
+                                    {
+                                        method.title
+                                    }
+                                </strong>
+                                <span>
+                                    {
+                                        method.description
+                                    }
+                                </span>
+                            </button>
+                        );
+                    },
+                )}
+            </div>
+
+            {selectedMethod && (
+                <div className="refund-page__allocation-entry">
+                    <label>
+                        סכום להקצאה
+                        <input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            max={
+                                remainingAmount
+                            }
+                            value={
+                                amountInput
+                            }
+                            onChange={(
+                                event,
+                            ) =>
+                                setAmountInput(
+                                    event
+                                        .target
+                                        .value,
+                                )
+                            }
+                        />
+                    </label>
+
+                    <button
+                        type="button"
+                        onClick={
+                            addAllocation
+                        }
+                    >
+                        הוסף להחזר
+                    </button>
+                </div>
+            )}
+
+            {payments.length > 0 && (
+                <div className="refund-page__allocations">
+                    {payments.map(
+                        (payment) => {
+                            const method =
+                                refundMethods.find(
+                                    (
+                                        item,
+                                    ) =>
+                                        item.code ===
+                                        payment.method,
+                                );
+
+                            return (
+                                <div
+                                    key={
+                                        payment.id
+                                    }
+                                >
+                                    <strong>
+                                        {method?.title ??
+                                            payment.method}
+                                    </strong>
+
+                                    <span>
+                                        ₪
+                                        {Math.abs(
+                                            payment.amount,
+                                        ).toFixed(
+                                            2,
+                                        )}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            removeAllocation(
+                                                payment.id,
+                                            )
+                                        }
+                                    >
+                                        הסר
+                                    </button>
+                                </div>
+                            );
+                        },
+                    )}
+                </div>
+            )}
+
+            {error && (
+                <div className="refund-page__error">
+                    {error}
+                </div>
+            )}
 
             <button
                 type="button"
                 className="refund-page__confirm"
                 disabled={
-                    !selectedMethod
+                    payments.length ===
+                        0 ||
+                    remainingAmount >
+                        0.001
                 }
                 onClick={
                     completeRefund
                 }
             >
-                אישור החזר · ₪
-                {refundAmount.toFixed(
+                סיים החזר · ₪
+                {netRefundAmount.toFixed(
                     2,
                 )}
             </button>
-
-            {smallRefundNotice && (
-                <div
-                    role="presentation"
-                    style={{
-                        position:
-                            "fixed",
-                        inset:
-                            0,
-                        zIndex:
-                            6000,
-                        display:
-                            "grid",
-                        placeItems:
-                            "center",
-                        padding:
-                            "24px",
-                        background:
-                            "rgba(17, 24, 39, 0.34)",
-                    }}
-                >
-                    <div
-                        dir="rtl"
-                        role="dialog"
-                        aria-modal="true"
-                        style={{
-                            width:
-                                "min(430px, 100%)",
-                            padding:
-                                "20px",
-                            border:
-                                "1px solid #dde4e1",
-                            borderRadius:
-                                "16px",
-                            background:
-                                "#ffffff",
-                            boxShadow:
-                                "0 20px 60px rgba(15, 23, 42, 0.18)",
-                        }}
-                    >
-                        <div
-                            style={{
-                                color:
-                                    "#78827d",
-                                fontSize:
-                                    "10px",
-                                fontWeight:
-                                    750,
-                            }}
-                        >
-                            מדיניות החזר
-                        </div>
-
-                        <h2
-                            style={{
-                                margin:
-                                    "7px 0 6px",
-                                fontSize:
-                                    "19px",
-                                fontWeight:
-                                    700,
-                            }}
-                        >
-                            הסכום יוחזר במזומן
-                        </h2>
-
-                        <p
-                            style={{
-                                margin:
-                                    0,
-                                color:
-                                    "#626d67",
-                                fontSize:
-                                    "12px",
-                                lineHeight:
-                                    1.6,
-                            }}
-                        >
-                            סכום ההחזר הוא ₪
-                            {refundAmount.toFixed(
-                                2,
-                            )}
-                            , ולכן לא יונפק שובר זיכוי.
-                        </p>
-
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setSmallRefundNotice(
-                                    false,
-                                )
-                            }
-                            style={{
-                                width:
-                                    "100%",
-                                minHeight:
-                                    "40px",
-                                marginTop:
-                                    "15px",
-                                border:
-                                    0,
-                                borderRadius:
-                                    "10px",
-                                background:
-                                    "var(--primary)",
-                                color:
-                                    "#fff",
-                                fontWeight:
-                                    700,
-                                cursor:
-                                    "pointer",
-                            }}
-                        >
-                            אישור
-                        </button>
-                    </div>
-                </div>
-            )}
         </section>
     );
 }

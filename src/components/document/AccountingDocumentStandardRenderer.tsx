@@ -1,4 +1,4 @@
-﻿import type {
+import type {
     AccountingDocumentData,
 } from "../../models/document/AccountingDocumentData";
 
@@ -260,6 +260,25 @@ function AccountingDocumentStandardRenderer({
                 </div>
             </section>
 
+            {/* CANCELLATION_FEE_V1 */}
+            {(data.cancellationFeeAmount ?? 0) > 0 && (
+                <div className="receipt-line">
+                    <div className="receipt-line__main">
+                        <strong>
+                            דמי ביטול
+                        </strong>
+                        <span>
+                            5% או ₪100 — הנמוך מביניהם
+                        </span>
+                    </div>
+
+                    <strong className="receipt-line__amount">
+                        {formatMoney(
+                            data.cancellationFeeAmount ?? 0,
+                        )}
+                    </strong>
+                </div>
+            )}
             <section className="receipt__summary">
                 <div>
                     <span>
@@ -445,6 +464,3 @@ function AccountingDocumentStandardRenderer({
     );
 }
 export default AccountingDocumentStandardRenderer;
-
-
-

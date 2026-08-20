@@ -1188,6 +1188,7 @@ function SalePage({
 
     const completeTransaction = async (
         payments: Payment[],
+        applyCancellationFee = false,
     ) => {
         const transactionId =
             crypto.randomUUID();
@@ -1256,6 +1257,8 @@ function SalePage({
                     shiftId:
                         getActiveRegisterShift()
                             ?.id,
+
+                    applyCancellationFee,
 
                     coupon:
                         appliedSaleCoupon,

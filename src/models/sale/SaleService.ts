@@ -240,6 +240,7 @@ export type CompleteSaleOptions = {
     transactionId?: string;
     shiftId?: string;
     coupon?: AppliedSaleCoupon;
+    applyCancellationFee?: boolean;
 };
 
 export async function completeSale(
@@ -301,10 +302,24 @@ export async function completeSale(
             )
             : 0;
 
+    const cancellationFeeAmount =
+        options.applyCancellationFee &&
+        preCouponTotal < 0
+            ? roundMoney(
+                  Math.min(
+                      Math.abs(
+                          preCouponTotal,
+                      ) * 0.05,
+                      100,
+                  ),
+              )
+            : 0;
+
     const total =
         roundMoney(
             preCouponTotal -
-            couponDiscount,
+            couponDiscount +
+            cancellationFeeAmount,
         );
 
     const sale: Sale = {
@@ -345,6 +360,11 @@ export async function completeSale(
                     discountApplied:
                         couponDiscount,
                 }
+                : undefined,
+
+        cancellationFeeAmount:
+            cancellationFeeAmount > 0
+                ? cancellationFeeAmount
                 : undefined,
 
         tax: calculateIncludedTax(total),

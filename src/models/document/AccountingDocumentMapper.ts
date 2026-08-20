@@ -322,6 +322,9 @@ export function createAccountingDocumentData(
                 },
             ),
 
+        cancellationFeeAmount:
+            sale.cancellationFeeAmount,
+
         totals: {
             subtotal:
                 sale.subtotal,

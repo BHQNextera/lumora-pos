@@ -2277,3 +2277,24 @@ PAYMENT VIEWPORT: GREEN
 
 ## Next
 Continue Standalone E2E acceptance.
+
+# Checkpoint — 2026-08-20 — Return / Refund V1
+
+## Completed
+- Return refund amount is limited to selected returned items.
+- Refund supports split allocation across refund methods.
+- Refund allocation cannot exceed the net refund amount.
+- Completion requires exact allocation of the refund balance.
+- Cancellation fee can be applied only at refund/payment stage.
+- Cancellation fee calculation: 5% or ILS 100, whichever is lower.
+- Cancellation fee reduces the net refund amount.
+- Cancellation fee is represented as a financial adjustment on accounting output.
+- Refund document total reflects the net refund.
+- Runtime E2E verified.
+
+## Status
+RETURN / REFUND V1: GREEN
+RETURN / REFUND UI POLISH: YELLOW
+
+## Next
+Continue Standalone E2E acceptance with stored-value refund/recovery scenarios.

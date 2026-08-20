@@ -274,6 +274,29 @@ function AccountingDocumentThermalRenderer({
                 )}
             </section>
 
+            {/* CANCELLATION_FEE_V1 */}
+            {(data.cancellationFeeAmount ?? 0) > 0 && (
+                <div className="thermal-line">
+                    <div className="thermal-line__main">
+                        <strong>
+                            דמי ביטול
+                        </strong>
+
+                        <strong
+                            dir="ltr"
+                            className="thermal-money"
+                        >
+                            {formatMoney(
+                                data.cancellationFeeAmount ?? 0,
+                            )}
+                        </strong>
+                    </div>
+
+                    <span className="thermal-line__description">
+                        5% או ₪100 — הנמוך מביניהם
+                    </span>
+                </div>
+            )}
             <section className="thermal-receipt__totals">
                 <div>
                     <span>
