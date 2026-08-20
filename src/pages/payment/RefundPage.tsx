@@ -6,16 +6,22 @@ import {
 import type {
     Payment,
 } from "../../models/Payment";
+import type {
+    OriginalGiftCardRefundSource,
+} from "../../models/refund/RefundStoredValueService";
 
 import "./refund-page.css";
 
 type RefundMethod =
     | "cash"
     | "card_terminal"
-    | "credit_voucher";
+    | "credit_voucher"
+    | "gift_card";
 
 type RefundPageProps = {
     total: number;
+    giftCardRefundSource:
+        OriginalGiftCardRefundSource | null;
     onBack: () => void;
     onComplete: (
         payments: Payment[],
@@ -43,6 +49,11 @@ const refundMethods: {
         title: "שובר זיכוי",
         description: "הנפקת זיכוי ללקוח",
     },
+    {
+        code: "gift_card",
+        title: "Gift Card",
+        description: "החזר לכרטיס המקורי",
+    },
 ];
 
 function roundMoney(
@@ -58,6 +69,7 @@ function roundMoney(
 
 function RefundPage({
     total,
+    giftCardRefundSource,
     onBack,
     onComplete,
 }: RefundPageProps) {
@@ -152,8 +164,17 @@ function RefundPage({
         setSelectedMethod(
             method,
         );
+        const methodLimit =
+            method === "gift_card"
+                ? Math.min(
+                      remainingAmount,
+                      giftCardRefundSource
+                          ?.availableAmount ?? 0,
+                  )
+                : remainingAmount;
+
         setAmountInput(
-            remainingAmount.toFixed(
+            methodLimit.toFixed(
                 2,
             ),
         );
@@ -214,6 +235,28 @@ function RefundPage({
             return;
         }
 
+        if (
+            selectedMethod === "gift_card"
+        ) {
+            const giftCardLimit =
+                Math.min(
+                    remainingAmount,
+                    giftCardRefundSource
+                        ?.availableAmount ?? 0,
+                );
+
+            if (
+                amount >
+                giftCardLimit + 0.001
+            ) {
+                setError(
+                    "לא ניתן להחזיר ל-Gift Card יותר מ-₪" +
+                    giftCardLimit.toFixed(2),
+                );
+                return;
+            }
+        }
+
         const payment: Payment = {
             id:
                 crypto.randomUUID(),
@@ -223,6 +266,10 @@ function RefundPage({
                 "approved",
             amount:
                 -amount,
+            externalReference:
+                selectedMethod === "gift_card"
+                    ? giftCardRefundSource?.number
+                    : undefined,
             createdAt:
                 new Date()
                     .toISOString(),
@@ -387,7 +434,16 @@ function RefundPage({
             </button>
 
             <div className="refund-page__methods">
-                {refundMethods.map(
+                {refundMethods
+                    .filter(
+                        (method) =>
+                            method.code !==
+                                "gift_card" ||
+                            Boolean(
+                                giftCardRefundSource,
+                            ),
+                    )
+                    .map(
                     (method) => {
                         const used =
                             payments.some(
@@ -428,7 +484,18 @@ function RefundPage({
                                 </strong>
                                 <span>
                                     {
-                                        method.description
+                                        method.code ===
+                                            "gift_card" &&
+                                        giftCardRefundSource
+                                            ? "לכרטיס ••••" +
+                                              giftCardRefundSource.number.slice(
+                                                  -4,
+                                              ) +
+                                              " · עד ₪" +
+                                              giftCardRefundSource.availableAmount.toFixed(
+                                                  2,
+                                              )
+                                            : method.description
                                     }
                                 </span>
                             </button>

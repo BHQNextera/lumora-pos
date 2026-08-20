@@ -2298,3 +2298,31 @@ RETURN / REFUND UI POLISH: YELLOW
 
 ## Next
 Continue Standalone E2E acceptance with stored-value refund/recovery scenarios.
+
+# Checkpoint — 2026-08-20 — Gift Card Refund Restore
+
+## Completed
+- Refund to the original Gift Card is supported.
+- Gift Card refund is offered only when the source sale used an eligible Gift Card.
+- Original Gift Card number/reference is preserved.
+- Refund amount is capped by original payment/restorable balance.
+- Refund restores the existing Gift Card; no new card is issued.
+- Monetary-value restore movement is persisted.
+- Runtime E2E passed.
+- SQLite restart durability passed.
+
+## Status
+GIFT CARD REFUND RESTORE: GREEN
+REFUND UI POLISH: YELLOW
+
+## Remaining roadmap
+1. Complete Standalone E2E: cash movement, X, close register, Z, restart, new trading day.
+2. Nextera replication foundation.
+3. Nextera -> Lumora master-data replication.
+4. Lumora -> Nextera operational replication.
+5. Echo / card-provider flow and Tranzila validation when available.
+6. Offline / reconnect / idempotency / recovery QA.
+7. Integrated E2E acceptance for Standalone and Connected modes.
+8. UI/UX Polish.
+9. Release hardening and Pilot acceptance.
+10. Training / delivery layer.

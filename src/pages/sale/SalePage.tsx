@@ -30,6 +30,11 @@ import {
 import { issueMonetaryValue } from "../../models/monetary-value/MonetaryValueService";
 import type { Payment } from "../../models/Payment";
 import {
+    getOriginalGiftCardRefundSource,
+    restoreGiftCardRefundPayments,
+    validateGiftCardRefundPayments,
+} from "../../models/refund/RefundStoredValueService";
+import {
     redeemCoupon,
 } from "../../models/coupon/CouponService";
 import {
@@ -1193,6 +1198,11 @@ function SalePage({
         const transactionId =
             crypto.randomUUID();
 
+        validateGiftCardRefundPayments(
+            createSaleLines(),
+            payments,
+        );
+
         let appliedSaleCoupon:
             AppliedSaleCoupon | undefined;
 
@@ -1265,6 +1275,11 @@ function SalePage({
                 },
             );
 
+
+        await restoreGiftCardRefundPayments(
+            payments,
+            sale.id,
+        );
 
         const accountingDocument =
             getDocumentsForTransaction(
@@ -1626,6 +1641,11 @@ function SalePage({
         return (
             <RefundPage
                 total={checkoutTotal}
+                giftCardRefundSource={
+                    getOriginalGiftCardRefundSource(
+                        createSaleLines(),
+                    )
+                }
                 onBack={() =>
                     setCheckoutTotal(
                         null,
