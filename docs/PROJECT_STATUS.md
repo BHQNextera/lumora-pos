@@ -2264,3 +2264,16 @@ ATTENDANCE SQLITE DURABILITY: GREEN
 
 ## Next
 Standalone E2E technical acceptance flow.
+
+# Checkpoint — 2026-08-20 — Payment Viewport E2E Fix
+
+## Completed
+- Payment screen now remains inside the application workspace height.
+- Payment methods and summary columns scroll independently when vertical space is limited.
+- Payment confirmation actions remain reachable above the status bar.
+
+## Status
+PAYMENT VIEWPORT: GREEN
+
+## Next
+Continue Standalone E2E acceptance.
