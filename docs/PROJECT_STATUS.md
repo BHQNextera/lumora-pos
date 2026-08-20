@@ -2326,3 +2326,30 @@ REFUND UI POLISH: YELLOW
 8. UI/UX Polish.
 9. Release hardening and Pilot acceptance.
 10. Training / delivery layer.
+
+# Checkpoint — 2026-08-20 — Standalone E2E Acceptance
+
+## Standalone E2E
+- Register/day opening: GREEN
+- Cash sale: GREEN
+- Split payment: GREEN
+- Returns / split refund: GREEN
+- Cancellation fee: GREEN
+- Gift Card refund restore: GREEN
+- Cash movements: GREEN
+- X report: GREEN
+- Closing cash declaration: GREEN
+- Register close: GREEN
+- Z report: GREEN
+- Closed state survives restart: GREEN
+- Z history survives restart: GREEN
+- New shift/day opens independently: GREEN
+
+## Milestone
+LUMORA STANDALONE TECHNICAL E2E: GREEN
+
+## UI / UX
+Payment, Refund, X/Z and general POS layout still require the planned Polish phase.
+
+## Next
+Nextera Replication Foundation.
