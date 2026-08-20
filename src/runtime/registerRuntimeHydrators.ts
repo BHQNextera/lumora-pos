@@ -1,4 +1,4 @@
-﻿import {
+import {
     hydrateActiveBusinessConfiguration,
 } from "../config/ActiveBusinessConfiguration";
 
@@ -50,6 +50,9 @@ import {
     hydrateShiftZReports,
 } from "../models/shift/ShiftZReportRepository";
 
+import {
+    hydrateAttendance,
+} from "../models/attendance/AttendanceRepository";
 import {
     registerRuntimeHydrator,
 } from "./RuntimeBootstrap";
@@ -125,7 +128,11 @@ void {
         hydrateCashMovements,
     );
 
-    registerRuntimeHydrator(
+        registerRuntimeHydrator(
+        "attendance",
+        hydrateAttendance,
+    );
+registerRuntimeHydrator(
         "shift-z-reports",
         hydrateShiftZReports,
     );

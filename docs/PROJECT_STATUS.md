@@ -2247,3 +2247,20 @@ MONETARY VALUES SQLITE DURABILITY: GREEN
 
 ## Next
 Attendance durability.
+
+# Checkpoint — 2026-08-20 — Attendance SQLite Durability
+
+## Completed
+- Attendance repository migrated from direct localStorage access to runtime storage.
+- Tauri uses SQLite with legacy localStorage migration.
+- Attendance is hydrated before application runtime.
+- Clock-in persists across repeated application restarts.
+- Clock-out persists across application restart.
+- Employee presence remains isolated per employee.
+- Existing duplicate clock-in protection is preserved.
+
+## Status
+ATTENDANCE SQLITE DURABILITY: GREEN
+
+## Next
+Standalone E2E technical acceptance flow.

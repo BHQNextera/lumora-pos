@@ -1,6 +1,19 @@
+﻿import {
+    isTauri,
+} from "@tauri-apps/api/core";
+
 import {
     getActiveBusinessConfiguration,
 } from "../../config/ActiveBusinessConfiguration";
+
+import {
+    BrowserLocalStorageAdapter,
+} from "../../runtime/storage/BrowserLocalStorageAdapter";
+
+import type {
+    RuntimeStorage,
+} from "../../runtime/storage/RuntimeStorage";
+
 import type {
     EmployeeAttendance,
 } from "./EmployeeAttendance";
@@ -8,22 +21,52 @@ import type {
 const STORAGE_KEY =
     "lumora.employee-attendance";
 
-function loadAttendance():
-EmployeeAttendance[] {
+let attendance:
+    EmployeeAttendance[] = [];
+
+let attendanceStoragePromise:
+    Promise<RuntimeStorage> | null =
+        null;
+
+let persistenceQueue:
+    Promise<void> =
+        Promise.resolve();
+
+function getAttendanceStorage():
+Promise<RuntimeStorage> {
+    if (!attendanceStoragePromise) {
+        attendanceStoragePromise =
+            (
+                async ():
+                Promise<RuntimeStorage> => {
+                    if (!isTauri()) {
+                        return new BrowserLocalStorageAdapter();
+                    }
+
+                    const {
+                        SQLiteRuntimeStorageAdapter,
+                    } = await import(
+                        "../../runtime/storage/SQLiteRuntimeStorageAdapter"
+                    );
+
+                    return new SQLiteRuntimeStorageAdapter();
+                }
+            )();
+    }
+
+    return attendanceStoragePromise;
+}
+
+function parseAttendance(
+    raw: string | null,
+): EmployeeAttendance[] {
+    if (!raw) {
+        return [];
+    }
+
     try {
-        const raw =
-            window.localStorage.getItem(
-                STORAGE_KEY,
-            );
-
-        if (!raw) {
-            return [];
-        }
-
         const parsed =
-            JSON.parse(
-                raw,
-            );
+            JSON.parse(raw);
 
         return Array.isArray(parsed)
             ? parsed
@@ -34,27 +77,90 @@ EmployeeAttendance[] {
     }
 }
 
-function persist(
-    attendance:
-        EmployeeAttendance[],
-) {
-    window.localStorage.setItem(
-        STORAGE_KEY,
+async function readStoredAttendance(
+    storage: RuntimeStorage,
+): Promise<string | null> {
+    let raw =
+        await storage.getItem(
+            STORAGE_KEY,
+        );
+
+    if (
+        raw === null &&
+        isTauri()
+    ) {
+        const legacy =
+            window.localStorage.getItem(
+                STORAGE_KEY,
+            );
+
+        if (legacy !== null) {
+            await storage.setItem(
+                STORAGE_KEY,
+                legacy,
+            );
+
+            window.localStorage.removeItem(
+                STORAGE_KEY,
+            );
+
+            raw = legacy;
+        }
+    }
+
+    return raw;
+}
+
+export async function hydrateAttendance():
+Promise<void> {
+    const storage =
+        await getAttendanceStorage();
+
+    const raw =
+        await readStoredAttendance(
+            storage,
+        );
+
+    attendance =
+        parseAttendance(raw);
+}
+
+function persistAttendance() {
+    const snapshot =
         JSON.stringify(
             attendance,
-        ),
-    );
+        );
+
+    persistenceQueue =
+        persistenceQueue.then(
+            async () => {
+                const storage =
+                    await getAttendanceStorage();
+
+                await storage.setItem(
+                    STORAGE_KEY,
+                    snapshot,
+                );
+            },
+        );
+}
+
+export function flushAttendancePersistence():
+Promise<void> {
+    return persistenceQueue;
 }
 
 export function getAttendance() {
-    return loadAttendance();
+    return [
+        ...attendance,
+    ];
 }
 
 export function getPresentAttendance() {
     const configuration =
         getActiveBusinessConfiguration();
 
-    return loadAttendance().filter(
+    return attendance.filter(
         (entry) =>
             entry.status === "present" &&
             entry.tenantId ===
@@ -121,10 +227,12 @@ export function clockInEmployee(
                 .toISOString(),
     };
 
-    persist([
+    attendance = [
         entry,
-        ...loadAttendance(),
-    ]);
+        ...attendance,
+    ];
+
+    persistAttendance();
 
     return entry;
 }
@@ -144,7 +252,7 @@ export function clockOutEmployee(
         undefined;
 
     const next =
-        loadAttendance().map(
+        attendance.map(
             (entry) => {
                 if (
                     entry.employeeId !==
@@ -172,7 +280,9 @@ export function clockOutEmployee(
         );
 
     if (changed) {
-        persist(next);
+        attendance = next;
+
+        persistAttendance();
     }
 
     return changed;
