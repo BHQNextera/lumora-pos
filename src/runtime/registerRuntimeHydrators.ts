@@ -31,6 +31,10 @@ import {
 } from "../models/transaction/TransactionRepository";
 
 import {
+    hydrateHeldSales,
+} from "../models/held-sale/HeldSaleRepository";
+
+import {
     hydrateReturns,
 } from "../models/transaction/ReturnRepository";
 
@@ -106,6 +110,11 @@ void {
     registerRuntimeHydrator(
         "transactions",
         hydrateTransactions,
+    );
+
+    registerRuntimeHydrator(
+        "held-sales",
+        hydrateHeldSales,
     );
 
     registerRuntimeHydrator(

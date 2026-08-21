@@ -783,3 +783,3070 @@ button.pos-sidebar__shift-status:hover {
     gap: 9px;
   }
 }
+
+/* SALE SCREEN POLISH V1 */
+
+.sale-page__transaction-context {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  direction: rtl;
+}
+
+.sale-page__context-field {
+  display: grid;
+  min-width: 180px;
+  gap: 4px;
+}
+
+.sale-page__context-field > span,
+.sale-page__context-summary > span {
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.sale-page__context-field select {
+  min-width: 0;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: #fbfcfd;
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+}
+
+.sale-page__context-field select:focus {
+  border-color: var(--primary);
+}
+
+.sale-page__context-summary {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  padding-inline-start: 10px;
+}
+
+.sale-page__context-summary strong {
+  overflow: hidden;
+  max-width: 260px;
+  color: var(--text);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sale-page__content {
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(380px, 38%);
+}
+
+.sale-page__actions {
+  grid-template-columns:
+    repeat(4, minmax(90px, 1fr));
+}
+
+@media (max-width: 1420px) {
+  .sale-page__content {
+    grid-template-columns:
+      minmax(0, 1fr)
+      370px;
+  }
+
+  .sale-page__actions {
+    grid-template-columns:
+      repeat(2, minmax(90px, 1fr));
+  }
+}
+
+
+/* SELLER OVERRIDE POLISH V1 */
+
+.sale-page__seller-tools {
+  position: relative;
+  align-self: end;
+}
+
+.sale-page__seller-override-trigger {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.sale-page__seller-override-trigger:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: 8px;
+}
+
+.sale-page__seller-override-trigger:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.sale-page__seller-popover {
+  position: absolute;
+  z-index: 5000;
+  top: calc(100% + 7px);
+  right: 0;
+  display: grid;
+  width: 270px;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 14px 35px rgb(16 24 40 / 14%);
+}
+
+.sale-page__seller-popover > span {
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.sale-page__seller-popover select {
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfcfd;
+  font: inherit;
+  font-size: 11px;
+}
+
+.sale-page__seller-popover-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.sale-page__seller-popover-actions button {
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.sale-page__seller-popover-actions button:hover {
+  background: #f7f9f8;
+}
+
+
+/* SELLER OVERRIDE ALIGNMENT V2 */
+
+.sale-page__seller-tools {
+  position: relative;
+  align-self: stretch;
+}
+
+.sale-page__seller-override-trigger {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fbfcfd;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.sale-page__seller-override-trigger:hover {
+  border-color: #c9d1dc;
+  background: #f8fafb;
+  color: var(--text);
+}
+
+.sale-page__seller-override-trigger:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.sale-page__seller-override-chevron {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+
+/* TRANSACTION CONTEXT ALIGNMENT V3 */
+
+.sale-page__transaction-context {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.sale-page__context-field {
+  width: 100%;
+  min-width: 0;
+  gap: 5px;
+}
+
+.sale-page__context-field > span {
+  display: block;
+  width: 100%;
+  text-align: right;
+}
+
+.sale-page__context-field select,
+.sale-page__seller-override-trigger {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+}
+
+.sale-page__seller-tools {
+  width: 100%;
+  min-width: 0;
+  align-self: end;
+}
+
+
+/* SALE CUSTOMER SELECTOR V1 */
+
+.sale-page__customer-tools {
+  position: relative;
+}
+
+.sale-page__customer-trigger {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fbfcfd;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  text-align: right;
+}
+
+.sale-page__customer-trigger:hover {
+  border-color: #c9d1dc;
+  background: #f8fafb;
+}
+
+.sale-page__customer-chevron {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.sale-page__customer-popover {
+  position: absolute;
+  z-index: 5100;
+  top: calc(100% + 7px);
+  right: 0;
+  width: min(390px, 92vw);
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 14px 35px rgb(16 24 40 / 14%);
+}
+
+.sale-page__customer-popover input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+  background: #fbfcfd;
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+}
+
+.sale-page__customer-popover input:focus {
+  border-color: var(--primary);
+}
+
+.sale-page__customer-results {
+  display: grid;
+  max-height: 280px;
+  margin-top: 8px;
+  overflow-y: auto;
+}
+
+.sale-page__customer-result {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: right;
+}
+
+.sale-page__customer-result:last-child {
+  border-bottom: 0;
+}
+
+.sale-page__customer-result:hover,
+.sale-page__customer-result--selected {
+  background: #f5faf7;
+}
+
+.sale-page__customer-result strong {
+  font-size: 11px;
+}
+
+.sale-page__customer-result span {
+  color: var(--text-secondary);
+  font-size: 9px;
+  direction: ltr;
+  text-align: right;
+}
+
+.sale-page__customer-empty {
+  padding: 18px 10px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-align: center;
+}
+
+
+/* MORE ACTIONS + COUPON V1 */
+
+.sale-page__actions {
+  grid-template-columns:
+    repeat(5, minmax(90px, 1fr));
+}
+
+.sale-page__more-actions {
+  position: relative;
+  min-width: 0;
+}
+
+.sale-page__actions
+.sale-page__more-actions-trigger {
+  width: 100%;
+  min-height: 41px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.sale-page__more-actions-chevron {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.sale-page__more-actions-menu {
+  position: absolute;
+  z-index: 5200;
+  right: 0;
+  bottom: calc(100% + 7px);
+  width: 220px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  box-shadow: 0 14px 35px rgb(16 24 40 / 14%);
+}
+
+.sale-page__actions
+.sale-page__more-actions-menu button {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: right;
+}
+
+.sale-page__actions
+.sale-page__more-actions-menu button:hover:not(:disabled) {
+  background: #f5f7f6;
+}
+
+.sale-page__actions
+.sale-page__more-actions-menu button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.sale-page__more-actions-menu strong {
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+@media (max-width: 1420px) {
+  .sale-page__actions {
+    grid-template-columns:
+      repeat(2, minmax(90px, 1fr));
+  }
+}
+
+/* SALE ACTIONS + COUPON VISUAL POLISH V2 */
+
+/* Five equal actions in one clean desktop row */
+.sale-page__actions {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px;
+}
+
+.sale-page__actions > button,
+.sale-page__more-actions,
+.sale-page__more-actions-trigger {
+  min-width: 0;
+}
+
+.sale-page__actions button {
+  min-height: 44px;
+}
+
+/* More actions should feel like a menu, not another large panel */
+.sale-page__more-actions {
+  position: relative;
+}
+
+.sale-page__actions
+.sale-page__more-actions-trigger {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.sale-page__more-actions-menu {
+  right: auto;
+  left: 0;
+  bottom: calc(100% + 6px);
+  width: 170px;
+  padding: 5px;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgb(16 24 40 / 14%);
+}
+
+.sale-page__actions
+.sale-page__more-actions-menu button {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 10px;
+  border-radius: 7px;
+}
+
+/* Coupon dialog — small utility dialog, not a full workflow */
+.sale-page .lumora-cart__coupon-overlay {
+  padding: 18px;
+}
+
+.sale-page .lumora-cart__coupon-dialog {
+  width: min(420px, calc(100vw - 36px));
+  max-width: 420px;
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.sale-page .lumora-cart__coupon-dialog-header {
+  margin-bottom: 12px;
+}
+
+.sale-page .lumora-cart__coupon-dialog-header strong {
+  font-size: 17px;
+}
+
+.sale-page .lumora-cart__coupon-dialog-header span {
+  margin-top: 2px;
+  font-size: 10px;
+}
+
+.sale-page .lumora-cart__coupon-dialog > input {
+  height: 42px;
+  font-size: 12px;
+  border-radius: 9px;
+}
+
+.sale-page .lumora-cart__coupon-dialog-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.sale-page .lumora-cart__coupon-dialog-actions button {
+  min-width: 78px;
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+/* Only collapse on genuinely small sale areas */
+@media (max-width: 1050px) {
+  .sale-page__actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+
+/* SALE ACTIONS MODAL POLISH V3 */
+
+/* Stronger main action buttons */
+
+.sale-page__actions > button,
+.sale-page__actions .sale-page__more-actions-trigger {
+  min-height: 44px;
+  border: 1px solid #c8d0da;
+  background: #ffffff;
+  color: var(--text);
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 4%);
+}
+
+.sale-page__actions > button:hover:not(:disabled),
+.sale-page__actions .sale-page__more-actions-trigger:hover:not(:disabled) {
+  border-color: #aeb8c4;
+  background: #f7f9f8;
+}
+
+.sale-page__actions > button:disabled {
+  opacity: .42;
+}
+
+
+/* Centered More Actions workspace */
+
+.sale-page__more-actions-overlay {
+  position: fixed;
+  z-index: 5400;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(16 24 40 / 22%);
+  backdrop-filter: blur(1.5px);
+}
+
+.sale-page__more-actions-dialog {
+  box-sizing: border-box;
+  width: min(640px, calc(100vw - 48px));
+  min-height: 300px;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgb(16 24 40 / 20%);
+  direction: rtl;
+}
+
+.sale-page__more-actions-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sale-page__more-actions-dialog-header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.sale-page__more-actions-dialog-header strong {
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.sale-page__more-actions-dialog-header span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.sale-page__actions
+.sale-page__more-actions-close {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: #f1f3f5;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.sale-page__more-actions-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 18px;
+}
+
+.sale-page__actions
+.sale-page__more-actions-card {
+  min-height: 100px;
+  padding: 16px;
+  border: 1px solid #cbd3dc;
+  border-radius: 13px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  text-align: right;
+}
+
+.sale-page__actions
+.sale-page__more-actions-card:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: #f7fbf9;
+}
+
+.sale-page__more-actions-card strong {
+  font-size: 14px;
+}
+
+.sale-page__more-actions-card span {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.sale-page__more-actions-card small {
+  margin-top: 3px;
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* Coupon dialog must stay fully inside its own frame */
+
+.sale-page .lumora-cart__coupon-dialog {
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 40px));
+  max-width: 460px;
+  overflow: hidden;
+  padding: 18px;
+}
+
+.sale-page .lumora-cart__coupon-dialog > input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+}
+
+.sale-page .lumora-cart__coupon-dialog-actions {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
+  .sale-page__more-actions-dialog {
+    width: calc(100vw - 28px);
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .sale-page__more-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LUMORA GRAPHITE THEME V1 */
+
+/*
+ * Lumora visual language:
+ * black / graphite / granite / neutral gray.
+ *
+ * Green is intentionally NOT the primary interaction color.
+ * Semantic success/online indicators may keep their own green.
+ */
+
+:root {
+  --primary: #2b2f35;
+  --primary-hover: #1f2328;
+  --primary-light: #eef0f2;
+}
+
+/* Main POS navigation */
+.pos-sidebar {
+  background: #17191d;
+}
+
+.pos-sidebar button,
+.pos-sidebar a {
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+/* Sale categories / selected controls */
+.sale-page__category--active {
+  border-color: #aeb4bc;
+  background: #e8eaed;
+  color: #20242a;
+}
+
+/* Main sale actions */
+.sale-page__actions > button,
+.sale-page__actions .sale-page__more-actions-trigger {
+  border-color: #bfc4ca;
+  background: #f1f2f4;
+  color: #20242a;
+  font-weight: 650;
+}
+
+.sale-page__actions > button:hover:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  border-color: #8f969f;
+  background: #e4e6e9;
+}
+
+/* More-actions cards */
+.sale-page__actions
+.sale-page__more-actions-card {
+  border-color: #c0c5cb;
+  background: #f5f6f7;
+}
+
+.sale-page__actions
+.sale-page__more-actions-card:hover:not(:disabled) {
+  border-color: #717780;
+  background: #e9ebee;
+}
+
+/* Checkout is the strongest action: graphite, not green */
+.lumora-cart__checkout {
+  border-color: #20242a !important;
+  background: #20242a !important;
+  color: #ffffff !important;
+}
+
+.lumora-cart__checkout:hover:not(:disabled) {
+  background: #111318 !important;
+}
+
+/* Neutral focus language */
+.sale-page input:focus,
+.sale-page select:focus,
+.sale-page button:focus-visible {
+  border-color: #717780;
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(32 36 42 / 10%);
+}
+
+/* Customer / seller selectors */
+.sale-page__customer-trigger,
+.sale-page__seller-override-trigger,
+.sale-page__context-field select {
+  border-color: #c8cdd3;
+  background: #f5f6f7;
+}
+
+.sale-page__customer-trigger:hover,
+.sale-page__seller-override-trigger:hover,
+.sale-page__context-field select:hover {
+  border-color: #979da5;
+  background: #eceef0;
+}
+
+/* Dialog primary actions inherit graphite */
+.sale-page .lumora-cart__coupon-dialog-actions button:last-child {
+  border-color: #2b2f35;
+  background: #2b2f35;
+  color: #ffffff;
+}
+
+.sale-page .lumora-cart__coupon-dialog-actions button:last-child:hover:not(:disabled) {
+  background: #1f2328;
+}
+
+/* Preserve disabled hierarchy */
+.sale-page button:disabled {
+  filter: grayscale(1);
+}
+
+/* LUMORA MODERN POS 2026 V1 */
+
+/* ============================================================
+   Modern premium POS
+   Graphite / granite / monochrome.
+   Clean surfaces, strong hierarchy, no bevels, no dated gradients.
+   ============================================================ */
+
+/* ---------- TRANSACTION CONTEXT ---------- */
+
+.sale-page__transaction-context {
+  padding: 10px 12px 12px;
+  border: 1px solid #d9dde2;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 8px 24px rgb(20 24 28 / 5%);
+}
+
+.sale-page__context-field > span {
+  color: #737983;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.sale-page__customer-trigger,
+.sale-page__seller-override-trigger,
+.sale-page__context-field select {
+  height: 42px;
+  min-height: 42px;
+  border: 1px solid #e0e3e7;
+  border-radius: 10px;
+  background: #f5f6f7;
+  color: #20242a;
+  box-shadow: none;
+}
+
+.sale-page__customer-trigger:hover,
+.sale-page__seller-override-trigger:hover,
+.sale-page__context-field select:hover {
+  border-color: #bfc4ca;
+  background: #eef0f2;
+}
+
+
+/* ---------- MAIN WORKSPACE ---------- */
+
+.sale-page__content {
+  gap: 12px;
+}
+
+.sale-page__catalog,
+.sale-page__cart {
+  border: 1px solid #e0e3e6;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgb(20 24 28 / 3%),
+    0 12px 32px rgb(20 24 28 / 5%);
+}
+
+
+/* ---------- SEARCH / SCAN ---------- */
+
+.sale-page__search-row {
+  gap: 8px;
+}
+
+.sale-page__search {
+  min-height: 48px;
+  border: 1px solid #d9dde2;
+  border-radius: 12px;
+  background: #f7f8f9;
+  color: #20242a;
+  box-shadow: none;
+  font-weight: 550;
+}
+
+.sale-page__search:focus {
+  border-color: #555b63;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgb(31 35 40 / 7%);
+}
+
+.sale-page__secondary-button {
+  min-height: 48px;
+  border: 1px solid #d8dce1;
+  border-radius: 12px;
+  background: #f4f5f6;
+  color: #24282d;
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.sale-page__secondary-button:hover {
+  border-color: #b6bbc1;
+  background: #eceef0;
+}
+
+
+/* ---------- CATEGORIES ---------- */
+
+.sale-page__categories {
+  gap: 7px;
+  padding: 2px 0;
+}
+
+.sale-page__category {
+  min-height: 38px;
+  padding-inline: 15px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #f2f3f4;
+  color: #5a6068;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.sale-page__category:hover {
+  background: #e9ebed;
+  color: #20242a;
+}
+
+.sale-page__category--active {
+  border-color: #20242a;
+  background: #20242a;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+
+/* ---------- PRODUCT CARDS ---------- */
+
+.product-grid {
+  gap: 12px;
+  padding: 8px 2px 10px;
+}
+
+.product-card {
+  overflow: hidden;
+  border: 1px solid #e4e7ea;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgb(24 28 32 / 5%);
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.product-card:hover {
+  border-color: #bbc0c6;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgb(24 28 32 / 10%);
+}
+
+.product-card:active {
+  transform: scale(.99);
+}
+
+.product-card__content {
+  background: #ffffff;
+}
+
+.product-card__content strong {
+  color: #1f2328;
+  font-weight: 750;
+}
+
+.product-card__content span {
+  color: #626871;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ---------- MODERN ACTION DOCK ---------- */
+
+.sale-page__actions {
+  gap: 0;
+  padding: 5px;
+  overflow: hidden;
+  border: 1px solid #181b1f;
+  border-radius: 14px;
+  background: #1d2024;
+  box-shadow: 0 10px 26px rgb(15 18 21 / 16%);
+}
+
+.sale-page__actions > button,
+.sale-page__actions .sale-page__more-actions-trigger {
+  min-height: 46px;
+  border: 0;
+  border-left: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 9px;
+  background: transparent;
+  color: #f3f4f5;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.sale-page__actions > button:first-child {
+  border-left: 0;
+}
+
+.sale-page__actions > button:hover:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  background: #30343a;
+  color: #ffffff;
+}
+
+.sale-page__actions > button:active:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:active:not(:disabled) {
+  background: #3b4046;
+  transform: scale(.985);
+}
+
+.sale-page__more-actions-chevron {
+  color: #b9bec5;
+}
+
+
+/* ---------- CART ---------- */
+
+.lumora-cart__header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eceef0;
+}
+
+.lumora-cart__header h2 {
+  color: #1d2126;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.lumora-cart__clear {
+  border: 0;
+  border-radius: 9px;
+  background: #f2f3f4;
+  color: #727880;
+}
+
+.lumora-cart__lines {
+  gap: 0;
+  padding: 6px 0;
+}
+
+.lumora-cart-line {
+  min-height: 74px;
+  padding: 10px 5px;
+  border: 0;
+  border-bottom: 1px solid #eceef0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.lumora-cart-line:hover {
+  background: #f8f9fa;
+}
+
+.lumora-cart-line--selected {
+  border: 0;
+  border-bottom: 1px solid #e3e5e8;
+  border-radius: 10px;
+  background: #f0f1f2;
+  box-shadow: inset -3px 0 0 #20242a;
+}
+
+.lumora-cart-line__image {
+  border-radius: 9px;
+}
+
+.lumora-cart-line__main > strong {
+  color: #20242a;
+  font-weight: 750;
+}
+
+.lumora-cart-line__quantity {
+  border: 1px solid #dde0e4;
+  border-radius: 9px;
+  background: #f5f6f7;
+  box-shadow: none;
+}
+
+.lumora-cart-line__quantity button {
+  background: transparent;
+  color: #30343a;
+}
+
+.lumora-cart-line__quantity button:hover {
+  background: #e7e9eb;
+}
+
+
+/* ---------- TOTAL ---------- */
+
+.lumora-cart__summary {
+  margin-top: 4px;
+  padding: 13px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #f2f3f4;
+}
+
+.lumora-cart__total {
+  margin-top: 7px;
+  padding-top: 12px;
+  border-top: 1px solid #d8dce0;
+}
+
+.lumora-cart__total span {
+  color: #383d43;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.lumora-cart__total strong {
+  color: #111418 !important;
+  font-size: 29px;
+  font-weight: 850 !important;
+  letter-spacing: -0.035em;
+}
+
+
+/* ---------- CHECKOUT ---------- */
+
+.lumora-cart__checkout {
+  min-height: 62px;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #181b1f !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgb(18 21 24 / 16%);
+  transition:
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+.lumora-cart__checkout:hover:not(:disabled) {
+  background: #282c31 !important;
+  transform: translateY(-1px);
+}
+
+.lumora-cart__checkout:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.lumora-cart__checkout span {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.lumora-cart__checkout strong {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+
+/* ---------- MORE ACTIONS ---------- */
+
+.sale-page__more-actions-overlay {
+  background: rgb(17 20 24 / 30%);
+  backdrop-filter: blur(7px);
+}
+
+.sale-page__more-actions-dialog {
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 18px;
+  background: rgb(250 250 250 / 96%);
+  box-shadow: 0 30px 80px rgb(10 12 15 / 24%);
+}
+
+.sale-page__more-actions-dialog-header {
+  border-bottom: 1px solid #e2e5e8;
+}
+
+.sale-page__actions
+.sale-page__more-actions-card {
+  border: 1px solid #e0e3e6;
+  border-radius: 13px;
+  background: #ffffff;
+  color: #20242a;
+  box-shadow: 0 4px 14px rgb(20 24 28 / 5%);
+}
+
+.sale-page__actions
+.sale-page__more-actions-card:hover:not(:disabled) {
+  border-color: #aeb4bb;
+  background: #f5f6f7;
+  transform: translateY(-1px);
+}
+
+
+/* ---------- MICRO STATUS COLOR ---------- */
+
+/*
+ * Green is allowed only for real semantic status:
+ * online / connected / success.
+ * It is not an interaction or branding color.
+ */
+
+
+/* LUMORA + MERCHANT BRAND SHELL V1 */
+
+.pos-app-shell {
+  grid-template-columns:
+    232px minmax(0, 1fr);
+}
+
+.pos-sidebar {
+  width: 232px;
+  padding: 16px 12px 14px;
+  background: #181a1e;
+}
+
+/* Lumora owns the platform layer */
+
+.pos-sidebar__platform-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 58px;
+  padding: 0 8px 14px;
+}
+
+.pos-sidebar__lumora-mark {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.pos-sidebar__lumora-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+  direction: ltr;
+  text-align: left;
+}
+
+.pos-sidebar__lumora-copy strong {
+  color: #f7f7f5;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.pos-sidebar__lumora-copy span {
+  color: #c7a96b;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .22em;
+}
+
+/* Merchant owns its own identity */
+
+.pos-sidebar__merchant-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 72px;
+  margin-bottom: 10px;
+  padding: 11px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 13px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.pos-sidebar__merchant-logo {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 11px;
+  background: #f3f1ec;
+  color: #25282d;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .04em;
+}
+
+.pos-sidebar__merchant-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pos-sidebar__merchant-label {
+  color: #7f858e;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.pos-sidebar__merchant-copy strong {
+  overflow: hidden;
+  color: #f2f3f4;
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-sidebar__merchant-branch {
+  overflow: hidden;
+  color: #a6abb3;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Navigation belongs to Lumora but does not compete with merchant */
+
+.pos-sidebar__navigation {
+  padding-top: 4px;
+}
+
+.pos-sidebar__item {
+  position: relative;
+  min-height: 42px;
+  border-radius: 9px;
+  color: #9fa5ad;
+}
+
+.pos-sidebar__item:hover {
+  background: rgb(255 255 255 / 5%);
+}
+
+.pos-sidebar__item--active {
+  background: #292d32;
+  color: #ffffff;
+}
+
+.pos-sidebar__item--active::before {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: #c7a96b;
+  content: "";
+}
+
+.pos-sidebar__item-icon {
+  color: #c0c5cb;
+}
+
+.pos-sidebar__item--active
+.pos-sidebar__item-icon {
+  color: #e7d4ad;
+}
+
+/* Coeuria stays an understated parent signature */
+
+.pos-sidebar__coeuria-signature {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding-top: 2px;
+  color: #666c74;
+  direction: ltr;
+  font-size: 8px;
+  letter-spacing: .02em;
+}
+
+.pos-sidebar__coeuria-signature > span:first-child {
+  color: #858b93;
+  font-size: 9px;
+}
+
+/* LUMORA BRAND SHELL BALANCE V1 */
+
+/* Softer premium graphite sidebar */
+.pos-sidebar {
+  background: #22262b;
+}
+
+/* Merchant identity gets a little more breathing room */
+.pos-sidebar__merchant-card {
+  border-color: rgb(255 255 255 / 11%);
+  background: rgb(255 255 255 / 6%);
+}
+
+/* Active navigation is visible without becoming a black block */
+.pos-sidebar__item--active {
+  background: #34393f;
+}
+
+/* Keep the action dock premium, but less heavy */
+.sale-page__actions {
+  border-color: #25292e;
+  background: #292e34;
+  box-shadow: 0 8px 22px rgb(15 18 21 / 11%);
+}
+
+.sale-page__actions > button,
+.sale-page__actions .sale-page__more-actions-trigger {
+  color: #f4f5f6;
+}
+
+.sale-page__actions > button:hover:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  background: #3a4046;
+}
+
+/* Checkout remains the darkest visual anchor */
+.lumora-cart__checkout {
+  background: #181b1f !important;
+}
+
+
+/* ADAPTIVE SALE SHELL V1 */
+
+/* Remove the old fixed desktop floor */
+html,
+body,
+#root {
+  min-width: 0 !important;
+}
+
+body {
+  min-width: 0;
+}
+
+/* Sidebar host keeps normal management layout */
+.pos-app-shell__sidebar-host {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+/* Sale gets the entire application width */
+.pos-app-shell--sale {
+  grid-template-columns:
+    minmax(0, 1fr) !important;
+}
+
+/* Sale sidebar becomes an overlay drawer */
+.pos-app-shell--sale
+.pos-app-shell__sidebar-host {
+  position: fixed;
+  z-index: 7000;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(
+    292px,
+    calc(100vw - 24px)
+  );
+  height: 100dvh;
+  transform: translateX(-104%);
+  transition:
+    transform 180ms ease;
+  box-shadow:
+    18px 0 50px
+    rgb(12 15 18 / 22%);
+}
+
+.pos-app-shell--sale
+.pos-app-shell__sidebar-host--open {
+  transform: translateX(0);
+}
+
+.pos-app-shell--sale
+.pos-sidebar {
+  width: 100% !important;
+  height: 100%;
+}
+
+/* Dim workspace only while drawer is open */
+.pos-app-shell__nav-backdrop {
+  position: fixed;
+  z-index: 6900;
+  inset: 0;
+  border: 0;
+  background:
+    rgb(20 23 27 / 24%);
+  backdrop-filter: blur(2px);
+  cursor: default;
+}
+
+/* Compact permanent Lumora access */
+.pos-app-shell__nav-trigger {
+  position: fixed;
+  z-index: 6800;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px 0 8px;
+  border: 1px solid
+    rgb(32 36 42 / 10%);
+  border-radius: 11px;
+  background:
+    rgb(255 255 255 / 92%);
+  color: #25292e;
+  box-shadow:
+    0 5px 18px
+    rgb(20 24 28 / 8%);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  direction: ltr;
+}
+
+.pos-app-shell__nav-trigger:hover {
+  border-color:
+    rgb(32 36 42 / 20%);
+  background: #ffffff;
+}
+
+.pos-app-shell__nav-trigger-mark {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 8px;
+  background: #25292e;
+  color: #d3b16d;
+  font-size: 13px;
+}
+
+.pos-app-shell__nav-trigger > span:last-child {
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+
+/* Sale heading becomes operator + merchant identity */
+.sale-page__heading {
+  justify-content: flex-start;
+  gap: 18px;
+  padding-left: 108px;
+}
+
+.sale-page__heading-title {
+  flex: 0 0 auto;
+}
+
+.sale-page__merchant-compact {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding-inline-start: 16px;
+  border-inline-start:
+    1px solid #e1e4e8;
+}
+
+.sale-page__merchant-monogram {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  place-items: center;
+  border-radius: 9px;
+  background: #f1ede4;
+  color: #2d3136;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.sale-page__merchant-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sale-page__merchant-copy strong {
+  overflow: hidden;
+  max-width: 200px;
+  color: #25292e;
+  font-size: 11px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sale-page__merchant-copy span {
+  overflow: hidden;
+  max-width: 200px;
+  color: #858b94;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Transaction controls adapt instead of forcing fixed widths */
+.sale-page__transaction-context {
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    ) !important;
+}
+
+.sale-page__context-field {
+  min-width: 0 !important;
+}
+
+/* Use screen width instead of sidebar-driven width */
+.sale-page__content {
+  grid-template-columns:
+    minmax(0, 1fr)
+    clamp(
+      330px,
+      31vw,
+      430px
+    ) !important;
+}
+
+/* Product grid grows/shrinks naturally */
+.product-grid {
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(180px, 1fr)
+    ) !important;
+}
+
+/* Actions remain usable instead of breaking into odd layouts */
+.sale-page__actions {
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    ) !important;
+}
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .sale-page__content {
+    grid-template-columns:
+      minmax(0, 1fr)
+      340px !important;
+  }
+
+  .product-grid {
+    grid-template-columns:
+      repeat(
+        auto-fill,
+        minmax(155px, 1fr)
+      ) !important;
+  }
+}
+
+/* Compact laptop / landscape tablet */
+@media (max-width: 980px) {
+  .sale-page__heading {
+    padding-left: 96px;
+  }
+
+  .sale-page__content {
+    grid-template-columns:
+      minmax(0, 1fr)
+      310px !important;
+  }
+
+  .product-grid {
+    grid-template-columns:
+      repeat(
+        auto-fill,
+        minmax(140px, 1fr)
+      ) !important;
+  }
+
+  .sale-page__transaction-context {
+    gap: 7px;
+  }
+
+  .sale-page__actions {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+  }
+
+  .pos-status-bar {
+    overflow-x: auto;
+  }
+}
+
+/* Portrait tablet / narrow window */
+@media (max-width: 760px) {
+  .sale-page {
+    overflow-y: auto;
+  }
+
+  .sale-page__heading {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    padding-left: 88px;
+  }
+
+  .sale-page__merchant-compact {
+    padding-inline-start: 12px;
+  }
+
+  .sale-page__transaction-context {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+  }
+
+  .sale-page__seller-tools {
+    grid-column: 1 / -1;
+  }
+
+  .sale-page__content {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+    grid-template-areas:
+      "catalog"
+      "cart" !important;
+    overflow: visible;
+  }
+
+  .sale-page__catalog,
+  .sale-page__cart {
+    min-height: 420px;
+  }
+
+  .product-grid {
+    grid-template-columns:
+      repeat(
+        auto-fill,
+        minmax(135px, 1fr)
+      ) !important;
+  }
+
+  .sale-page__actions {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+  }
+
+  .pos-app-shell__nav-trigger {
+    top: 10px;
+    left: 10px;
+  }
+}
+
+/* Very narrow window */
+@media (max-width: 520px) {
+  .sale-page__transaction-context {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .sale-page__seller-tools {
+    grid-column: auto;
+  }
+
+  .product-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+  }
+
+  .sale-page__merchant-copy strong,
+  .sale-page__merchant-copy span {
+    max-width: 120px;
+  }
+}
+
+
+/* OPERATOR ACTION DOCK V1 */
+
+/* Light operator-first action surface */
+.sale-page__actions {
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid #e1e4e7;
+  border-radius: 14px;
+  background: #f4f5f5;
+  box-shadow:
+    0 4px 14px
+    rgb(24 28 32 / 5%);
+}
+
+/* Individual actions read like fast POS controls */
+.sale-page__actions > button,
+.sale-page__actions
+.sale-page__more-actions-trigger {
+  min-height: 54px;
+  border: 1px solid #e1e4e7;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #292d32;
+  font-weight: 750;
+  box-shadow:
+    0 1px 2px
+    rgb(20 24 28 / 3%);
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 80ms ease;
+}
+
+.sale-page__actions > button:hover:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  border-color: #cdd1d5;
+  background: #fafafa;
+  box-shadow:
+    0 3px 9px
+    rgb(20 24 28 / 6%);
+}
+
+.sale-page__actions > button:active:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* Secondary actions stay quiet when unavailable */
+.sale-page__actions > button:disabled,
+.sale-page__actions
+.sale-page__more-actions-trigger:disabled {
+  border-color: #eceeef;
+  background: #f7f8f8;
+  color: #b0b5bb;
+  box-shadow: none;
+}
+
+/* More actions gets a subtle Lumora cue, not a loud brand block */
+.sale-page__actions
+.sale-page__more-actions-trigger:not(:disabled) {
+  border-color: #ddd3bd;
+  background: #fbfaf7;
+}
+
+.sale-page__actions
+.sale-page__more-actions-trigger:not(:disabled)::first-letter {
+  color: #9a793f;
+}
+
+/* OPERATOR CONTROLS POLISH V2 */
+
+/* Restore the connected modern POS dock */
+.sale-page__actions {
+  gap: 0;
+  padding: 5px;
+  overflow: hidden;
+  border: 1px solid #343a40;
+  border-radius: 13px;
+  background: #30353b;
+  box-shadow:
+    0 5px 15px rgb(20 24 28 / 9%);
+}
+
+.sale-page__actions > button,
+.sale-page__actions
+.sale-page__more-actions-trigger {
+  min-height: 46px;
+  border: 0;
+  border-left:
+    1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  background: transparent;
+  color: #f1f2f3;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.sale-page__actions > button:hover:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  border-color:
+    rgb(255 255 255 / 8%);
+  background: #3b4147;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.sale-page__actions > button:active:not(:disabled),
+.sale-page__actions
+.sale-page__more-actions-trigger:active:not(:disabled) {
+  background: #454b52;
+  transform: translateY(1px);
+}
+
+.sale-page__actions > button:disabled,
+.sale-page__actions
+.sale-page__more-actions-trigger:disabled {
+  border-color:
+    rgb(255 255 255 / 6%);
+  background: transparent;
+  color: #777e86;
+  opacity: 1;
+  box-shadow: none;
+}
+
+/* More Actions belongs to the same dock */
+.sale-page__actions
+.sale-page__more-actions-trigger:not(:disabled) {
+  border-color:
+    rgb(255 255 255 / 8%);
+  background: transparent;
+}
+
+.sale-page__more-actions-chevron {
+  color: #b7bdc4;
+}
+
+/* Softer checkout anchor */
+.lumora-cart__checkout {
+  min-height: 56px !important;
+  padding: 0 18px;
+  border-radius: 12px !important;
+  background: #30353a !important;
+  color: #f7f7f7 !important;
+  box-shadow:
+    0 4px 12px rgb(20 24 28 / 10%);
+}
+
+.lumora-cart__checkout:hover:not(:disabled) {
+  background: #3a4046 !important;
+  transform: none;
+}
+
+.lumora-cart__checkout span {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lumora-cart__checkout strong {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+
+/* CHECKOUT POLISH V3 */
+
+.lumora-cart__checkout {
+  min-height: 56px !important;
+  border: 1px solid rgb(199 169 107 / 34%) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(
+      180deg,
+      #3a3d40 0%,
+      #32363a 100%
+    ) !important;
+  color: #f7f6f3 !important;
+  box-shadow:
+    0 3px 10px rgb(20 24 28 / 8%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+.lumora-cart__checkout:hover:not(:disabled) {
+  border-color:
+    rgb(199 169 107 / 52%) !important;
+  background:
+    linear-gradient(
+      180deg,
+      #42464a 0%,
+      #393d41 100%
+    ) !important;
+  transform: none;
+}
+
+.lumora-cart__checkout span {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.lumora-cart__checkout strong,
+.lumora-cart__checkout-amount {
+  color: #f4eee2;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* LUMORA DEFAULT SHELL V1 */
+
+/*
+ * Default sale workspace:
+ * persistent Lumora rail + operator workspace.
+ *
+ * Canvas customization comes later.
+ * This is the standard Lumora reference layout.
+ */
+
+.pos-app-shell--sale {
+  grid-template-columns:
+    208px
+    minmax(0, 1fr) !important;
+}
+
+/* Sale navigation is part of the workspace again */
+.pos-app-shell--sale
+.pos-app-shell__sidebar-host {
+  position: static;
+  z-index: auto;
+  width: auto;
+  height: 100%;
+  min-width: 0;
+  transform: none;
+  transition: none;
+  box-shadow: none;
+}
+
+/* Sidebar fills its permanent rail */
+.pos-app-shell--sale
+.pos-sidebar {
+  width: 208px !important;
+  height: 100%;
+}
+
+/* Old adaptive drawer controls are not part of Default */
+.pos-app-shell--sale
+.pos-app-shell__nav-trigger,
+.pos-app-shell--sale
+.pos-app-shell__nav-backdrop {
+  display: none !important;
+}
+
+/*
+ * The heading previously reserved space for the
+ * floating Lumora trigger. The permanent rail
+ * makes that unnecessary.
+ */
+.pos-app-shell--sale
+.sale-page__heading {
+  padding-left: 0 !important;
+}
+
+/* Slightly tighter rail for operator use */
+.pos-app-shell--sale
+.pos-sidebar {
+  padding-inline:
+    10px !important;
+}
+
+/*
+ * Keep laptop workspace practical.
+ * The sidebar remains present instead of
+ * consuming the catalog through a large rail.
+ */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale {
+    grid-template-columns:
+      188px
+      minmax(0, 1fr) !important;
+  }
+
+  .pos-app-shell--sale
+  .pos-sidebar {
+    width: 188px !important;
+  }
+}
+
+/*
+ * On genuinely narrow workspaces we may later
+ * introduce a dedicated compact/mobile mode.
+ * Do not invent that behavior during Default V1.
+ */
+
+
+/* LUMORA DEFAULT TOP BAR + GOLD LANGUAGE V1 */
+
+.pos-app-shell--sale {
+  --lumora-gold: #c9942f;
+  --lumora-gold-strong: #b47d1e;
+  --lumora-gold-soft: #faf3e4;
+  --lumora-gold-border: #e5d2aa;
+}
+
+/* Merchant identity belongs to the operator top bar */
+.pos-app-shell--sale
+.pos-sidebar__merchant-card {
+  display: none !important;
+}
+
+/* Keep the sidebar usable without showing a browser scrollbar */
+.pos-app-shell--sale
+.pos-sidebar {
+  overflow: hidden;
+}
+
+.pos-app-shell--sale
+.pos-sidebar__navigation {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.pos-app-shell--sale
+.pos-sidebar__navigation::-webkit-scrollbar {
+  display: none;
+}
+
+/* Active navigation gets the Lumora gold cue */
+.pos-app-shell--sale
+.pos-sidebar__item--active {
+  border-color:
+    rgb(201 148 47 / 34%) !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(201 148 47 / 18%),
+      rgb(201 148 47 / 7%)
+    ) !important;
+  color: #f6ead1 !important;
+}
+
+.pos-app-shell--sale
+.pos-sidebar__item--active::after {
+  background:
+    var(--lumora-gold) !important;
+}
+
+/* ---------- TOP BAR ---------- */
+
+.pos-app-shell--sale
+.sale-page__heading {
+  min-height: 64px;
+  margin: 0 0 8px;
+  padding: 8px 16px !important;
+  border: 1px solid #e5e7e9;
+  border-radius: 14px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  box-shadow:
+    0 2px 8px rgb(20 24 28 / 3%);
+}
+
+.pos-app-shell--sale
+.sale-page__heading-title {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pos-app-shell--sale
+.sale-page__eyebrow {
+  margin: 0;
+  color: #969ba2;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.pos-app-shell--sale
+.sale-page__heading h1 {
+  margin: 0;
+  color: #20242a;
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.05;
+}
+
+/* Merchant now reads like the reference top bar */
+.pos-app-shell--sale
+.sale-page__merchant-compact {
+  padding: 0 !important;
+  border: 0 !important;
+  gap: 10px;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-monogram {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  border: 1px solid
+    var(--lumora-gold-border);
+  border-radius: 11px;
+  background:
+    var(--lumora-gold-soft);
+  color: #5d4319;
+  font-size: 12px;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-copy strong {
+  max-width: 240px;
+  color: #20242a;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-copy span {
+  max-width: 240px;
+  color: #8d939b;
+  font-size: 10px;
+}
+
+/* ---------- TRANSACTION STRIP ---------- */
+
+.pos-app-shell--sale
+.sale-page__transaction-context {
+  min-height: 64px;
+  margin: 0 0 10px;
+  padding: 8px 10px !important;
+  border: 1px solid #e4e6e8 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 2px 8px rgb(20 24 28 / 3%) !important;
+  gap: 8px !important;
+  align-items: end;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field {
+  gap: 4px;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field > span {
+  color: #858b93;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field select,
+.pos-app-shell--sale
+.sale-page__customer-trigger,
+.pos-app-shell--sale
+.sale-page__seller-override-trigger {
+  min-height: 38px !important;
+  height: 38px;
+  border: 1px solid #dfe2e5 !important;
+  border-radius: 9px !important;
+  background: #fafafa !important;
+  color: #2b2f34 !important;
+  box-shadow: none !important;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field select:focus,
+.pos-app-shell--sale
+.sale-page__customer-trigger:focus-visible,
+.pos-app-shell--sale
+.sale-page__seller-override-trigger:focus-visible {
+  border-color:
+    var(--lumora-gold) !important;
+  outline:
+    2px solid rgb(201 148 47 / 13%);
+}
+
+/* ---------- GOLD INTERACTION LANGUAGE ---------- */
+
+/* Selected category */
+.pos-app-shell--sale
+.sale-page__category--active {
+  border-color:
+    var(--lumora-gold-strong) !important;
+  background:
+    linear-gradient(
+      180deg,
+      #d6a643 0%,
+      #bd8523 100%
+    ) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 3px 8px rgb(151 103 25 / 18%);
+}
+
+/* Old dark action dock is removed from the Default direction */
+.pos-app-shell--sale
+.sale-page__actions {
+  gap: 6px !important;
+  padding: 5px !important;
+  border: 1px solid #e2e4e6 !important;
+  border-radius: 12px !important;
+  background: #f5f5f4 !important;
+  box-shadow:
+    0 2px 8px rgb(20 24 28 / 4%) !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions > button,
+.pos-app-shell--sale
+.sale-page__actions
+.sale-page__more-actions-trigger {
+  min-height: 44px !important;
+  border:
+    1px solid #e0e2e4 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #30343a !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions > button:hover:not(:disabled),
+.pos-app-shell--sale
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  border-color: #cacdd0 !important;
+  background: #fafafa !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions
+.sale-page__more-actions-trigger:not(:disabled) {
+  border-color:
+    var(--lumora-gold-border) !important;
+  background:
+    var(--lumora-gold-soft) !important;
+  color: #72521f !important;
+}
+
+/* Checkout is the strongest standard Lumora CTA */
+.pos-app-shell--sale
+.lumora-cart__checkout {
+  border:
+    1px solid #a86f16 !important;
+  background:
+    linear-gradient(
+      180deg,
+      #d9a541 0%,
+      #bd7e19 100%
+    ) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 5px 14px rgb(151 103 25 / 20%) !important;
+}
+
+.pos-app-shell--sale
+.lumora-cart__checkout:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      180deg,
+      #e0ad49 0%,
+      #c78921 100%
+    ) !important;
+}
+
+.pos-app-shell--sale
+.lumora-cart__checkout span,
+.pos-app-shell--sale
+.lumora-cart__checkout strong,
+.pos-app-shell--sale
+.lumora-cart__checkout-amount {
+  color: #ffffff !important;
+}
+
+/* Laptop stays compact */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale
+  .sale-page__heading {
+    min-height: 58px;
+    padding:
+      7px 12px !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__transaction-context {
+    min-height: 58px;
+    padding:
+      6px 8px !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__context-field select,
+  .pos-app-shell--sale
+  .sale-page__customer-trigger,
+  .pos-app-shell--sale
+  .sale-page__seller-override-trigger {
+    min-height: 36px !important;
+    height: 36px;
+  }
+}
+
+
+/* COMPACT OPERATOR HEADER V2 */
+
+/*
+ * Heading + transaction controls become one
+ * compact operator surface.
+ */
+.pos-app-shell--sale
+.sale-page__operator-topbar {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(260px, 340px);
+  gap: 8px;
+  margin-bottom: 9px;
+  direction: ltr;
+}
+
+/* ---------- SALE / MERCHANT BLOCK ---------- */
+
+.pos-app-shell--sale
+.sale-page__heading {
+  min-width: 0;
+  min-height: 58px;
+  margin: 0 !important;
+  padding: 7px 11px !important;
+  border: 1px solid #e4e6e8;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow:
+    0 2px 8px rgb(20 24 28 / 3%);
+  direction: rtl;
+}
+
+.pos-app-shell--sale
+.sale-page__heading-title {
+  gap: 0;
+}
+
+.pos-app-shell--sale
+.sale-page__eyebrow {
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.pos-app-shell--sale
+.sale-page__heading h1 {
+  margin-top: 2px;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-compact {
+  gap: 8px;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-monogram {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  border-radius: 10px;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-copy strong {
+  font-size: 12px;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-copy span {
+  font-size: 9px;
+}
+
+/* ---------- TRANSACTION CONTROLS ---------- */
+
+.pos-app-shell--sale
+.sale-page__transaction-context {
+  min-width: 0;
+  min-height: 58px;
+  margin: 0 !important;
+  padding: 6px 7px !important;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    ) !important;
+  gap: 6px !important;
+  border: 1px solid #e4e6e8 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 2px 8px rgb(20 24 28 / 3%) !important;
+  direction: rtl;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field {
+  gap: 3px;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field > span {
+  font-size: 8px;
+  line-height: 1;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field select,
+.pos-app-shell--sale
+.sale-page__customer-trigger,
+.pos-app-shell--sale
+.sale-page__seller-override-trigger {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding-block:
+    0 !important;
+  border-radius: 8px !important;
+  font-size: 10px !important;
+}
+
+/*
+ * Gold stays interaction language,
+ * not background decoration.
+ */
+.pos-app-shell--sale
+.sale-page__customer-trigger:hover,
+.pos-app-shell--sale
+.sale-page__seller-override-trigger:hover:not(:disabled),
+.pos-app-shell--sale
+.sale-page__context-field select:hover {
+  border-color:
+    var(--lumora-gold-border) !important;
+}
+
+/* Give the recovered height back to the workspace */
+.pos-app-shell--sale
+.sale-page__content {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale
+  .sale-page__operator-topbar {
+    grid-template-columns:
+      minmax(0, 1fr)
+      270px;
+    gap: 7px;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__heading,
+  .pos-app-shell--sale
+  .sale-page__transaction-context {
+    min-height: 54px;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__heading {
+    padding:
+      6px 9px !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__transaction-context {
+    padding:
+      5px 6px !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__context-field select,
+  .pos-app-shell--sale
+  .sale-page__customer-trigger,
+  .pos-app-shell--sale
+  .sale-page__seller-override-trigger {
+    height: 32px !important;
+    min-height: 32px !important;
+  }
+}
+
+/*
+ * Narrow layouts stack cleanly.
+ * Canvas behavior is NOT being introduced here.
+ */
+@media (max-width: 900px) {
+  .pos-app-shell--sale
+  .sale-page__operator-topbar {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+}
+
+
+/* LUMORA OPERATOR HEADER V3 */
+
+/*
+ * One continuous operator bar.
+ * Merchant / sale identity + transaction controls
+ * share one visual surface.
+ */
+.pos-app-shell--sale
+.sale-page__operator-topbar {
+  display: grid !important;
+  grid-template-columns:
+    340px
+    minmax(0, 1fr) !important;
+  gap: 0 !important;
+  margin-bottom: 9px !important;
+  overflow: visible;
+  border: 1px solid #e2e4e6;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow:
+    0 3px 12px rgb(20 24 28 / 4%);
+  direction: ltr;
+}
+
+/* Left identity zone */
+.pos-app-shell--sale
+.sale-page__heading {
+  min-width: 0;
+  min-height: 64px !important;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  border: 0 !important;
+  border-right: 1px solid #ece7dc !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  direction: rtl;
+}
+
+.pos-app-shell--sale
+.sale-page__heading h1 {
+  font-size: 20px !important;
+  font-weight: 750;
+}
+
+.pos-app-shell--sale
+.sale-page__eyebrow {
+  font-size: 9px !important;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-monogram {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+}
+
+.pos-app-shell--sale
+.sale-page__merchant-copy strong {
+  font-size: 12px !important;
+}
+
+/* Transaction controls are part of the same bar */
+.pos-app-shell--sale
+.sale-page__transaction-context {
+  min-width: 0;
+  min-height: 64px !important;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    ) !important;
+  gap: 8px !important;
+  align-items: center;
+  direction: rtl;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field {
+  gap: 4px !important;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field > span {
+  color: #858a91;
+  font-size: 9px !important;
+  font-weight: 650;
+}
+
+.pos-app-shell--sale
+.sale-page__context-field select,
+.pos-app-shell--sale
+.sale-page__customer-trigger,
+.pos-app-shell--sale
+.sale-page__seller-override-trigger {
+  height: 37px !important;
+  min-height: 37px !important;
+  border: 1px solid #dfe1e3 !important;
+  border-radius: 9px !important;
+  background: #fafafa !important;
+  color: #292d32 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* Gold focus language */
+.pos-app-shell--sale
+.sale-page__context-field select:focus,
+.pos-app-shell--sale
+.sale-page__customer-trigger:focus-visible,
+.pos-app-shell--sale
+.sale-page__seller-override-trigger:focus-visible {
+  border-color:
+    var(--lumora-gold) !important;
+  outline:
+    2px solid rgb(201 148 47 / 12%);
+}
+
+/* ---------- BOTTOM ACTIONS ---------- */
+
+/*
+ * Standard actions stay white.
+ * Gold is reserved for More Actions and primary CTA.
+ */
+.pos-app-shell--sale
+.sale-page__actions {
+  gap: 7px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions > button,
+.pos-app-shell--sale
+.sale-page__actions
+.sale-page__more-actions-trigger {
+  min-height: 44px !important;
+  border: 1px solid #dedfe1 !important;
+  border-radius: 9px !important;
+  background: #fffefa !important;
+  color: #30343a !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  box-shadow:
+    0 1px 3px rgb(20 24 28 / 3%) !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions > button:hover:not(:disabled) {
+  border-color:
+    #d5bf91 !important;
+  background:
+    #fffdf8 !important;
+}
+
+/* Only More Actions receives a permanent gold cue */
+.pos-app-shell--sale
+.sale-page__actions
+.sale-page__more-actions-trigger:not(:disabled) {
+  border-color:
+    #dfc58f !important;
+  background:
+    linear-gradient(
+      180deg,
+      #fff9ec 0%,
+      #f9edcf 100%
+    ) !important;
+  color: #6e4d18 !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions
+.sale-page__more-actions-trigger:hover:not(:disabled) {
+  border-color:
+    var(--lumora-gold) !important;
+  background:
+    #f9ebc8 !important;
+}
+
+.pos-app-shell--sale
+.sale-page__actions > button:disabled {
+  border-color: #eceeef !important;
+  background: #f7f7f6 !important;
+  color: #b5b8bc !important;
+  box-shadow: none !important;
+}
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale
+  .sale-page__operator-topbar {
+    grid-template-columns:
+      290px
+      minmax(0, 1fr) !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__heading,
+  .pos-app-shell--sale
+  .sale-page__transaction-context {
+    min-height: 60px !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__context-field select,
+  .pos-app-shell--sale
+  .sale-page__customer-trigger,
+  .pos-app-shell--sale
+  .sale-page__seller-override-trigger {
+    height: 35px !important;
+    min-height: 35px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .pos-app-shell--sale
+  .sale-page__operator-topbar {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__heading {
+    border-right: 0 !important;
+    border-bottom:
+      1px solid #ece7dc !important;
+  }
+}
+
+
+/* LUMORA PRODUCT DENSITY V1 */
+
+/*
+ * Product imagery stays visually important,
+ * but no longer dominates the operator workspace.
+ */
+.pos-app-shell--sale
+.product-grid {
+  gap: 13px !important;
+  padding:
+    10px 3px 12px !important;
+  align-content: start;
+}
+
+.pos-app-shell--sale
+.product-card {
+  min-height: 126px !important;
+  border-radius: 12px !important;
+}
+
+/* Main change: reduce image dominance */
+.pos-app-shell--sale
+.product-card__image-wrapper {
+  height: 72px !important;
+  background: #f6f6f4;
+}
+
+/* Keep product imagery clean */
+.pos-app-shell--sale
+.product-card__image {
+  object-fit: cover;
+}
+
+/* Give name + price breathing room */
+.pos-app-shell--sale
+.product-card__content {
+  min-height: 48px;
+  padding:
+    8px 9px 9px !important;
+  gap: 9px !important;
+  align-items: center !important;
+}
+
+.pos-app-shell--sale
+.product-card__content strong {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+}
+
+.pos-app-shell--sale
+.product-card__content span {
+  font-size: 10px !important;
+  font-weight: 650 !important;
+}
+
+/* Quiet Lumora hover */
+.pos-app-shell--sale
+.product-card:hover {
+  border-color:
+    var(--lumora-gold-border) !important;
+  transform:
+    translateY(-1px) !important;
+  box-shadow:
+    0 7px 18px
+    rgb(24 28 32 / 7%) !important;
+}
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale
+  .product-card {
+    min-height: 120px !important;
+  }
+
+  .pos-app-shell--sale
+  .product-card__image-wrapper {
+    height: 68px !important;
+  }
+
+  .pos-app-shell--sale
+  .product-card__content {
+    min-height: 46px;
+  }
+}
+
+
+/* LUMORA PRODUCT DENSITY V2 */
+
+/*
+ * Denser operator catalog:
+ * image identifies the item,
+ * text + price remain fully readable.
+ */
+
+.pos-app-shell--sale
+.product-card {
+  min-height: 108px !important;
+}
+
+.pos-app-shell--sale
+.product-card__image-wrapper {
+  height: 58px !important;
+}
+
+.pos-app-shell--sale
+.product-card__content {
+  min-height: 43px !important;
+  padding:
+    7px 9px 8px !important;
+}
+
+/* Slightly more vertical air between cards */
+.pos-app-shell--sale
+.product-grid {
+  gap: 14px 13px !important;
+}
+
+/* Compact screens */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale
+  .product-card {
+    min-height: 104px !important;
+  }
+
+  .pos-app-shell--sale
+  .product-card__image-wrapper {
+    height: 54px !important;
+  }
+
+  .pos-app-shell--sale
+  .product-card__content {
+    min-height: 42px !important;
+  }
+}
+
+
+/* LUMORA PRODUCT GRID DENSITY V3 */
+
+/*
+ * Default Lumora laptop density:
+ * stable four-column catalog.
+ *
+ * Category size must not change the visual
+ * scale of the product cards.
+ */
+.pos-app-shell--sale
+.product-grid {
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    ) !important;
+}
+
+/* Smaller laptop / compact workspace */
+@media (max-width: 1280px) {
+  .pos-app-shell--sale
+  .product-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      ) !important;
+  }
+}
+
+/* Narrow layouts */
+@media (max-width: 900px) {
+  .pos-app-shell--sale
+  .product-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+  }
+}
+
+
+/* HELD SALE ACTION V1 */
+
+.pos-app-shell--sale
+.sale-page__actions {
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(102px, 1fr)
+    ) !important;
+}

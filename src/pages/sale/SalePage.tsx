@@ -1,4 +1,4 @@
-import {
+﻿import {
     useEffect,
     useMemo,
     useState,
@@ -10,6 +10,7 @@ import TransactionDiscountDialog from "../../components/pricing/TransactionDisco
 import CalculatorSaleEntry from "../../components/pos/CalculatorSaleEntry";
 import FashionVariantSelector from "../../components/pos/FashionVariantSelector";
 import CartPanel from "../../components/pos/CartPanel";
+import HeldSalesDialog from "../../components/pos/HeldSalesDialog";
 import ProductGrid from "../../components/pos/ProductGrid";
 import {
     getActiveBusinessOperatingProfile,
@@ -22,8 +23,9 @@ import { useCatalog } from "../../context/useCatalog";
 import { translate } from "../../i18n";
 import { categorySeed } from "../../models/catalog/Category";
 import {
-    testCustomers,
-} from "../../models/customer/CustomerSeed";
+    getCustomers,
+    getWalkInCustomer,
+} from "../../models/customer/CustomerRepository";
 import {
     getDocumentsForTransaction,
 } from "../../models/document/DocumentRepository";
@@ -49,6 +51,15 @@ import type {
 import type {
     ProductVariant,
 } from "../../models/catalog/ProductVariantIdentity";
+import {
+    deleteHeldSale,
+    flushHeldSalePersistence,
+    getHeldSales,
+    saveHeldSale,
+} from "../../models/held-sale/HeldSaleRepository";
+import type {
+    HeldSale,
+} from "../../models/held-sale/HeldSale";
 import type { CartLine } from "../../models/sale/CartLine";
 import type {
     AppliedSaleCoupon,
@@ -260,8 +271,10 @@ function SalePage({
     const {
         pricingRules,
         pricing,
+        cartLines,
         setCartLines,
         updateCartLines,
+        setPricingRules,
         addPricingRule,
         removePricingRule,
         clearPricingRules,
@@ -277,10 +290,74 @@ function SalePage({
     } = usePricing();
 
     const [
+        moreActionsOpen,
+        setMoreActionsOpen,
+    ] = useState(false);
+
+    const [
+        couponDialogRequestId,
+        setCouponDialogRequestId,
+    ] = useState(0);
+
+    const [
+        heldSales,
+        setHeldSales,
+    ] =
+        useState<HeldSale[]>(
+            () =>
+                getHeldSales(),
+        );
+
+    const [
+        heldSalesOpen,
+        setHeldSalesOpen,
+    ] =
+        useState(false);
+
+    const [
+        pendingHeldCouponCode,
+        setPendingHeldCouponCode,
+    ] =
+        useState<string | null>(
+            null,
+        );
+
+    const [
         mode,
         setMode,
     ] =
         useState<SaleMode>("sale");
+
+    useEffect(() => {
+        if (
+            !pendingHeldCouponCode ||
+            pricing.total <= 0
+        ) {
+            return;
+        }
+
+        const result =
+            applyCoupon(
+                pendingHeldCouponCode,
+            );
+
+        if (!result.success) {
+            console.warn(
+                "LUMORA_HELD_SALE_COUPON_RESTORE_FAILED",
+                pendingHeldCouponCode,
+                result.reason,
+            );
+        }
+
+        setPendingHeldCouponCode(
+            null,
+        );
+    }, [
+        pendingHeldCouponCode,
+        pricing.total,
+        selectedCustomer.id,
+        applyCoupon,
+    ]);
 
     const [
         selectedCategory,
@@ -292,6 +369,88 @@ function SalePage({
         searchTerm,
         setSearchTerm,
     ] = useState("");
+
+    const [
+        customerPickerOpen,
+        setCustomerPickerOpen,
+    ] = useState(false);
+
+    const [
+        customerSearchTerm,
+        setCustomerSearchTerm,
+    ] = useState("");
+
+    const saleCustomers =
+        getCustomers()
+            .filter(
+                (customer) =>
+                    customer.id === "walk-in" ||
+                    customer.isActive !== false,
+            );
+
+    const normalizedCustomerSearch =
+        customerSearchTerm
+            .trim()
+            .toLocaleLowerCase();
+
+    const customerSearchDigits =
+        customerSearchTerm
+            .replace(/\D/g, "");
+
+    const filteredSaleCustomers =
+        saleCustomers.filter(
+            (customer) => {
+                if (!normalizedCustomerSearch) {
+                    return true;
+                }
+
+                const nameMatches =
+                    customer.name
+                        .toLocaleLowerCase()
+                        .includes(
+                            normalizedCustomerSearch,
+                        );
+
+                const phone =
+                    customer.phone ?? "";
+
+                const externalId =
+                    customer.externalId ?? "";
+
+                const textMatches =
+                    phone
+                        .toLocaleLowerCase()
+                        .includes(
+                            normalizedCustomerSearch,
+                        ) ||
+                    externalId
+                        .toLocaleLowerCase()
+                        .includes(
+                            normalizedCustomerSearch,
+                        );
+
+                const digitsMatch =
+                    customerSearchDigits.length > 0 &&
+                    (
+                        phone
+                            .replace(/\D/g, "")
+                            .includes(
+                                customerSearchDigits,
+                            ) ||
+                        externalId
+                            .replace(/\D/g, "")
+                            .includes(
+                                customerSearchDigits,
+                            )
+                    );
+
+                return (
+                    nameMatches ||
+                    textMatches ||
+                    digitsMatch
+                );
+            },
+        );
 
     const [
         checkoutTotal,
@@ -443,6 +602,28 @@ function SalePage({
             searchTerm,
             selectedCategory,
         ]);
+
+    const selectedCartLine =
+        selectedLineId
+            ? pricing.lines.find(
+                  (line) =>
+                      line.id === selectedLineId,
+              ) ?? null
+            : null;
+
+    const [
+        sellerOverrideOpen,
+        setSellerOverrideOpen,
+    ] = useState(false);
+
+    const [
+        sellerOverrideEmployeeId,
+        setSellerOverrideEmployeeId,
+    ] = useState("");
+
+    useEffect(() => {
+        setSellerOverrideOpen(false);
+    }, [selectedLineId]);
 
     const selectedSaleLine =
         pricing.lines.find(
@@ -839,6 +1020,37 @@ function SalePage({
                                 ...line,
                                 quantity:
                                     line.quantity + 1,
+                            }
+                            : line,
+                ),
+        );
+
+        setSelectedLineId(lineId);
+    };
+
+    const setQuantity = (
+        lineId: string,
+        quantity: number,
+    ) => {
+        if (!Number.isFinite(quantity)) {
+            return;
+        }
+
+        const normalizedQuantity =
+            Math.max(
+                1,
+                Math.floor(quantity),
+            );
+
+        updateCartLines(
+            (current) =>
+                current.map(
+                    (line) =>
+                        line.id === lineId
+                            ? {
+                                ...line,
+                                quantity:
+                                    normalizedQuantity,
                             }
                             : line,
                 ),
@@ -1346,17 +1558,6 @@ function SalePage({
                 0,
             );
 
-    const sellerAssignments =
-        activeSellers.map(
-            (employee) => ({
-                employeeId:
-                    employee.id,
-
-                employeeName:
-                    employee.name,
-            }),
-        );
-
     const changeSellerForLine = (
         lineId: string,
         seller: {
@@ -1435,10 +1636,150 @@ function SalePage({
         clearPricingRules();
         removeCoupon();
         setSelectedCustomer(
-            testCustomers[0],
+            getWalkInCustomer(),
         );
+
+        setCustomerPickerOpen(false);
+        setCustomerSearchTerm("");
+        setMoreActionsOpen(false);
         setSelectedLineId(null);
     };
+
+    const refreshHeldSales = () => {
+        setHeldSales(
+            getHeldSales(),
+        );
+    };
+
+    const holdCurrentSale =
+        async () => {
+            if (
+                cartLines.length === 0
+            ) {
+                return;
+            }
+
+            saveHeldSale({
+                id:
+                    crypto.randomUUID(),
+
+                heldAt:
+                    new Date()
+                        .toISOString(),
+
+                cartLines:
+                    [...cartLines],
+
+                pricingRules:
+                    [...pricingRules],
+
+                customer:
+                    selectedCustomer,
+
+                couponCode:
+                    appliedCoupon?.code,
+
+                currentSellerId,
+
+                sellerSelectionMode,
+
+                selectedCategory,
+
+                total:
+                    transactionTotal,
+            });
+
+            await flushHeldSalePersistence();
+
+            refreshHeldSales();
+
+            clearSale();
+
+            setSearchTerm("");
+            setSelectedCategory(
+                "all",
+            );
+        };
+
+    const resumeHeldSale =
+        async (
+            heldSale: HeldSale,
+        ) => {
+            if (
+                cartLines.length > 0
+            ) {
+                return;
+            }
+
+            removeCoupon();
+
+            setCartLines(
+                heldSale.cartLines,
+            );
+
+            setPricingRules(
+                heldSale.pricingRules,
+            );
+
+            setSelectedCustomer(
+                heldSale.customer,
+            );
+
+            setCurrentSellerId(
+                heldSale.currentSellerId,
+            );
+
+            setSellerSelectionMode(
+                heldSale
+                    .sellerSelectionMode,
+            );
+
+            setSelectedCategory(
+                heldSale.selectedCategory ||
+                "all",
+            );
+
+            setSearchTerm("");
+            setSelectedLineId(null);
+            setCheckoutTotal(null);
+            setMode("sale");
+
+            setPendingHeldCouponCode(
+                heldSale.couponCode ??
+                null,
+            );
+
+            deleteHeldSale(
+                heldSale.id,
+            );
+
+            await flushHeldSalePersistence();
+
+            refreshHeldSales();
+            setHeldSalesOpen(false);
+        };
+
+    const removeHeldSale =
+        async (
+            id: string,
+        ) => {
+            const confirmed =
+                window.confirm(
+                    "למחוק את העסקה המושהית?",
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            deleteHeldSale(
+                id,
+            );
+
+            await flushHeldSalePersistence();
+
+            refreshHeldSales();
+        };
 
     const startNewSale = () => {
         setMode("sale");
@@ -1697,8 +2038,9 @@ function SalePage({
                 className="sale-page"
                 aria-labelledby="sale-page-title"
             >
-                <header className="sale-page__heading">
-                    <div>
+                <div className="sale-page__operator-topbar">
+                    <header className="sale-page__heading">
+                    <div className="sale-page__heading-title">
                         <p className="sale-page__eyebrow">
                             עסקה חדשה
                         </p>
@@ -1708,73 +2050,316 @@ function SalePage({
                         </h1>
                     </div>
 
-                    <button
-                        type="button"
-                        className="sale-page__quick-action"
-                    >
-                        פעולות מהירות
-                    </button>
+                    <div className="sale-page__merchant-compact">
+                        <div
+                            className="sale-page__merchant-monogram"
+                            aria-hidden="true"
+                        >
+                            {(
+                                activeProfile.identity.tradingName ??
+                                activeProfile.identity.businessName
+                            )
+                                .trim()
+                                .charAt(0)
+                                .toUpperCase()}
+                        </div>
+
+                        <div className="sale-page__merchant-copy">
+                            <strong>
+                                {activeProfile.identity.tradingName ??
+                                    activeProfile.identity.businessName}
+                            </strong>
+
+                            {activeProfile.identity.branchName && (
+                                <span>
+                                    {activeProfile.identity.branchName}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </header>
 
-                                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        marginBottom: "10px",
-                    }}
-                >
-                    <strong>
-                        מוכרן פעיל
-                    </strong>
+                <div className="sale-page__transaction-context">
+                    <div className="sale-page__context-field sale-page__customer-tools">
+                        <span>לקוח</span>
 
-                    <select
-                        value={
-                            currentSellerId
-                        }
-                        onChange={(event) => {
-                            const nextSellerId =
-                                event.target.value;
+                        <button
+                            type="button"
+                            className="sale-page__customer-trigger"
+                            onClick={() => {
+                                setCustomerPickerOpen(
+                                    (current) => !current,
+                                );
 
-                            setCurrentSellerId(
-                                nextSellerId,
-                            );
+                                setCustomerSearchTerm("");
+                            }}
+                        >
+                            <span>
+                                {selectedCustomer.name}
+                            </span>
 
-                            setSellerSelectionMode(
-                                nextSellerId
-                                    ? "explicit"
-                                    : null,
-                            );
-                        }}
-                    >
-                        {activeSellers.length !== 1 && (
-                            <option value="">
-                                {
-                                    activeSellers.length === 0
+                            <span
+                                className="sale-page__customer-chevron"
+                                aria-hidden="true"
+                            >
+                                ⌄
+                            </span>
+                        </button>
+
+                        {customerPickerOpen && (
+                            <div className="sale-page__customer-popover">
+                                <input
+                                    type="search"
+                                    autoFocus
+                                    value={customerSearchTerm}
+                                    placeholder="חיפוש לפי שם, טלפון או ת״ז"
+                                    onChange={(event) =>
+                                        setCustomerSearchTerm(
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+
+                                <div className="sale-page__customer-results">
+                                    {filteredSaleCustomers.length === 0 && (
+                                        <div className="sale-page__customer-empty">
+                                            לא נמצאו לקוחות
+                                        </div>
+                                    )}
+
+                                    {filteredSaleCustomers.map(
+                                        (customer) => (
+                                            <button
+                                                key={customer.id}
+                                                type="button"
+                                                className={
+                                                    customer.id ===
+                                                    selectedCustomer.id
+                                                        ? "sale-page__customer-result sale-page__customer-result--selected"
+                                                        : "sale-page__customer-result"
+                                                }
+                                                onClick={() => {
+                                                    setSelectedCustomer(
+                                                        customer,
+                                                    );
+
+                                                    setCustomerPickerOpen(
+                                                        false,
+                                                    );
+
+                                                    setCustomerSearchTerm(
+                                                        "",
+                                                    );
+                                                }}
+                                            >
+                                                <strong>
+                                                    {customer.name}
+                                                </strong>
+
+                                                {customer.id !==
+                                                    "walk-in" && (
+                                                    <span>
+                                                        {[
+                                                            customer.phone,
+                                                            customer.externalId,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(" · ")}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <label className="sale-page__context-field">
+                        <span>מוכרן</span>
+
+                        <select
+                            value={currentSellerId}
+                            onChange={(event) => {
+                                const nextSellerId =
+                                    event.target.value;
+
+                                setCurrentSellerId(
+                                    nextSellerId,
+                                );
+
+                                setSellerSelectionMode(
+                                    nextSellerId
+                                        ? "explicit"
+                                        : null,
+                                );
+                            }}
+                        >
+                            {activeSellers.length !== 1 && (
+                                <option value="">
+                                    {activeSellers.length === 0
                                         ? "אין מוכרנים בנוכחות"
-                                        : "בחר מוכרן"
-                                }
-                            </option>
-                        )}
-
-                        {activeSellers.map(
-                            (employee) => (
-                                <option
-                                    key={
-                                        employee.id
-                                    }
-                                    value={
-                                        employee.id
-                                    }
-                                >
-                                    {
-                                        employee.name
-                                    }
+                                        : "בחר מוכרן"}
                                 </option>
-                            ),
-                        )}
-                    </select>
+                            )}
+
+                            {activeSellers.map(
+                                (employee) => (
+                                    <option
+                                        key={employee.id}
+                                        value={employee.id}
+                                    >
+                                        {employee.name}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    </label>
+
+
+                    <div className="sale-page__context-field sale-page__seller-tools">
+                            <span>שינוי לשורה</span>
+
+                            <button
+                                type="button"
+                                className="sale-page__seller-override-trigger"
+                                disabled={
+                                    activeSellers.length === 0 ||
+                                    !selectedCartLine
+                                }
+                                onClick={() => {
+                                    if (!selectedCartLine) {
+                                        return;
+                                    }
+
+                                    const replacementSeller =
+                                        activeSellers.find(
+                                            (employee) =>
+                                                employee.id !==
+                                                selectedCartLine?.seller?.employeeId,
+                                        );
+
+                                    setSellerOverrideEmployeeId(
+                                        replacementSeller?.id || "",
+                                    );
+
+                                    setSellerOverrideOpen(
+                                        (current) => !current,
+                                    );
+                                }}
+                            >
+                                <span>
+                                    {selectedCartLine?.seller?.employeeName ||
+                                        (selectedCartLine
+                                            ? "בחר מוכרן"
+                                            : "בחר שורה בעגלה")}
+                                </span>
+
+                                <span
+                                    className="sale-page__seller-override-chevron"
+                                    aria-hidden="true"
+                                >
+                                   ⌄
+                                </span>
+                            </button>
+
+                            {sellerOverrideOpen && selectedCartLine && (
+                                <div className="sale-page__seller-popover">
+                                    <span>
+                                        מוכרן לשורה הנבחרת
+                                    </span>
+
+                                    <select
+                                        value={sellerOverrideEmployeeId}
+                                        onChange={(event) =>
+                                            setSellerOverrideEmployeeId(
+                                                event.target.value,
+                                            )
+                                        }
+                                    >
+                                        {activeSellers
+                                            .filter(
+                                                (employee) =>
+                                                    employee.id !==
+                                                    selectedCartLine?.seller?.employeeId,
+                                            )
+                                            .map(
+                                                (employee) => (
+                                                    <option
+                                                        key={employee.id}
+                                                        value={employee.id}
+                                                    >
+                                                        {employee.name}
+                                                    </option>
+                                                ),
+                                            )}
+                                    </select>
+
+                                    <div className="sale-page__seller-popover-actions">
+                                        <button
+                                            type="button"
+                                            disabled={!sellerOverrideEmployeeId}
+                                            onClick={() => {
+                                                const seller =
+                                                    activeSellers.find(
+                                                        (employee) =>
+                                                            employee.id ===
+                                                            sellerOverrideEmployeeId,
+                                                    );
+
+                                                if (!seller) {
+                                                    return;
+                                                }
+
+                                                changeSellerForLine(
+                                                    selectedCartLine.id,
+                                                    {
+                                                        employeeId: seller.id,
+                                                        employeeName: seller.name,
+                                                    },
+                                                );
+
+                                                setSellerOverrideOpen(false);
+                                            }}
+                                        >
+                                            רק שורה זו
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            disabled={!sellerOverrideEmployeeId}
+                                            onClick={() => {
+                                                const seller =
+                                                    activeSellers.find(
+                                                        (employee) =>
+                                                            employee.id ===
+                                                            sellerOverrideEmployeeId,
+                                                    );
+
+                                                if (!seller) {
+                                                    return;
+                                                }
+
+                                                changeSellerFromLineToEnd(
+                                                    selectedCartLine.id,
+                                                    {
+                                                        employeeId: seller.id,
+                                                        employeeName: seller.name,
+                                                    },
+                                                );
+
+                                                setSellerOverrideOpen(false);
+                                            }}
+                                        >
+                                            מכאן ועד הסוף
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                 </div>
+                </div>
+
 <div className="sale-page__content">
                     {activeProfile.operatingModel ===
                         "calculator" && (
@@ -2029,13 +2614,158 @@ function SalePage({
                                     </button>
                                 )}
 
-                            <button type="button">
-                                הערות
+                            <button
+                                type="button"
+                                disabled={
+                                    cartLines.length === 0
+                                }
+                                onClick={() =>
+                                    void holdCurrentSale()
+                                }
+                            >
+                                השהה עסקה
                             </button>
 
-                            <button type="button">
-                                עוד פעולות
-                            </button>
+                            <div className="sale-page__more-actions">
+                                <button
+                                    type="button"
+                                    className="sale-page__more-actions-trigger"
+                                    onClick={() =>
+                                        setMoreActionsOpen(
+                                            (current) =>
+                                                !current,
+                                        )
+                                    }
+                                >
+                                    <span>
+                                        עוד פעולות
+                                    </span>
+
+                                    <span
+                                        aria-hidden="true"
+                                        className="sale-page__more-actions-chevron"
+                                    >
+                                        ⌄
+                                    </span>
+                                </button>
+
+                                {moreActionsOpen && (
+                                    <div
+                                        className="sale-page__more-actions-overlay"
+                                        role="presentation"
+                                        onMouseDown={() =>
+                                            setMoreActionsOpen(false)
+                                        }
+                                    >
+                                        <section
+                                            className="sale-page__more-actions-dialog"
+                                            role="dialog"
+                                            aria-modal="true"
+                                            aria-label="פעולות נוספות"
+                                            onMouseDown={(event) =>
+                                                event.stopPropagation()
+                                            }
+                                        >
+                                            <header className="sale-page__more-actions-dialog-header">
+                                                <div>
+                                                    <strong>
+                                                        פעולות נוספות
+                                                    </strong>
+
+                                                    <span>
+                                                        פעולות משלימות לעסקה
+                                                    </span>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    className="sale-page__more-actions-close"
+                                                    aria-label="סגור"
+                                                    onClick={() =>
+                                                        setMoreActionsOpen(
+                                                            false,
+                                                        )
+                                                    }
+                                                >
+                                                    ×
+                                                </button>
+                                            </header>
+
+                                            <div className="sale-page__more-actions-grid">
+                                                <button
+                                                    type="button"
+                                                    className="sale-page__more-actions-card"
+                                                    disabled={
+                                                        heldSales.length === 0 ||
+                                                        cartLines.length > 0
+                                                    }
+                                                    onClick={() => {
+                                                        setMoreActionsOpen(
+                                                            false,
+                                                        );
+
+                                                        setHeldSalesOpen(
+                                                            true,
+                                                        );
+                                                    }}
+                                                >
+                                                    <strong>
+                                                        עסקאות מושהות
+                                                    </strong>
+
+                                                    <span>
+                                                        שחזור עסקה שהושהתה
+                                                    </span>
+
+                                                    <small>
+                                                        {heldSales.length}
+                                                        {" "}
+                                                        מושהות
+                                                    </small>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="sale-page__more-actions-card"
+                                                    disabled={
+                                                        Boolean(
+                                                            appliedCoupon,
+                                                        )
+                                                    }
+                                                    onClick={() => {
+                                                        setMoreActionsOpen(
+                                                            false,
+                                                        );
+
+                                                        setCouponDialogRequestId(
+                                                            (current) =>
+                                                                current + 1,
+                                                        );
+                                                    }}
+                                                >
+                                                    <strong>
+                                                        {appliedCoupon
+                                                            ? "קופון פעיל"
+                                                            : "קופון"}
+                                                    </strong>
+
+                                                    <span>
+                                                        סריקה או הקלדת קוד קופון
+                                                    </span>
+
+                                                    {appliedCoupon && (
+                                                        <small>
+                                                            {
+                                                                appliedCoupon.code
+                                                            }
+                                                        </small>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </section>
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                     </section>
                     )}
@@ -2043,16 +2773,6 @@ function SalePage({
                     <section className="sale-page__cart">
                         <CartPanel
                             lines={pricing.lines}
-                            pricing={pricing}
-                            selectedCustomer={
-                                selectedCustomer
-                            }
-                            customers={
-                                testCustomers
-                            }
-                            onCustomerChange={
-                                setSelectedCustomer
-                            }
                             appliedCoupon={appliedCoupon}
                             couponDiscountAmount={
                                 couponDiscountAmount
@@ -2063,6 +2783,9 @@ function SalePage({
                             }
                             onRemoveCoupon={
                                 removeCoupon
+                            }
+                            couponDialogRequestId={
+                                couponDialogRequestId
                             }
                             selectedLineId={
                                 selectedLineId ??
@@ -2075,21 +2798,14 @@ function SalePage({
                             onDecrease={
                                 decreaseQuantity
                             }
+                            onSetQuantity={
+                                setQuantity
+                            }
                             onSelectLine={
                                 setSelectedLineId
                             }
-                            
-                            sellers={
-                                sellerAssignments
-                            }
 
-                            onChangeSellerForLine={
-                                changeSellerForLine
-                            }
 
-                            onChangeSellerFromLineToEnd={
-                                changeSellerFromLineToEnd
-                            }
 onEditDescription={
                                 editDescription
                             }
@@ -2100,6 +2816,29 @@ onEditDescription={
                     </section>
                 </div>
             </section>
+
+            {heldSalesOpen && (
+                <HeldSalesDialog
+                    heldSales={
+                        heldSales
+                    }
+                    onClose={() =>
+                        setHeldSalesOpen(
+                            false,
+                        )
+                    }
+                    onResume={(heldSale) =>
+                        void resumeHeldSale(
+                            heldSale,
+                        )
+                    }
+                    onDelete={(id) =>
+                        void removeHeldSale(
+                            id,
+                        )
+                    }
+                />
+            )}
 
             {pendingProductForSeller && (
                 <div

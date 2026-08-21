@@ -7,29 +7,14 @@ import {
 import { posCapabilities } from "../../config/posCapabilities";
 import type {
     PricedCartLine,
-    PricingResult,
 } from "../../models/pricing/PricingEngine";
 import type {
     Coupon,
 } from "../../models/coupon/Coupon";
-import type {
-    Customer,
-} from "../../models/customer/Customer";
-import type {
-    SellerAssignment,
-} from "../../models/sale/SellerAssignment";
-
 import "./cart-panel.css";
 
 type CartPanelProps = {
     lines: PricedCartLine[];
-    pricing: PricingResult;
-
-    selectedCustomer: Customer;
-    customers: Customer[];
-    onCustomerChange: (
-        customer: Customer,
-    ) => void;
 
     appliedCoupon: Coupon | null;
     couponDiscountAmount: number;
@@ -44,24 +29,18 @@ type CartPanelProps = {
 
     onRemoveCoupon: () => void;
 
+    couponDialogRequestId: number;
+
     selectedLineId?: string;
 
     onClear: () => void;
     onIncrease: (lineId: string) => void;
     onDecrease: (lineId: string) => void;
+    onSetQuantity: (
+        lineId: string,
+        quantity: number,
+    ) => void;
     onSelectLine: (lineId: string) => void;
-
-    sellers: SellerAssignment[];
-
-    onChangeSellerForLine: (
-        lineId: string,
-        seller: SellerAssignment,
-    ) => void;
-
-    onChangeSellerFromLineToEnd: (
-        lineId: string,
-        seller: SellerAssignment,
-    ) => void;
 
     onEditDescription: (
         lineId: string,
@@ -73,23 +52,18 @@ type CartPanelProps = {
 
 function CartPanel({
     lines,
-    pricing,
-    selectedCustomer,
-    customers,
-    onCustomerChange,
     appliedCoupon,
     couponDiscountAmount,
     totalAfterCoupon,
     onApplyCoupon,
     onRemoveCoupon,
+    couponDialogRequestId,
     selectedLineId,
     onClear,
     onIncrease,
     onDecrease,
+    onSetQuantity,
     onSelectLine,
-    sellers,
-    onChangeSellerForLine,
-    onChangeSellerFromLineToEnd,
     onEditDescription,
     onCheckout,
 }: CartPanelProps) {
@@ -119,32 +93,10 @@ function CartPanel({
         setCouponDialogOpen,
     ] = useState(false);
 
-    const [
-        sellerTargetEmployeeId,
-        setSellerTargetEmployeeId,
-    ] =
-        useState("");
-
     const totalQuantity = lines.reduce(
         (sum, line) => sum + line.quantity,
         0,
     );
-
-    const selectedSellerLine =
-        selectedLineId
-            ? lines.find(
-                  (line) =>
-                      line.id ===
-                      selectedLineId,
-              )
-            : undefined;
-
-    const selectedSeller =
-        sellers.find(
-            (seller) =>
-                seller.employeeId ===
-                sellerTargetEmployeeId,
-        );
 
     useEffect(() => {
         if (
@@ -159,6 +111,21 @@ function CartPanel({
             behavior: "smooth",
         });
     }, [lines.length]);
+
+    useEffect(() => {
+        if (
+            couponDialogRequestId <= 0 ||
+            appliedCoupon
+        ) {
+            return;
+        }
+
+        setCouponError("");
+        setCouponDialogOpen(true);
+    }, [
+        couponDialogRequestId,
+        appliedCoupon,
+    ]);
 
     const openDescriptionEditor = (
         line: PricedCartLine,
@@ -198,24 +165,6 @@ function CartPanel({
         closeDescriptionEditor();
     };
 
-    useEffect(() => {
-        if (!selectedSellerLine) {
-            return;
-        }
-
-        setSellerTargetEmployeeId(
-            selectedSellerLine.seller
-                ?.employeeId ??
-                sellers[0]
-                    ?.employeeId ??
-                "",
-        );
-    }, [
-        selectedLineId,
-        selectedSellerLine?.seller
-            ?.employeeId,
-        sellers,
-    ]);
     return (
         <>
             <aside
@@ -224,109 +173,6 @@ function CartPanel({
             >
                 <div className="lumora-cart__header">
 
-                    {selectedSellerLine && (
-                        <div
-                            style={{
-                                width: "100%",
-                                marginTop: "8px",
-                                padding: "8px",
-                                border:
-                                    "1px solid rgba(15,23,42,.12)",
-                                borderRadius:
-                                    "8px",
-                            }}
-                        >
-                            <div
-                                style={{
-                                    fontSize: "11px",
-                                    fontWeight: 700,
-                                    marginBottom: "6px",
-                                }}
-                            >
-                                שינוי מוכרן לשורה הנבחרת
-                            </div>
-
-                            <div
-                                style={{
-                                    display: "flex",
-                                    gap: "6px",
-                                    flexWrap: "wrap",
-                                }}
-                            >
-                                <select
-                                    value={
-                                        sellerTargetEmployeeId
-                                    }
-                                    onChange={(event) =>
-                                        setSellerTargetEmployeeId(
-                                            event.target.value,
-                                        )
-                                    }
-                                >
-                                    {sellers.map(
-                                        (seller) => (
-                                            <option
-                                                key={
-                                                    seller.employeeId
-                                                }
-                                                value={
-                                                    seller.employeeId
-                                                }
-                                            >
-                                                {
-                                                    seller.employeeName
-                                                }
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-
-                                <button
-                                    type="button"
-                                    disabled={
-                                        !selectedSeller
-                                    }
-                                    onClick={() => {
-                                        if (
-                                            !selectedSeller ||
-                                            !selectedLineId
-                                        ) {
-                                            return;
-                                        }
-
-                                        onChangeSellerForLine(
-                                            selectedLineId,
-                                            selectedSeller,
-                                        );
-                                    }}
-                                >
-                                    רק שורה זו
-                                </button>
-
-                                <button
-                                    type="button"
-                                    disabled={
-                                        !selectedSeller
-                                    }
-                                    onClick={() => {
-                                        if (
-                                            !selectedSeller ||
-                                            !selectedLineId
-                                        ) {
-                                            return;
-                                        }
-
-                                        onChangeSellerFromLineToEnd(
-                                            selectedLineId,
-                                            selectedSeller,
-                                        );
-                                    }}
-                                >
-                                    מכאן ועד הסוף
-                                </button>
-                            </div>
-                        </div>
-                    )}
                     <div>
                         <h2>עגלה</h2>
 
@@ -606,9 +452,49 @@ function CartPanel({
                                                 −
                                             </button>
 
-                                            <span>
-                                                {line.quantity}
-                                            </span>
+                                            <input
+                                                className="lumora-cart-line__quantity-input"
+                                                type="number"
+                                                inputMode="numeric"
+                                                min={1}
+                                                step={1}
+                                                value={line.quantity}
+                                                aria-label="כמות"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    event.currentTarget.select();
+                                                }}
+                                                onDoubleClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
+                                                onChange={(event) => {
+                                                    const nextValue =
+                                                        Number(
+                                                            event.target.value,
+                                                        );
+
+                                                    if (
+                                                        Number.isFinite(
+                                                            nextValue,
+                                                        ) &&
+                                                        nextValue >= 1
+                                                    ) {
+                                                        onSetQuantity(
+                                                            line.id,
+                                                            nextValue,
+                                                        );
+                                                    }
+                                                }}
+                                                onKeyDown={(event) => {
+                                                    event.stopPropagation();
+
+                                                    if (
+                                                        event.key === "Enter"
+                                                    ) {
+                                                        event.currentTarget.blur();
+                                                    }
+                                                }}
+                                            />
 
                                             <button
                                                 type="button"
@@ -645,109 +531,38 @@ function CartPanel({
                     </div>
                 )}
 
-                <div
-                    style={{
-                        padding: "10px 12px",
-                        borderTop:
-                            "1px solid #e2e4e7",
-                    }}
-                >
-                    <label
-                        style={{
-                            display: "grid",
-                            gap: "5px",
-                            fontSize: "10px",
-                        }}
-                    >
-                        <span>לקוח בעסקה</span>
+                {appliedCoupon && (
+                    <div className="lumora-cart__coupon-compact">
+                        <div className="lumora-cart__coupon-active">
+                            <span>
+                                קופון{" "}
+                                <strong>
+                                    {appliedCoupon.code}
+                                </strong>
+                            </span>
 
-                        <select
-                            value={
-                                selectedCustomer.id
-                            }
-                            onChange={(event) => {
-                                const customer =
-                                    customers.find(
-                                        (item) =>
-                                            item.id ===
-                                            event.target.value,
-                                    );
-
-                                if (customer) {
-                                    onCustomerChange(
-                                        customer,
-                                    );
-                                }
-                            }}
-                            style={{
-                                height: "34px",
-                                padding: "0 8px",
-                                border: "1px solid #d8dade",
-                                borderRadius: "8px",
-                                background: "#fff",
-                            }}
-                        >
-                            {customers.map(
-                                (customer) => (
-                                    <option
-                                        key={customer.id}
-                                        value={customer.id}
-                                    >
-                                        {customer.name}
-                                    </option>
-                                ),
+                            {couponDiscountAmount > 0 && (
+                                <strong>
+                                    -₪
+                                    {couponDiscountAmount.toFixed(
+                                        2,
+                                    )}
+                                </strong>
                             )}
-                        </select>
-                    </label>
-                </div>
 
-                <div className="lumora-cart__coupon-compact">
-                    {appliedCoupon ? (
-                        <>
-                            <div className="lumora-cart__coupon-active">
-                                <span>
-                                    קופון{" "}
-                                    <strong>
-                                        {appliedCoupon.code}
-                                    </strong>
-                                </span>
-
-                                {couponDiscountAmount > 0 && (
-                                    <strong>
-                                        ‎-₪
-                                        {couponDiscountAmount.toFixed(
-                                            2,
-                                        )}
-                                    </strong>
-                                )}
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        onRemoveCoupon();
-                                        setCouponCode("");
-                                        setCouponError("");
-                                    }}
-                                >
-                                    הסר
-                                </button>
-                            </div>
-                        </>
-                    ) : (
-                        <button
-                            type="button"
-                            className="lumora-cart__coupon-trigger"
-                            onClick={() => {
-                                setCouponError("");
-                                setCouponDialogOpen(
-                                    true,
-                                );
-                            }}
-                        >
-                            קופון
-                        </button>
-                    )}
-                </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onRemoveCoupon();
+                                    setCouponCode("");
+                                    setCouponError("");
+                                }}
+                            >
+                                הסר
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {couponDialogOpen && (
                     <div
@@ -901,103 +716,9 @@ function CartPanel({
                     </div>
                 )}
 
-                <div className="lumora-cart__summary">
-                    <div>
-                        <span>
-                            כמות פריטים
-                        </span>
 
-                        <strong>
-                            {totalQuantity}
-                        </strong>
-                    </div>
 
-                    <div>
-                        <span>
-                            נטו פריטים
-                        </span>
-
-                        <strong>
-                            {pricing.subtotal < 0
-                                ? "‎-"
-                                : ""}
-                            ₪
-                            {Math.abs(
-                                pricing.subtotal,
-                            ).toFixed(2)}
-                        </strong>
-                    </div>
-
-                    {pricing.lineDiscountTotal > 0 && (
-                        <div className="lumora-cart__summary-discount">
-                            <span>
-                                הנחות פריט
-                            </span>
-
-                            <strong>
-                                ‎-₪
-                                {pricing.lineDiscountTotal.toFixed(
-                                    2,
-                                )}
-                            </strong>
-                        </div>
-                    )}
-
-                    {pricing.transactionDiscountTotal > 0 && (
-                        <div className="lumora-cart__summary-discount">
-                            <span>
-                                הנחת עסקה
-                            </span>
-
-                            <strong>
-                                ‎-₪
-                                {pricing.transactionDiscountTotal.toFixed(
-                                    2,
-                                )}
-                            </strong>
-                        </div>
-                    )}
-
-                    {couponDiscountAmount > 0 && (
-                        <div className="lumora-cart__summary-discount">
-                            <span>
-                                קופון{" "}
-                                {appliedCoupon
-                                    ? `(${appliedCoupon.code})`
-                                    : ""}
-                            </span>
-
-                            <strong>
-                                ‎-₪
-                                {couponDiscountAmount.toFixed(
-                                    2,
-                                )}
-                            </strong>
-                        </div>
-                    )}
-
-                    <div className="lumora-cart__total">
-                        <span>
-                            {totalAfterCoupon < 0
-                                ? "סה״כ לזיכוי"
-                                : totalAfterCoupon === 0
-                                    ? "יתרה"
-                                    : "סה״כ לתשלום"}
-                        </span>
-
-                        <strong>
-                            {totalAfterCoupon < 0
-                                ? "‎-"
-                                : ""}
-                            ₪
-                            {Math.abs(
-                                totalAfterCoupon,
-                            ).toFixed(2)}
-                        </strong>
-                    </div>
-                </div>
-
-                <button
+<button
                     type="button"
                     className="lumora-cart__checkout"
                     disabled={lines.length === 0}
@@ -1016,17 +737,17 @@ function CartPanel({
                     </span>
 
                     {lines.length > 0 && (
-                        <strong>
+                        <strong className="lumora-cart__checkout-amount">
                             {totalAfterCoupon < 0
-                                ? "‎-"
+                                ? "\u200E-"
                                 : ""}
-                            ₪
+                            {"\u20AA"}
                             {Math.abs(
                                 totalAfterCoupon,
                             ).toFixed(2)}
                         </strong>
                     )}
-                </button>
+</button>
             </aside>
 
             {editingLine && (

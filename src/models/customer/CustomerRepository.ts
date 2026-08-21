@@ -162,6 +162,31 @@ export function getCustomers() {
     ];
 }
 
+export function getWalkInCustomer(): Customer {
+    const walkInCustomer =
+        customers.find(
+            (customer) =>
+                customer.id === "walk-in",
+        ) ??
+        testCustomers.find(
+            (customer) =>
+                customer.id === "walk-in",
+        );
+
+    if (!walkInCustomer) {
+        throw new Error(
+            "LUMORA_WALK_IN_CUSTOMER_MISSING",
+        );
+    }
+
+    return {
+        ...walkInCustomer,
+        groupIds: [
+            ...walkInCustomer.groupIds,
+        ],
+    };
+}
+
 export function saveCustomer(
     customer: Customer,
 ) {

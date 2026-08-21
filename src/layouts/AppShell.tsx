@@ -295,15 +295,72 @@ function AppShell() {
       null,
     );
 
+  const [
+    showNavigation,
+    setShowNavigation,
+  ] = useState(false);
+
   return (
-    <div className="pos-app-shell">
+    <div
+      className={`pos-app-shell ${
+        activeView === "sale"
+          ? "pos-app-shell--sale"
+          : ""
+      }`}
+    >
+      {activeView === "sale" && (
+        <button
+          type="button"
+          className="pos-app-shell__nav-trigger"
+          aria-label="פתח תפריט Lumora"
+          aria-expanded={showNavigation}
+          onClick={() =>
+            setShowNavigation(
+              (current) => !current,
+            )
+          }
+        >
+          <span
+            className="pos-app-shell__nav-trigger-mark"
+            aria-hidden="true"
+          >
+            ✦
+          </span>
+
+          <span>
+            LUMORA
+          </span>
+        </button>
+      )}
+
+      {activeView === "sale" &&
+        showNavigation && (
+          <button
+            type="button"
+            className="pos-app-shell__nav-backdrop"
+            aria-label="סגור תפריט"
+            onClick={() =>
+              setShowNavigation(false)
+            }
+          />
+        )}
+
+      <div
+        className={`pos-app-shell__sidebar-host ${
+          activeView === "sale" &&
+          showNavigation
+            ? "pos-app-shell__sidebar-host--open"
+            : ""
+        }`}
+      >
       <Sidebar
         activeView={
           activeView
         }
-        onNavigate={
-          setActiveView
-        }
+        onNavigate={(view) => {
+          setActiveView(view);
+          setShowNavigation(false);
+        }}
         activeShift={
           activeShift
         }
@@ -337,6 +394,9 @@ function AppShell() {
           );
         }}
       />
+
+
+      </div>
 
       <div
         className="pos-app-shell__main"

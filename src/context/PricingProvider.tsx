@@ -20,8 +20,8 @@ import type {
     Customer,
 } from "../models/customer/Customer";
 import {
-    testCustomers,
-} from "../models/customer/CustomerSeed";
+    getWalkInCustomer,
+} from "../models/customer/CustomerRepository";
 import {
     PricingEvent,
 } from "../models/pricing/PricingEvents";
@@ -104,7 +104,7 @@ function PricingProvider({
         setSelectedCustomerState,
     ] =
         useState<Customer>(
-            testCustomers[0],
+            getWalkInCustomer(),
         );
 
     const pricing = useMemo(

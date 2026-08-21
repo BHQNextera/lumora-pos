@@ -1,3 +1,5 @@
+import lumoraMark from "../../assets/lumora-mark.svg";
+
 import {
   getActiveBusinessOperatingProfile,
 } from "../../config/ActiveBusinessConfiguration";
@@ -5,9 +7,11 @@ import {
 import {
   requestCashDrawerOpen,
 } from "../../models/drawer/CashDrawerService";
+
 import type {
   AppView,
 } from "../../layouts/AppShell";
+
 import type {
   RegisterShift,
 } from "../../models/shift/RegisterShift";
@@ -55,6 +59,16 @@ function Sidebar({
 
   const branchName =
     profile.identity.branchName;
+
+  const businessInitials =
+    businessName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) =>
+        part.charAt(0).toUpperCase(),
+      )
+      .join("") || "B";
 
   const navigationItems: SidebarItem[] = [
     {
@@ -114,7 +128,8 @@ function Sidebar({
       id: "reports",
       label: "דוחות",
       icon: "▥",
-      view: "reports",},
+      view: "reports",
+    },
     {
       id: "settings",
       label: "הגדרות",
@@ -131,37 +146,50 @@ function Sidebar({
         item.isVisible !== false,
     );
 
-  const logoText =
-    businessName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) =>
-        part.charAt(0).toUpperCase(),
-      )
-      .join("") || "L";
-
   return (
     <aside
       className="pos-sidebar"
       dir="rtl"
       aria-label="ניווט ראשי"
     >
-      <div className="pos-sidebar__business">
+      <div className="pos-sidebar__platform-brand">
+        <img
+          src={lumoraMark}
+          className="pos-sidebar__lumora-mark"
+          alt=""
+          aria-hidden="true"
+        />
+
+        <div className="pos-sidebar__lumora-copy">
+          <strong>
+            LUMORA
+          </strong>
+
+          <span>
+            RETAIL POS
+          </span>
+        </div>
+      </div>
+
+      <div className="pos-sidebar__merchant-card">
         <div
-          className="pos-sidebar__logo"
+          className="pos-sidebar__merchant-logo"
           aria-hidden="true"
         >
-          {logoText}
+          {businessInitials}
         </div>
 
-        <div className="pos-sidebar__business-details">
+        <div className="pos-sidebar__merchant-copy">
+          <span className="pos-sidebar__merchant-label">
+            העסק
+          </span>
+
           <strong>
             {businessName}
           </strong>
 
           {branchName && (
-            <span>
+            <span className="pos-sidebar__merchant-branch">
               {branchName}
             </span>
           )}
@@ -259,6 +287,7 @@ function Sidebar({
             </button>
           </>
         )}
+
         <button
           type="button"
           className="pos-sidebar__drawer-button"
@@ -293,6 +322,16 @@ function Sidebar({
             פתיחת קופה
           </button>
         )}
+
+        <div className="pos-sidebar__coeuria-signature">
+          <span aria-hidden="true">
+            ♣
+          </span>
+
+          <span>
+            Powered by Coeuria
+          </span>
+        </div>
       </div>
     </aside>
   );

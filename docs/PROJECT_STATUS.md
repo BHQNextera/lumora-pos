@@ -2353,3 +2353,82 @@ Payment, Refund, X/Z and general POS layout still require the planned Polish pha
 
 ## Next
 Nextera Replication Foundation.
+
+# Checkpoint — 2026-08-22 — Lumora Default Sale UX + Durable Held Sales
+
+## Completed
+- Lumora Default sale screen is the active reference direction.
+- Permanent dark Lumora sidebar restored.
+- Unified compact operator header implemented.
+- Gold/champagne interaction language applied.
+- Customer selector, seller and line-seller context operational.
+- Direct quantity entry verified.
+- Cart total consolidated into Checkout.
+- Product catalog density accepted as current baseline.
+- Coupon / More Actions foundation operational.
+- Held Sale V1 implemented.
+- Held Sale preserves cart, quantities, variants, pricing rules/discounts, customer, coupon, seller state and category.
+- Held Sales are persisted through RuntimeStorage / SQLite in Tauri.
+- Held Sales hydrate at application startup.
+- Hold -> restore functional QA passed.
+- Full restart durability QA passed.
+
+## Status
+LUMORA DEFAULT SALE DIRECTION: GREEN
+SALE OPERATOR UX: GREEN
+QUANTITY DIRECT ENTRY: GREEN
+CUSTOMER SELECTOR: GREEN
+SELLER / LINE SELLER: GREEN
+COUPON / MORE ACTIONS: GREEN
+HELD SALE V1 FUNCTIONAL: GREEN
+HELD SALE V1 SQLITE DURABILITY: GREEN
+RETURN / REFUND UI POLISH: YELLOW
+X / Z UI POLISH: YELLOW
+REAL CARD PROVIDER FLOW: YELLOW
+LUMORA CANVAS: PLANNED / DEFERRED
+
+## Technical Note
+- src/theme/global.css currently contains accumulated Sale Screen design layers.
+- The approved visual result still depends on parts of that cascade.
+- Do not perform broad CSS cleanup inside this checkpoint.
+- CSS consolidation must be isolated into a later dedicated commit with visual before/after verification.
+
+## Remaining Roadmap
+1. Finish Lumora Default Sale Screen:
+   - item note
+   - document note
+   - print / do-not-print flags
+   - preserve notes into transaction/document output
+   - final functional and visual regression
+2. Lumora Canvas foundation:
+   - controlled smart grid
+   - configurable tile position, size, color and function
+   - product/category/payment/action tiles
+   - saved layouts by business/branch/register/device
+3. Return / Refund UI polish and regression.
+4. X / Z UI polish and regression.
+5. Seller representation on accounting documents.
+6. Payment UX polish and provider preparation.
+7. Echo / Tranzila real-card validation when provider environment is available.
+8. Standalone hardening:
+   - sale
+   - held sales
+   - returns/refunds
+   - stored value
+   - cash movements
+   - attendance
+   - X/Z
+   - documents
+   - restart/crash recovery
+   - offline operation
+9. Replication Core:
+   - durable outbound queue
+   - retry
+   - idempotency
+   - synced/pending/failed states
+   - reconnect recovery
+10. Isolated Nextera integration sandbox.
+11. Nextera -> Lumora master-data replication.
+12. Lumora -> Nextera operational replication.
+13. Integrated offline/reconnect/idempotency E2E.
+14. Release hardening, installer QA, training and Pilot acceptance.
