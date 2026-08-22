@@ -1,3 +1,5 @@
+@import "./lumora-tokens.css";
+
 @import "./tokens.css";
 
 html,
@@ -335,7 +337,7 @@ button.pos-sidebar__shift-status:hover {
 
 .sale-page__search-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   gap: 9px;
 }
 
@@ -2911,10 +2913,10 @@ body {
 /* LUMORA DEFAULT TOP BAR + GOLD LANGUAGE V1 */
 
 .pos-app-shell--sale {
-  --lumora-gold: #c9942f;
-  --lumora-gold-strong: #b47d1e;
-  --lumora-gold-soft: #faf3e4;
-  --lumora-gold-border: #e5d2aa;
+  --lumora-gold: var(--lumora-color-accent);
+  --lumora-gold-strong: var(--lumora-color-accent-strong);
+  --lumora-gold-soft: var(--lumora-color-accent-soft);
+  --lumora-gold-border: var(--lumora-color-accent-border);
 }
 
 /* Merchant identity belongs to the operator top bar */
@@ -3689,8 +3691,33 @@ body {
 
 /* Keep product imagery clean */
 .pos-app-shell--sale
-.product-card__image {
+.product-card__image-wrapper {
+  position: relative;
+  isolation: isolate;
+}
+
+.pos-app-shell--sale
+.product-card__image-backdrop {
+  position: absolute;
+  z-index: 0;
+  inset: -10px;
+  width: calc(100% + 20px);
+  height: calc(100% + 20px);
   object-fit: cover;
+  object-position: center;
+  filter: blur(14px) saturate(.72);
+  opacity: .14;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+.pos-app-shell--sale
+.product-card__image {
+  position: relative;
+  z-index: 1;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
 }
 
 /* Give name + price breathing room */
@@ -3757,12 +3784,12 @@ body {
 
 .pos-app-shell--sale
 .product-card {
-  min-height: 108px !important;
+  min-height: 130px !important;
 }
 
 .pos-app-shell--sale
 .product-card__image-wrapper {
-  height: 58px !important;
+  height: 80px !important;
 }
 
 .pos-app-shell--sale
@@ -3816,7 +3843,7 @@ body {
 }
 
 /* Smaller laptop / compact workspace */
-@media (max-width: 1280px) {
+@media (max-width: 1050px) {
   .pos-app-shell--sale
   .product-grid {
     grid-template-columns:
@@ -3849,4 +3876,762 @@ body {
       auto-fit,
       minmax(102px, 1fr)
     ) !important;
+}
+
+/* LUMORA DEFAULT COLLAPSIBLE SIDEBAR V1 */
+
+/*
+ * Sidebar is part of the workspace grid.
+ * It never overlays the sale screen.
+ */
+.pos-app-shell--sale {
+  grid-template-columns:
+    auto
+    minmax(0, 1fr) !important;
+}
+
+/* Kill the legacy drawer/overlay geometry for Default. */
+.pos-app-shell--sale
+.pos-app-shell__sidebar-host,
+.pos-app-shell--sale
+.pos-app-shell__sidebar-host--open {
+  position: static !important;
+  z-index: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: auto !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  transform: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+/* Legacy drawer controls stay out of Lumora Default. */
+.pos-app-shell--sale
+.pos-app-shell__nav-trigger,
+.pos-app-shell--sale
+.pos-app-shell__nav-backdrop {
+  display: none !important;
+}
+
+/* Smooth full <-> rail transition. */
+.pos-app-shell--sale
+.pos-sidebar {
+  transition:
+    width 150ms ease,
+    padding 150ms ease;
+}
+
+/* Collapse control */
+.pos-sidebar__collapse-toggle {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  place-items: center;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 7px;
+  background: rgb(255 255 255 / 5%);
+  color: #d6ba7b;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.pos-sidebar__collapse-toggle:hover {
+  border-color: rgb(201 148 47 / 35%);
+  background: rgb(201 148 47 / 10%);
+  color: #f0d79d;
+}
+
+/* ---------- COLLAPSED RAIL ---------- */
+
+.pos-app-shell--sale
+.pos-sidebar--collapsed {
+  width: 72px !important;
+  padding-inline: 8px !important;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__platform-brand {
+  justify-content: center;
+  gap: 4px;
+  padding-inline: 0;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__lumora-mark {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__lumora-copy {
+  display: none;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__collapse-toggle {
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
+  margin-left: 0;
+}
+
+/* Navigation becomes icon rail. */
+.pos-sidebar--collapsed
+.pos-sidebar__navigation {
+  padding-top: 8px;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__item {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 0 !important;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__item-icon {
+  flex-basis: auto;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__item > span:last-child {
+  display: none;
+}
+
+/* Footer actions remain available as icons. */
+.pos-sidebar--collapsed
+.pos-sidebar__footer {
+  gap: 6px;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__drawer-button {
+  min-height: 36px;
+  padding: 0;
+  gap: 0;
+  font-size: 0;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__drawer-button > span {
+  font-size: 14px;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__shift-status {
+  min-height: 28px;
+  padding: 0;
+  gap: 0;
+  font-size: 0;
+}
+
+.pos-sidebar--collapsed
+.pos-sidebar__coeuria-signature > span:last-child {
+  display: none;
+}
+
+/* LUMORA PRODUCT LIST VIEW V1 */
+
+.pos-app-shell--sale
+.product-grid--list {
+  grid-template-columns:
+    minmax(0, 1fr) !important;
+  gap: 6px !important;
+  padding-top: 8px !important;
+}
+
+.pos-app-shell--sale
+.product-grid--list
+.product-card {
+  min-height: 50px !important;
+  border-radius: 9px !important;
+}
+
+.pos-app-shell--sale
+.product-grid--list
+.product-card__image-wrapper {
+  display: none !important;
+}
+
+.pos-app-shell--sale
+.product-grid--list
+.product-card__content {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  min-height: 50px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding:
+    0 14px
+    0 48px !important;
+}
+
+.pos-app-shell--sale
+.product-grid--list
+.product-card__content strong {
+  overflow: hidden;
+  font-size: 12px !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-app-shell--sale
+.product-grid--list
+.product-card__content span {
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  white-space: nowrap;
+}
+
+.pos-app-shell--sale
+.sale-page__view-toggle--active {
+  border-color:
+    var(--lumora-gold-border) !important;
+  background:
+    var(--lumora-gold-soft) !important;
+  color: #73521a !important;
+}
+
+/* LUMORA QUICK PRESETS V1 */
+
+.pos-app-shell--sale
+.sale-page__preset-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  min-width: 0;
+  padding: 7px 0 4px;
+  overflow: visible;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  width: 100%;
+  max-width: none;
+  padding: 0 12px;
+  border: 1px solid rgba(30, 41, 59, .13);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .92);
+  color: #26303d;
+  font-size: 12px;
+  font-weight: 720;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+.pos-app-shell--sale
+.sale-page__preset-chip:hover {
+  border-color: var(--lumora-gold-border);
+  background: var(--lumora-gold-soft);
+}
+
+.pos-app-shell--sale
+.sale-page__preset-chip:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-chip > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-chip-icon {
+  opacity: .68;
+  font-size: 11px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-backdrop {
+  position: fixed;
+  z-index: 8400;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .42);
+  backdrop-filter: blur(3px);
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor {
+  width: min(620px, 94vw);
+  max-height: min(720px, 88vh);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid rgba(30, 41, 59, .10);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .20);
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-header strong {
+  font-size: 17px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-header span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-header > button {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-list {
+  display: grid;
+  gap: 8px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-empty {
+  padding: 22px;
+  border: 1px dashed rgba(30, 41, 59, .16);
+  border-radius: 10px;
+  color: #667085;
+  text-align: center;
+  font-size: 12px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-row {
+  display: grid;
+  grid-template-columns:
+    30px
+    minmax(105px, .7fr)
+    minmax(180px, 1.5fr)
+    auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-row select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-slot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #f3f4f6;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-remove {
+  min-height: 38px;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-add {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  border-style: dashed;
+}
+
+.pos-app-shell--sale
+.sale-page__preset-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(30, 41, 59, .09);
+}
+
+.pos-app-shell--sale
+.sale-page__preset-save {
+  border-color: var(--lumora-gold-border) !important;
+  background: var(--lumora-gold-soft) !important;
+  color: #73521a !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 720px) {
+  .pos-app-shell--sale
+  .sale-page__preset-editor-row {
+    grid-template-columns:
+      28px
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .pos-app-shell--sale
+  .sale-page__preset-editor-row select:nth-of-type(2) {
+    grid-column:
+      2 / 4;
+  }
+}
+/* GIFT CARD BALANCE DIALOG V1 */
+
+.gift-card-balance-dialog__backdrop {
+  position: fixed;
+  z-index: 8600;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .42);
+  backdrop-filter: blur(3px);
+}
+
+.gift-card-balance-dialog {
+  width: min(430px, 94vw);
+  padding: 20px;
+  border: 1px solid rgba(30, 41, 59, .10);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .20);
+}
+
+.gift-card-balance-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.gift-card-balance-dialog__header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.gift-card-balance-dialog__header strong {
+  font-size: 18px;
+}
+
+.gift-card-balance-dialog__header span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.gift-card-balance-dialog__header > button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+.gift-card-balance-dialog__field {
+  display: grid;
+  gap: 7px;
+}
+
+.gift-card-balance-dialog__field > span {
+  color: #475467;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.gift-card-balance-dialog__field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #d8dce1;
+  border-radius: 10px;
+  outline: none;
+  font-size: 15px;
+}
+
+.gift-card-balance-dialog__field input:focus {
+  border-color: var(--lumora-gold-border);
+  box-shadow: 0 0 0 3px rgba(196, 145, 46, .10);
+}
+
+.gift-card-balance-dialog__check {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+  border-color: var(--lumora-gold-border) !important;
+  background: var(--lumora-gold-soft) !important;
+  color: #73521a !important;
+  font-weight: 800 !important;
+}
+
+.gift-card-balance-dialog__result {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid rgba(196, 145, 46, .28);
+  border-radius: 12px;
+  background: rgba(196, 145, 46, .07);
+}
+
+.gift-card-balance-dialog__result > span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.gift-card-balance-dialog__result > strong {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.gift-card-balance-dialog__result > small {
+  color: #667085;
+  font-weight: 700;
+}
+
+.gift-card-balance-dialog__error {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff3f2;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 700;
+}
+/* GIFT CARD BALANCE DIALOG — LUMORA POLISH V2 */
+
+.gift-card-balance-dialog {
+  box-sizing: border-box;
+  width: min(430px, calc(100vw - 40px));
+  background: #ffffff;
+  color: #181c23;
+}
+
+.gift-card-balance-dialog *,
+.gift-card-balance-dialog *::before,
+.gift-card-balance-dialog *::after {
+  box-sizing: border-box;
+}
+
+.gift-card-balance-dialog__field {
+  width: 100%;
+  min-width: 0;
+}
+
+.gift-card-balance-dialog__field input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  background: #ffffff;
+  border-color: #d8dce1;
+  color: #181c23;
+}
+
+.gift-card-balance-dialog__check {
+  background: #f4f5f6 !important;
+  border: 1px solid #d8dce1 !important;
+  color: #24282d !important;
+}
+
+.gift-card-balance-dialog__check:hover:not(:disabled) {
+  border-color: var(--lumora-gold-border) !important;
+  background: var(--lumora-gold-soft) !important;
+  color: #73521a !important;
+}
+
+.gift-card-balance-dialog__result {
+  background: #f7f8f9;
+  border: 1px solid #e0e3e7;
+  box-shadow: inset 0 3px 0 var(--lumora-gold-border);
+}
+
+.gift-card-balance-dialog__result > strong {
+  color: #151a22;
+}
+
+.gift-card-balance-dialog__result > small {
+  color: #667085;
+}
+
+/* GIFT CARD BALANCE DIALOG — BUTTON RADIUS */
+
+.gift-card-balance-dialog__check {
+  border-radius: 10px;
+}
+
+/* LUMORA QUICK PRESETS — RESPONSIVE GRID */
+
+@media (max-width: 1100px) {
+  .pos-app-shell--sale
+  .sale-page__preset-strip {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .pos-app-shell--sale
+  .sale-page__preset-strip {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+}
+
+/* =========================================================
+   LUMORA TOPBAR TRUE THREE ZONE GRID
+   ========================================================= */
+
+.pos-app-shell--sale .sale-page__operator-topbar {
+    display: grid !important;
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        minmax(0, 1fr) !important;
+    align-items: center !important;
+    position: relative !important;
+}
+
+.pos-app-shell--sale .sale-page__merchant-zone {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    justify-self: start !important;
+    min-width: 0;
+}
+
+.pos-app-shell--sale .sale-page__transaction-zone {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    position: static !important;
+    inset: auto !important;
+
+    width: max-content !important;
+    max-width: none !important;
+
+    margin: 0 !important;
+    transform: none !important;
+
+    justify-self: center !important;
+    align-self: center !important;
+
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.pos-app-shell--sale .sale-page__transaction-context {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+    min-width: 0;
+}
+/* =========================================================
+   LUMORA TOPBAR CUSTOMER WIDTH RESTORE
+   ========================================================= */
+
+.pos-app-shell--sale .sale-page__transaction-context {
+    width: max-content !important;
+    max-width: none !important;
+    overflow: visible !important;
+}
+
+.pos-app-shell--sale .sale-page__customer-tools {
+    width: auto !important;
+    min-width: max-content !important;
+    flex: 0 0 auto !important;
+}
+
+.pos-app-shell--sale .sale-page__customer-trigger {
+    width: auto !important;
+    min-width: 145px !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+}
+/* =========================================================
+   LUMORA TOPBAR RIGHT CONTROLS FINAL
+   ========================================================= */
+
+.pos-app-shell--sale .sale-page__transaction-context {
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    flex: 0 0 auto !important;
+    justify-self: end !important;
+}
+
+.pos-app-shell--sale
+.sale-page__transaction-context
+.sale-page__context-field {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+}
+
+.pos-app-shell--sale
+.sale-page__transaction-context
+.sale-page__context-field:not(.sale-page__customer-tools)
+button,
+.pos-app-shell--sale
+.sale-page__transaction-context
+.sale-page__context-field:not(.sale-page__customer-tools)
+select {
+    width: auto !important;
+    min-width: 150px !important;
+    max-width: 190px !important;
+    flex: 0 0 auto !important;
+}
+
+.pos-app-shell--sale .sale-page__customer-tools {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+.pos-app-shell--sale .sale-page__customer-trigger {
+    width: auto !important;
+    min-width: 175px !important;
+    max-width: 210px !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
 }

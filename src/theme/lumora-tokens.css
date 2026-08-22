@@ -1,0 +1,80 @@
+:root {
+    /* ======================================================
+       LUMORA DESIGN SYSTEM V1
+       Utility / modal baseline
+       ====================================================== */
+
+    /* Typography */
+    --lumora-font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    --lumora-type-modal-title-size: 17px;
+    --lumora-type-modal-title-weight: 700;
+
+    --lumora-type-modal-subtitle-size: 10px;
+    --lumora-type-modal-subtitle-weight: 400;
+
+    --lumora-type-card-title-size: 13px;
+    --lumora-type-card-title-weight: 700;
+
+    --lumora-type-card-meta-size: 10px;
+    --lumora-type-card-meta-weight: 400;
+
+    --lumora-type-button-size: 10px;
+    --lumora-type-button-weight: 650;
+
+    /* Core surfaces */
+    --lumora-surface: #ffffff;
+    --lumora-surface-soft: #f4f5f5;
+    --lumora-surface-muted: #f7f8f9;
+
+    /* Text */
+    --lumora-text-strong: #20242a;
+    --lumora-text-card: #25292e;
+    --lumora-text-secondary: #858b92;
+    --lumora-text-modal-secondary: #8b9198;
+    --lumora-text-control: #363a3f;
+
+    /* Borders */
+    --lumora-border-modal: #dedfe1;
+    --lumora-border-card: #e4e5e7;
+    --lumora-border-divider: #eceeef;
+    --lumora-border-control: #dce0e5;
+
+    /* Gold / primary accent */
+    --lumora-color-accent: #c9942f;
+    --lumora-color-accent-strong: #b47d1e;
+    --lumora-color-accent-soft: #faf3e4;
+    --lumora-color-accent-border: #e5d2aa;
+
+    /* Legacy aliases - backed by one source */
+    --lumora-gold: var(--lumora-color-accent);
+    --lumora-gold-strong: var(--lumora-color-accent-strong);
+    --lumora-gold-soft: var(--lumora-color-accent-soft);
+    --lumora-gold-border: var(--lumora-color-accent-border);
+
+    /* Radius */
+    --lumora-radius-control: 8px;
+    --lumora-radius-close: 9px;
+    --lumora-radius-card: 12px;
+    --lumora-radius-modal: 16px;
+
+    /* Controls */
+    --lumora-control-height: 34px;
+
+    /* Modal */
+    --lumora-modal-header-padding-y: 16px;
+    --lumora-modal-header-padding-x: 18px;
+    --lumora-modal-close-size: 34px;
+
+    /* Shadow */
+    --lumora-shadow-modal:
+        0 24px 70px rgb(15 18 21 / 22%);
+
+    /* Overlay */
+    --lumora-overlay:
+        rgb(20 23 27 / 32%);
+}

@@ -2432,3 +2432,175 @@ LUMORA CANVAS: PLANNED / DEFERRED
 12. Lumora -> Nextera operational replication.
 13. Integrated offline/reconnect/idempotency E2E.
 14. Release hardening, installer QA, training and Pilot acceptance.
+---
+
+# Checkpoint — 2026-08-22 — Sale Workspace + Design System
+
+## Completed in this checkpoint
+
+### Sale workspace
+- Sale Topbar V3 completed visually:
+  - Business / Transaction / Customer + Seller structure.
+  - Transaction identity is physically centered and is not affected by customer or seller width.
+  - Compact Lumora visual language retained.
+- Open transaction number policy corrected:
+  - Topbar displays the next expected `S-xxxxx` number using peek-only behavior.
+  - An open transaction does not own or persist the number.
+  - Holding a transaction does not allocate or burn an `S-number`.
+  - Resuming a held transaction shows the current next expected number.
+  - Only final completion allocates and persists the final transaction number.
+- Hold / Resume flow remains durable.
+- Completed transaction number is retained in transaction history.
+
+### Cart
+- Cart visual redesign aligned to the approved Lumora reference.
+- Quantity direct entry retained and verified.
+- Compact line layout completed.
+- Cart summary / checkout hierarchy completed.
+- Flat Champagne/Gold checkout CTA aligned to approved design tokens.
+- Trash and payment-card icon treatments added.
+- Seller assignment remains visible per line.
+- Line seller override moved into the cart interaction:
+  - `רק שורה זו`
+  - `מכאן ועד הסוף`
+- Seller override functional regression passed.
+
+### Product / transaction identity
+- Fashion variant identity is preserved into cart / transaction / return flows.
+- Product grid / product card refinements included.
+- Seller / attendance reactive foundation included.
+
+### Held sales
+- Durable Held Sales foundation retained.
+- Lumora-native delete-confirmation UI implemented in place of browser-native `window.confirm`.
+- Final live visual regression of this confirmation remains a small follow-up check.
+
+### Notes / presets / customer / stored value
+- Line and document notes foundation included.
+- Accounting document renderers include note support.
+- Quick Preset editor components included.
+- Gift Card balance dialog included.
+- Sale customer quick-create dialog included.
+
+### Design system
+- `docs/LUMORA_DESIGN_SYSTEM.md` added.
+- `src/theme/lumora-tokens.css` added.
+- Approved baseline remains:
+  - Inter / Segoe UI / Arial
+  - Gold `#c9942f`
+  - Gold strong `#b47d1e`
+  - Gold soft `#faf3e4`
+  - Gold border `#e5d2aa`
+  - Modal border `#dedfe1`
+  - 16px modal radius
+  - `0 24px 70px rgb(15 18 21 / 22%)` modal shadow
+  - `rgb(20 23 27 / 32%)` + blur 2 overlay
+- Do not broadly consolidate `global.css` yet; approved layers currently depend on cascade.
+
+## Verification at checkpoint
+- TypeScript build: required before commit.
+- Production build: required before commit.
+- Scoped / staged diff-check: required before commit.
+- Known non-blocking warnings:
+  - LF -> CRLF warnings on Windows.
+  - Vite chunk-size warning above 500 kB.
+
+## Current product status
+- Standalone technical E2E core remains GREEN.
+- Sale Topbar V3: GREEN.
+- Cart visual: GREEN.
+- Quantity Direct Entry: GREEN.
+- Line Seller Override: GREEN.
+- Sale-number policy: GREEN after correction to completion-only allocation.
+- Held Sale native delete confirmation: implemented; live visual regression pending.
+- Working target remains controlled standalone Pilot first.
+- Nextera and Echo are not blockers for the standalone Pilot.
+
+## Exact next action
+Redesign the Lumora Login / Register Entry screen using the approved Lumora design language, then continue through the side-navigation screens one screen at a time.
+
+## Complete remaining roadmap from this checkpoint
+
+### Phase A — Finish UI / UX polish for the standalone operator experience
+1. Login / Register Entry redesign.
+2. Sidebar / shell consistency pass.
+3. Transactions screen.
+4. Customers screen.
+5. Inventory screen.
+6. Payments / operational screens.
+7. Reports / X-Z presentation polish.
+8. Settings / configuration screens.
+9. Remaining dialogs and confirmation consistency.
+10. Final Sale-screen regression only for true regressions; do not reopen completed design work unnecessarily.
+
+### Phase B — Standalone persistence / recovery hardening
+1. Verify active trading-day persistence across refresh / restart.
+2. Verify held sales and local operational state after restart.
+3. Verify numbering persistence and no premature number allocation.
+4. Verify offline operation and restart recovery.
+5. Verify idempotency / duplicate-protection boundaries.
+6. Verify local database / runtime storage behavior on target Windows POS.
+
+### Phase C — Pilot fiscal / output / business-policy closure
+1. Confirm selected pilot business profile.
+2. Confirm document policy and numbering policy.
+3. Verify receipt / invoice / credit / exchange output rules required by pilot.
+4. Verify 80mm / required thermal output.
+5. Verify print / send / none post-sale policy required by pilot.
+6. Confirm return / exchange / refund policies.
+7. Confirm cash movement, X, close register and Z operational policy.
+
+### Phase D — Pilot QA and release hardening
+Pilot acceptance sequence:
+Open day
+-> Real sale
+-> Cash / split payment
+-> Return / exchange
+-> Cash movement
+-> X
+-> Close register
+-> Z
+-> Restart
+-> Reopen / new trading day
+
+Acceptance requirements:
+- Correct persistence.
+- No loss of trading-day state.
+- No active console errors.
+- Correct transaction / document numbering.
+- Correct seller / variant identity.
+- Correct fiscal documents / output.
+- Recovery after refresh / restart.
+- Controlled standalone installer / release package.
+
+### Phase E — Controlled standalone Pilot
+1. Deploy one predefined business profile / register.
+2. Validate on real target hardware.
+3. Run supervised real transactions.
+4. Capture blockers only.
+5. Stabilize and publish Pilot release.
+
+### Phase F — Post-Pilot / Connected mode
+Only after standalone Pilot stability unless a real blocker changes priority:
+1. Nextera replication foundation.
+2. Nextera -> Lumora master-data replication.
+3. Lumora -> Nextera operational replication.
+4. Offline queue / conflict / reconciliation.
+5. Echo / payment-provider integration.
+6. Additional accounting / fiscal integrations.
+7. Reporting expansion.
+8. Advanced permissions / audit UI.
+9. Companion applications.
+10. Training / help / delivery layer.
+
+## Deferred unless they become Pilot blockers
+- Cash Movement History UI.
+- Advanced audit UI.
+- AI / BI custom reports.
+- Detailed admin permissions.
+- Nextera replication.
+- Echo.
+- Companion apps.
+- Large `global.css` consolidation.
+- Customer-club domain expansion.
+- Canvas / configurable layout builder.

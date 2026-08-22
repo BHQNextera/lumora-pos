@@ -30,6 +30,14 @@ export type AccountingDocumentLine = {
     productName: string;
     description?: string;
 
+    /**
+     * Customer-facing line note.
+     *
+     * Internal-only transaction notes must never
+     * be mapped into this field.
+     */
+    note?: string;
+
     sku?: string;
     barcode?: string;
 
@@ -134,6 +142,14 @@ export type AccountingDocumentData = {
 
     lines:
         AccountingDocumentLine[];
+
+    /**
+     * Customer-facing document note.
+     *
+     * The mapper populates this only when the
+     * transaction explicitly permits printing.
+     */
+    documentNote?: string;
 
     cancellationFeeAmount?: number;
 

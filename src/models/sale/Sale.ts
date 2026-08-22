@@ -52,6 +52,22 @@ customer: SaleCustomer;
 
     coupon?: AppliedSaleCoupon;
 
+    /**
+     * Transaction/document-level operator note.
+     *
+     * Stored on the transaction even when it is
+     * internal only and not printed.
+     */
+    documentNote?: string;
+
+    /**
+     * Explicit permission to include documentNote
+     * in the customer-facing accounting document.
+     *
+     * Missing / false means internal only.
+     */
+    printDocumentNote?: boolean;
+
     cancellationFeeAmount?: number;
 
     tax: number;

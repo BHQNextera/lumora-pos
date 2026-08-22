@@ -1,4 +1,4 @@
-﻿import type {
+import type {
     Customer,
 } from "../customer/Customer";
 
@@ -17,6 +17,7 @@ export type HeldSaleSellerSelectionMode =
 
 export type HeldSale = {
     id: string;
+    transactionNumber?: string;
     heldAt: string;
 
     cartLines: CartLine[];
@@ -25,6 +26,9 @@ export type HeldSale = {
     customer: Customer;
 
     couponCode?: string;
+
+    documentNote?: string;
+    printDocumentNote?: boolean;
 
     currentSellerId: string;
     sellerSelectionMode:

@@ -272,7 +272,13 @@ export function createAccountingDocumentData(
                                 .join(" · ") ||
                             undefined,
 
-                        sku:
+
+
+                        note:
+                            line.printNoteOnDocument
+                                ? line.note?.trim() ||
+                                  undefined
+                                : undefined,                        sku:
                             line.sku,
 
                         barcode:
@@ -321,6 +327,12 @@ export function createAccountingDocumentData(
                     };
                 },
             ),
+
+        documentNote:
+            sale.printDocumentNote
+                ? sale.documentNote?.trim() ||
+                  undefined
+                : undefined,
 
         cancellationFeeAmount:
             sale.cancellationFeeAmount,

@@ -1,0 +1,637 @@
+.quick-preset-editor__backdrop {
+    position: fixed;
+    z-index: 8400;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    background: rgba(22, 29, 39, .42);
+    backdrop-filter: blur(4px);
+}
+
+.quick-preset-editor {
+    box-sizing: border-box;
+    width: min(880px, calc(100vw - 44px));
+    max-height: calc(100dvh - 44px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid #e2e5e9;
+    border-radius: 20px;
+    background: #fff;
+    color: #20252d;
+    box-shadow: 0 26px 72px rgba(15, 23, 42, .24);
+}
+
+.quick-preset-editor *,
+.quick-preset-editor *::before,
+.quick-preset-editor *::after {
+    box-sizing: border-box;
+}
+
+.quick-preset-editor__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 26px 20px;
+    border-bottom: 1px solid #e7e9ed;
+}
+
+.quick-preset-editor__heading {
+    display: grid;
+    gap: 5px;
+}
+
+.quick-preset-editor__heading strong {
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 750;
+    color: #20252d;
+}
+
+.quick-preset-editor__heading span {
+    font-size: 13px;
+    color: #89919d;
+}
+
+.quick-preset-editor__close {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    background: #f3f4f5;
+    color: #20252d;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.quick-preset-editor__close:hover {
+    background: #e9ebee;
+}
+
+.quick-preset-editor__cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 20px 22px 16px;
+}
+
+.quick-preset-editor__card {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 86px;
+    padding: 10px 11px;
+    border: 1px solid #dfe3e8;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.quick-preset-editor__slot {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: #f1f3f5;
+    color: #727b88;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.quick-preset-editor__card-main {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: inherit;
+    text-align: right;
+    cursor: pointer;
+}
+
+.quick-preset-editor__card-main:hover {
+    background: #f8f9fa;
+}
+
+.quick-preset-editor__card-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: #f4f5f6;
+    color: #4f5865;
+    font-size: 18px;
+}
+
+.quick-preset-editor__card-copy {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.quick-preset-editor__card-copy strong {
+    overflow: hidden;
+    color: #222831;
+    font-size: 13px;
+    font-weight: 720;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quick-preset-editor__card-copy small {
+    overflow: hidden;
+    color: #8a929d;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quick-preset-editor__change {
+    color: #9a722f;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.quick-preset-editor__remove {
+    min-width: 58px;
+    font-size: 12px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dfe3e8;
+    border-radius: 11px;
+    background: #fff;
+    color: #68717d;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.quick-preset-editor__remove:hover {
+    border-color: #cdd2d8;
+    background: #f5f6f7;
+    color: #343a43;
+}
+
+.quick-preset-editor__add {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 4px;
+    min-height: 86px;
+    padding: 10px;
+    border: 1px dashed #ccd1d8;
+    border-radius: 15px;
+    background: #fafafa;
+    color: #4d5662;
+    cursor: pointer;
+}
+
+.quick-preset-editor__add:hover {
+    border-color: #d7ad62;
+    background: #fffaf0;
+}
+
+.quick-preset-editor__add > span {
+    font-size: 22px;
+    line-height: 1;
+    color: #b67a18;
+}
+
+.quick-preset-editor__add strong {
+    font-size: 14px;
+}
+
+.quick-preset-editor__add small {
+    color: #9299a3;
+    font-size: 11px;
+}
+
+.quick-preset-editor__empty-note {
+    margin: 0 22px 14px;
+    padding: 18px;
+    border: 1px dashed #d7dbe0;
+    border-radius: 13px;
+    color: #8a929d;
+    text-align: center;
+}
+
+.quick-preset-editor__footer {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 16px 22px 20px;
+    border-top: 1px solid #e7e9ed;
+}
+
+.quick-preset-editor__cancel,
+.quick-preset-editor__save {
+    min-height: 46px;
+    padding: 0 22px;
+    border-radius: 11px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.quick-preset-editor__cancel {
+    font-weight: 700;
+}
+
+.quick-preset-editor__save {
+    font-weight: 750;
+}
+
+.quick-preset-editor__cancel {
+    border: 1px solid #dce0e5;
+    background: #fff;
+    color: #515a66;
+}
+
+.quick-preset-editor__save {
+    min-width: 138px;
+    border: 1px solid #c98611;
+    background: linear-gradient(180deg, #e2a536 0%, #ca850f 100%);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(182, 122, 24, .18);
+}
+
+.quick-preset-editor__picker {
+    padding: 20px 22px 22px;
+}
+
+.quick-preset-editor__picker-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 15px;
+}
+
+.quick-preset-editor__picker-heading > div {
+    display: grid;
+    gap: 3px;
+}
+
+.quick-preset-editor__picker-heading strong {
+    color: #252a31;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.quick-preset-editor__picker-heading span {
+    color: #8b939e;
+    font-size: 12px;
+}
+
+.quick-preset-editor__back {
+    min-height: 38px;
+    padding: 0 15px;
+    border: 1px solid #dfe3e8;
+    border-radius: 10px;
+    background: #f7f8f9;
+    color: #505965;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.quick-preset-editor__tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid #e0e3e7;
+    border-radius: 13px;
+    background: #f4f5f6;
+}
+
+.quick-preset-editor__tab {
+    min-height: 41px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #68717e;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.quick-preset-editor__tab--active {
+    background: #fff;
+    color: #79561b;
+    box-shadow:
+        0 1px 4px rgba(15, 23, 42, .08),
+        inset 0 -2px 0 #d6a95a;
+}
+
+.quick-preset-editor__search {
+    display: grid;
+    gap: 6px;
+    margin-top: 15px;
+}
+
+.quick-preset-editor__search > span {
+    color: #626b77;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.quick-preset-editor__search input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #d9dde3;
+    border-radius: 11px;
+    outline: none;
+    background: #fff;
+    color: #222831;
+    font-size: 14px;
+}
+
+.quick-preset-editor__search input:focus {
+    border-color: #d3a04a;
+    box-shadow: 0 0 0 3px rgba(211, 160, 74, .12);
+}
+
+.quick-preset-editor__options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.quick-preset-editor__option {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+    min-height: 64px;
+    padding: 9px 12px;
+    border: 1px solid #e0e3e7;
+    border-radius: 13px;
+    background: #fff;
+    color: #252b33;
+    text-align: right;
+    cursor: pointer;
+}
+
+.quick-preset-editor__option:hover {
+    border-color: #d7ad62;
+    background: #fffaf1;
+}
+
+.quick-preset-editor__option-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: #f3f4f6;
+    color: #525b67;
+    font-size: 17px;
+}
+
+.quick-preset-editor__option-copy {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.quick-preset-editor__option-copy strong {
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quick-preset-editor__option-copy small {
+    color: #8b939e;
+    font-size: 11px;
+}
+
+.quick-preset-editor__option-arrow {
+    color: #b27a1c;
+    font-size: 16px;
+}
+
+.quick-preset-editor__empty {
+    margin-top: 14px;
+    padding: 36px 20px;
+    border: 1px dashed #d9dde2;
+    border-radius: 13px;
+    color: #9299a3;
+    text-align: center;
+}
+
+.quick-preset-editor__result-hint {
+    margin-top: 10px;
+    color: #9299a3;
+    font-size: 11px;
+    text-align: center;
+}
+
+@media (max-width: 760px) {
+    .quick-preset-editor {
+        overflow-y: auto;
+    }
+
+    .quick-preset-editor__cards,
+    .quick-preset-editor__options {
+        grid-template-columns: 1fr;
+    }
+}
+/* ==========================================================
+   LUMORA DESIGN SYSTEM V1 — QUICK PRESET ALIGNMENT
+   Do not tune component typography/colors independently.
+   ========================================================== */
+
+.quick-preset-editor__backdrop {
+    background: var(--lumora-overlay);
+    backdrop-filter: blur(2px);
+}
+
+.quick-preset-editor {
+    border-color: var(--lumora-border-modal);
+    border-radius: var(--lumora-radius-modal);
+    background: var(--lumora-surface);
+    color: var(--lumora-text-strong);
+    box-shadow: var(--lumora-shadow-modal);
+    font-family: var(--lumora-font-family);
+}
+
+.quick-preset-editor__header {
+    padding:
+        var(--lumora-modal-header-padding-y)
+        var(--lumora-modal-header-padding-x);
+    border-bottom-color: var(--lumora-border-divider);
+}
+
+.quick-preset-editor__heading {
+    gap: 2px;
+}
+
+.quick-preset-editor__heading strong {
+    color: var(--lumora-text-strong);
+    font-size: var(--lumora-type-modal-title-size);
+    font-weight: var(--lumora-type-modal-title-weight);
+    line-height: 1.25;
+}
+
+.quick-preset-editor__heading span {
+    color: var(--lumora-text-modal-secondary);
+    font-size: var(--lumora-type-modal-subtitle-size);
+    font-weight: var(--lumora-type-modal-subtitle-weight);
+}
+
+.quick-preset-editor__close {
+    width: var(--lumora-modal-close-size);
+    min-width: var(--lumora-modal-close-size);
+    height: var(--lumora-modal-close-size);
+    border-radius: var(--lumora-radius-close);
+    background: var(--lumora-surface-soft);
+    color: var(--lumora-text-control);
+    font-size: 20px;
+}
+
+.quick-preset-editor__card {
+    border-color: var(--lumora-border-card);
+    border-radius: var(--lumora-radius-card);
+    background: var(--lumora-surface);
+}
+
+.quick-preset-editor__card-copy strong {
+    color: var(--lumora-text-card);
+    font-size: var(--lumora-type-card-title-size);
+    font-weight: var(--lumora-type-card-title-weight);
+}
+
+.quick-preset-editor__card-copy small {
+    color: var(--lumora-text-secondary);
+    font-size: var(--lumora-type-card-meta-size);
+    font-weight: var(--lumora-type-card-meta-weight);
+}
+
+.quick-preset-editor__change {
+    color: var(--lumora-gold-strong);
+    font-size: var(--lumora-type-button-size);
+    font-weight: var(--lumora-type-button-weight);
+}
+
+.quick-preset-editor__remove {
+    min-height: var(--lumora-control-height);
+    border-color: var(--lumora-border-control);
+    border-radius: var(--lumora-radius-control);
+    background: var(--lumora-surface);
+    color: #68717d;
+    font-size: var(--lumora-type-button-size);
+    font-weight: var(--lumora-type-button-weight);
+}
+
+.quick-preset-editor__add {
+    border-radius: var(--lumora-radius-card);
+}
+
+.quick-preset-editor__add > span {
+    color: var(--lumora-gold-strong);
+}
+
+.quick-preset-editor__add strong {
+    color: var(--lumora-text-card);
+    font-size: var(--lumora-type-card-title-size);
+    font-weight: var(--lumora-type-card-title-weight);
+}
+
+.quick-preset-editor__add small {
+    color: var(--lumora-text-secondary);
+    font-size: var(--lumora-type-card-meta-size);
+}
+
+.quick-preset-editor__footer {
+    padding:
+        14px
+        var(--lumora-modal-header-padding-x)
+        var(--lumora-modal-header-padding-y);
+    border-top-color: var(--lumora-border-divider);
+}
+
+.quick-preset-editor__cancel,
+.quick-preset-editor__save {
+    min-height: var(--lumora-control-height);
+    padding: 0 12px;
+    border-radius: var(--lumora-radius-control);
+    font-size: var(--lumora-type-button-size);
+    font-weight: var(--lumora-type-button-weight);
+}
+
+.quick-preset-editor__cancel {
+    border-color: var(--lumora-border-control);
+    background: var(--lumora-surface);
+    color: #515a66;
+}
+
+.quick-preset-editor__save {
+    min-width: 118px;
+    border-color: var(--lumora-gold-strong);
+    background:
+        linear-gradient(
+            180deg,
+            var(--lumora-gold) 0%,
+            var(--lumora-gold-strong) 100%
+        );
+    color: #fff;
+    box-shadow:
+        0 3px 8px rgb(180 125 30 / 18%);
+}
+
+.quick-preset-editor__picker-heading strong {
+    color: var(--lumora-text-strong);
+    font-size: var(--lumora-type-modal-title-size);
+    font-weight: var(--lumora-type-modal-title-weight);
+}
+
+.quick-preset-editor__picker-heading span {
+    color: var(--lumora-text-modal-secondary);
+    font-size: var(--lumora-type-modal-subtitle-size);
+}
+
+.quick-preset-editor__back,
+.quick-preset-editor__tab {
+    font-size: var(--lumora-type-button-size);
+    font-weight: var(--lumora-type-button-weight);
+}
+
+.quick-preset-editor__back {
+    min-height: var(--lumora-control-height);
+    border-radius: var(--lumora-radius-control);
+}
+
+.quick-preset-editor__tab {
+    min-height: var(--lumora-control-height);
+}
+
+.quick-preset-editor__option {
+    border-color: var(--lumora-border-card);
+    border-radius: var(--lumora-radius-card);
+    background: var(--lumora-surface);
+}
+
+.quick-preset-editor__option-copy strong {
+    color: var(--lumora-text-card);
+    font-size: var(--lumora-type-card-title-size);
+    font-weight: var(--lumora-type-card-title-weight);
+}
+
+.quick-preset-editor__option-copy small {
+    color: var(--lumora-text-secondary);
+    font-size: var(--lumora-type-card-meta-size);
+}

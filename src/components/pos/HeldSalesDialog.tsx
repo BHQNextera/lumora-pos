@@ -1,4 +1,6 @@
-﻿import type {
+import { useState } from "react";
+
+import type {
     HeldSale,
 } from "../../models/held-sale/HeldSale";
 
@@ -21,6 +23,12 @@ function HeldSalesDialog({
     onResume,
     onDelete,
 }: HeldSalesDialogProps) {
+    const [
+        pendingDeleteSale,
+        setPendingDeleteSale,
+    ] =
+        useState<HeldSale | null>(null);
+
     return (
         <div
             className="held-sales-dialog__backdrop"
@@ -153,11 +161,7 @@ function HeldSalesDialog({
                                         <button
                                             type="button"
                                             className="held-sales-dialog__delete"
-                                            onClick={() =>
-                                                onDelete(
-                                                    heldSale.id,
-                                                )
-                                            }
+                                            onClick={() => setPendingDeleteSale(heldSale)}
                                         >
                                             מחק
                                         </button>
@@ -168,6 +172,85 @@ function HeldSalesDialog({
                     )}
                 </div>
             </section>
+
+            {pendingDeleteSale && (
+                <div
+                    className="held-sales-dialog__confirm-backdrop"
+                    role="presentation"
+                    onMouseDown={(event) => {
+                        event.stopPropagation();
+                        setPendingDeleteSale(null);
+                    }}
+                >
+                    <section
+                        className="held-sales-dialog__confirm"
+                        dir="rtl"
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="held-sale-delete-title"
+                        aria-describedby="held-sale-delete-description"
+                        onMouseDown={(event) =>
+                            event.stopPropagation()
+                        }
+                    >
+                        <div className="held-sales-dialog__confirm-header">
+                            <div>
+                                <strong id="held-sale-delete-title">
+                                    מחיקת עסקה מושהית
+                                </strong>
+
+                                <span>
+                                    {pendingDeleteSale.customer.name}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                aria-label="סגור"
+                                onClick={() =>
+                                    setPendingDeleteSale(null)
+                                }
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <p id="held-sale-delete-description">
+                            למחוק את העסקה המושהית?
+                        </p>
+
+                        <small>
+                            הפעולה אינה ניתנת לביטול.
+                        </small>
+
+                        <div className="held-sales-dialog__confirm-actions">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setPendingDeleteSale(null)
+                                }
+                            >
+                                ביטול
+                            </button>
+
+                            <button
+                                type="button"
+                                className="held-sales-dialog__confirm-delete"
+                                onClick={() => {
+                                    const id =
+                                        pendingDeleteSale.id;
+
+                                    setPendingDeleteSale(null);
+                                    onDelete(id);
+                                }}
+                            >
+                                מחק
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
         </div>
     );
 }

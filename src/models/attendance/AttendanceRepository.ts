@@ -1,4 +1,4 @@
-﻿import {
+import {
     isTauri,
 } from "@tauri-apps/api/core";
 
@@ -24,6 +24,12 @@ const STORAGE_KEY =
 let attendance:
     EmployeeAttendance[] = [];
 
+type AttendanceListener =
+    () => void;
+
+const attendanceListeners =
+    new Set<AttendanceListener>();
+
 let attendanceStoragePromise:
     Promise<RuntimeStorage> | null =
         null;
@@ -31,6 +37,29 @@ let attendanceStoragePromise:
 let persistenceQueue:
     Promise<void> =
         Promise.resolve();
+
+function notifyAttendanceListeners() {
+    for (
+        const listener
+        of attendanceListeners
+    ) {
+        listener();
+    }
+}
+
+export function subscribeAttendance(
+    listener: AttendanceListener,
+): () => void {
+    attendanceListeners.add(
+        listener,
+    );
+
+    return () => {
+        attendanceListeners.delete(
+            listener,
+        );
+    };
+}
 
 function getAttendanceStorage():
 Promise<RuntimeStorage> {
@@ -123,6 +152,8 @@ Promise<void> {
 
     attendance =
         parseAttendance(raw);
+
+    notifyAttendanceListeners();
 }
 
 function persistAttendance() {
@@ -232,6 +263,7 @@ export function clockInEmployee(
         ...attendance,
     ];
 
+    notifyAttendanceListeners();
     persistAttendance();
 
     return entry;
@@ -282,6 +314,7 @@ export function clockOutEmployee(
     if (changed) {
         attendance = next;
 
+        notifyAttendanceListeners();
         persistAttendance();
     }
 

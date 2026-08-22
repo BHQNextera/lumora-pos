@@ -13,6 +13,15 @@ import type {
 } from "../../models/coupon/Coupon";
 import "./cart-panel.css";
 
+type CartSellerOption = {
+    id: string;
+    name: string;
+};
+
+type SellerAssignmentInput = {
+    employeeId: string;
+    employeeName: string;
+};
 type CartPanelProps = {
     lines: PricedCartLine[];
 
@@ -47,6 +56,18 @@ type CartPanelProps = {
         description: string | undefined,
     ) => void;
 
+    activeSellers: CartSellerOption[];
+
+    onChangeSellerForLine: (
+        lineId: string,
+        seller: SellerAssignmentInput,
+    ) => void;
+
+    onChangeSellerFromLineToEnd: (
+        lineId: string,
+        seller: SellerAssignmentInput,
+    ) => void;
+
     onCheckout: (total: number) => void;
 };
 
@@ -65,6 +86,9 @@ function CartPanel({
     onSetQuantity,
     onSelectLine,
     onEditDescription,
+    activeSellers,
+    onChangeSellerForLine,
+    onChangeSellerFromLineToEnd,
     onCheckout,
 }: CartPanelProps) {
     const listRef =
@@ -74,6 +98,18 @@ function CartPanel({
         useState<PricedCartLine | null>(null);
 
     const [descriptionValue, setDescriptionValue] =
+        useState("");
+
+    const [
+        sellerEditorLine,
+        setSellerEditorLine,
+    ] =
+        useState<PricedCartLine | null>(null);
+
+    const [
+        sellerEmployeeId,
+        setSellerEmployeeId,
+    ] =
         useState("");
 
     const [
@@ -97,6 +133,17 @@ function CartPanel({
         (sum, line) => sum + line.quantity,
         0,
     );
+    const totalDiscountAmount =
+        lines.reduce(
+            (sum, line) =>
+                sum +
+                line.calculatedLineDiscountAmount +
+                line.calculatedTransactionDiscountAmount,
+            0,
+        ) + couponDiscountAmount;
+
+    const totalBeforeDiscounts =
+        totalAfterCoupon + totalDiscountAmount;
 
     useEffect(() => {
         if (
@@ -164,6 +211,64 @@ function CartPanel({
 
         closeDescriptionEditor();
     };
+    const openSellerEditor = (
+        line: PricedCartLine,
+    ) => {
+        const replacementSeller =
+            activeSellers.find(
+                (employee) =>
+                    employee.id !==
+                    line.seller?.employeeId,
+            );
+
+        setSellerEditorLine(line);
+        setSellerEmployeeId(
+            replacementSeller?.id ?? "",
+        );
+    };
+
+    const closeSellerEditor = () => {
+        setSellerEditorLine(null);
+        setSellerEmployeeId("");
+    };
+
+    const applySellerChange = (
+        scope: "line" | "from-line",
+    ) => {
+        if (!sellerEditorLine) {
+            return;
+        }
+
+        const seller =
+            activeSellers.find(
+                (employee) =>
+                    employee.id ===
+                    sellerEmployeeId,
+            );
+
+        if (!seller) {
+            return;
+        }
+
+        const assignment = {
+            employeeId: seller.id,
+            employeeName: seller.name,
+        };
+
+        if (scope === "line") {
+            onChangeSellerForLine(
+                sellerEditorLine.id,
+                assignment,
+            );
+        } else {
+            onChangeSellerFromLineToEnd(
+                sellerEditorLine.id,
+                assignment,
+            );
+        }
+
+        closeSellerEditor();
+    };
 
     return (
         <>
@@ -188,8 +293,25 @@ function CartPanel({
                         className="lumora-cart__clear"
                         disabled={lines.length === 0}
                         onClick={onClear}
+                        aria-label="נקה עגלה"
+                        title="נקה עגלה"
                     >
-                        נקה
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="16"
+                            height="16"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+                            <path
+                                d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
                     </button>
                 </div>
 
@@ -281,23 +403,22 @@ function CartPanel({
                                         </strong>
 
                                         {line.seller && (
-                                            <span
-                                                style={{
-                                                    display:
-                                                        "block",
-                                                    marginTop:
-                                                        "3px",
-                                                    fontSize:
-                                                        "11px",
-                                                    fontWeight:
-                                                        700,
+                                            <button
+                                                type="button"
+                                                className="lumora-cart-line__seller"
+                                                title="שינוי מוכרן לשורה"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    onSelectLine(line.id);
+                                                    openSellerEditor(line);
                                                 }}
                                             >
-                                                מוכרן: {
+                                                מוכרן:{" "}
+                                                {
                                                     line.seller
                                                         .employeeName
                                                 }
-                                            </span>
+                                            </button>
                                         )}
 
                                         {line.variant && (
@@ -718,7 +839,53 @@ function CartPanel({
 
 
 
-<button
+{lines.length > 0 && (
+                    <div className="lumora-cart__summary">
+                        <div>
+                            <span>סה״כ לפני הנחות</span>
+
+                            <strong>
+                                {totalBeforeDiscounts < 0
+                                    ? "‎-"
+                                    : ""}
+                                ₪
+                                {Math.abs(
+                                    totalBeforeDiscounts,
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div className="lumora-cart__summary-discount">
+                            <span>הנחה</span>
+
+                            <strong>
+                                {totalDiscountAmount > 0
+                                    ? "‎-"
+                                    : ""}
+                                ₪
+                                {Math.abs(
+                                    totalDiscountAmount,
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                        <div className="lumora-cart__total">
+                            <span>סה״כ לתשלום</span>
+
+                            <strong>
+                                {totalAfterCoupon < 0
+                                    ? "‎-"
+                                    : ""}
+                                ₪
+                                {Math.abs(
+                                    totalAfterCoupon,
+                                ).toFixed(2)}
+                            </strong>
+                        </div>
+                    </div>
+                )}
+
+                <button
                     type="button"
                     className="lumora-cart__checkout"
                     disabled={lines.length === 0}
@@ -728,12 +895,40 @@ function CartPanel({
                         )
                     }
                 >
-                    <span>
-                        {totalAfterCoupon < 0
-                            ? "להחזר"
-                            : totalAfterCoupon === 0
-                                ? "סיום עסקה"
-                                : "לתשלום"}
+                    <span className="lumora-cart__checkout-label">
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="17"
+                            height="17"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+                            <rect
+                                x="3"
+                                y="5"
+                                width="18"
+                                height="14"
+                                rx="2.5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                            />
+                            <path
+                                d="M3 9h18M7 15h4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+
+                        <span>
+                            {totalAfterCoupon < 0
+                                ? "להחזר"
+                                : totalAfterCoupon === 0
+                                    ? "סיום עסקה"
+                                    : "לתשלום"}
+                        </span>
                     </span>
 
                     {lines.length > 0 && (
@@ -750,6 +945,118 @@ function CartPanel({
 </button>
             </aside>
 
+            {sellerEditorLine && (
+                <div
+                    className="lumora-cart__seller-overlay"
+                    role="presentation"
+                    onMouseDown={closeSellerEditor}
+                >
+                    <section
+                        className="lumora-cart__seller-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="שינוי מוכרן"
+                        onMouseDown={(event) =>
+                            event.stopPropagation()
+                        }
+                    >
+                        <div className="lumora-cart__seller-dialog-header">
+                            <div>
+                                <strong>
+                                    שינוי מוכרן
+                                </strong>
+
+                                <span>
+                                    {sellerEditorLine.descriptionOverride ??
+                                        sellerEditorLine.product.name}
+                                </span>
+
+                                <small>
+                                    מוכרן נוכחי:{" "}
+                                    {sellerEditorLine.seller?.employeeName ??
+                                        "לא הוגדר"}
+                                </small>
+                            </div>
+
+                            <button
+                                type="button"
+                                aria-label="סגור"
+                                onClick={closeSellerEditor}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <label className="lumora-cart__seller-field">
+                            <span>
+                                מוכרן חדש
+                            </span>
+
+                            <select
+                                autoFocus
+                                value={sellerEmployeeId}
+                                onChange={(event) =>
+                                    setSellerEmployeeId(
+                                        event.target.value,
+                                    )
+                                }
+                            >
+                                {activeSellers
+                                    .filter(
+                                        (employee) =>
+                                            employee.id !==
+                                            sellerEditorLine.seller
+                                                ?.employeeId,
+                                    )
+                                    .map(
+                                        (employee) => (
+                                            <option
+                                                key={employee.id}
+                                                value={employee.id}
+                                            >
+                                                {employee.name}
+                                            </option>
+                                        ),
+                                    )}
+                            </select>
+                        </label>
+
+                        {!sellerEmployeeId && (
+                            <div className="lumora-cart__seller-empty">
+                                אין מוכרן חלופי בנוכחות
+                            </div>
+                        )}
+
+                        <div className="lumora-cart__seller-question">
+                            לאילו פריטים להחיל את השינוי?
+                        </div>
+
+                        <div className="lumora-cart__seller-actions">
+                            <button
+                                type="button"
+                                disabled={!sellerEmployeeId}
+                                onClick={() =>
+                                    applySellerChange("line")
+                                }
+                            >
+                                רק שורה זו
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={!sellerEmployeeId}
+                                onClick={() =>
+                                    applySellerChange(
+                                        "from-line",
+                                    )
+                                }
+                            >
+                                מכאן ועד הסוף
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
             {editingLine && (
                 <div
                     style={{

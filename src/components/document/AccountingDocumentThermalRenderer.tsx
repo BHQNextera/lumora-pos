@@ -209,6 +209,14 @@ function AccountingDocumentThermalRenderer({
                                     }
                                 </span>
                             )}
+                            {line.note && (
+                                <span className="thermal-line__note">
+                                    <strong>
+                                        הערה:
+                                    </strong>{" "}
+                                    {line.note}
+                                </span>
+                            )}
 
                             <div className="thermal-line__quantity">
                                 <span dir="ltr">
@@ -296,6 +304,17 @@ function AccountingDocumentThermalRenderer({
                         5% או ₪100 — הנמוך מביניהם
                     </span>
                 </div>
+            )}
+            {data.documentNote && (
+                <section className="thermal-receipt__document-note">
+                    <strong>
+                        הערה
+                    </strong>
+
+                    <p>
+                        {data.documentNote}
+                    </p>
+                </section>
             )}
             <section className="thermal-receipt__totals">
                 <div>

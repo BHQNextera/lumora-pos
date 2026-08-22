@@ -1,4 +1,7 @@
-﻿import {
+import SaleCustomerQuickCreateDialog from "../../components/pos/SaleCustomerQuickCreateDialog";
+import "./SaleTopbarV3.css";
+import NoteEditorDialog from "../../components/pos/NoteEditorDialog";
+import {
     useEffect,
     useMemo,
     useState,
@@ -18,6 +21,9 @@ import {
 import {
     getPresentSellers,
 } from "../../models/employee/AvailableSellerService";
+import {
+    subscribeAttendance,
+} from "../../models/attendance/AttendanceRepository";
 import { usePricing } from "../../context/usePricing";
 import { useCatalog } from "../../context/useCatalog";
 import { translate } from "../../i18n";
@@ -66,11 +72,46 @@ import type {
     Sale,
 } from "../../models/sale/Sale";
 import type { SaleLine } from "../../models/sale/SaleLine";
+import {
+    allocateSaleNumber,
+    flushSaleNumberPersistence,
+    peekNextSaleNumber,
+} from "../../models/sale/SaleNumbering";
+
 import { completeSale } from "../../models/sale/SaleService";
+import {
+    getTransactions,
+} from "../../models/transaction/TransactionRepository";
 import {
     getActiveRegisterShift,
 } from "../../models/shift/RegisterShiftRepository";
+import {
+    getSalePresets,
+    hydrateSalePresets,
+    saveSalePresets,
+    subscribeSalePresets,
+} from "../../models/preset/SalePresetRepository";
+
+import {
+    MAX_SALE_PRESETS,
+} from "../../models/preset/SalePreset";
+
+import type {
+    SalePreset,
+} from "../../models/preset/SalePreset";
+import {
+    executeSaleAction,
+    getEligibleSaleActions,
+    getSaleActionDefinition,
+    isSaleActionEnabled,
+    isSaleActionId,
+} from "../../models/preset/SaleActionRegistry";
 import type { Product } from "../../types/product";
+import GiftCardBalanceDialog from "../../components/pos/GiftCardBalanceDialog";
+import QuickPresetEditorDialog from "../../components/pos/QuickPresetEditorDialog";
+import {
+    requestCashDrawerOpen,
+} from "../../models/drawer/CashDrawerService";
 import PaymentPage from "../payment/PaymentPage";
 import RefundPage from "../payment/RefundPage";
 import ReturnItemPage from "../return-item/ReturnItemPage";
@@ -123,8 +164,35 @@ function SalePage({
 
     const { products } = useCatalog();
 
-    const activeSellers =
-        getPresentSellers();
+    const [
+        activeSellers,
+        setActiveSellers,
+    ] = useState(
+        () =>
+            getPresentSellers(),
+    );
+
+    useEffect(() => {
+        const refreshActiveSellers =
+            () => {
+                setActiveSellers(
+                    getPresentSellers(),
+                );
+            };
+
+        const unsubscribe =
+            subscribeAttendance(
+                refreshActiveSellers,
+            );
+
+        /*
+         * Close the tiny gap between the initial render
+         * and subscription registration.
+         */
+        refreshActiveSellers();
+
+        return unsubscribe;
+    }, []);
 
     const [
         currentSellerId,
@@ -290,6 +358,16 @@ function SalePage({
     } = usePricing();
 
     const [
+        documentNote,
+        setDocumentNote,
+    ] = useState("");
+
+    const [
+        printDocumentNote,
+        setPrintDocumentNote,
+    ] = useState(false);
+
+    const [
         moreActionsOpen,
         setMoreActionsOpen,
     ] = useState(false);
@@ -369,6 +447,27 @@ function SalePage({
         searchTerm,
         setSearchTerm,
     ] = useState("");
+
+    const [
+        catalogViewMode,
+        setCatalogViewMode,
+    ] = useState<"cards" | "list">(
+        "cards",
+    );
+
+    const [
+        catalogSortMode,
+        setCatalogSortMode,
+    ] = useState<
+        "az" |
+        "za" |
+        "top"
+    >("az");
+
+    const [
+        customerCreateOpen,
+        setCustomerCreateOpen,
+    ] = useState(false);
 
     const [
         customerPickerOpen,
@@ -459,6 +558,15 @@ function SalePage({
         useState<number | null>(null);
 
     const [
+        reservedTransactionNumber,
+        setReservedTransactionNumber,
+    ] = useState<string | null>(
+        null,
+    );
+
+    const openTransactionNumber =
+        peekNextSaleNumber();
+const [
         completedSale,
         setCompletedSale,
     ] =
@@ -476,9 +584,23 @@ function SalePage({
 
 
     const [
+        giftCardBalanceOpen,
+        setGiftCardBalanceOpen,
+    ] = useState(false);
+
+    const [
         showTransactionDiscount,
         setShowTransactionDiscount,
     ] = useState(false);
+
+    const [
+        noteEditorKind,
+        setNoteEditorKind,
+    ] = useState<
+        "line" |
+        "document" |
+        null
+    >(null);
 
     const [
         selectedLineId,
@@ -534,6 +656,206 @@ function SalePage({
         updateCartLines,
     ]);
 
+    const [
+        salePresets,
+        setSalePresets,
+    ] = useState<SalePreset[]>(
+        () =>
+            getSalePresets(),
+    );
+
+    const [
+        presetEditorOpen,
+        setPresetEditorOpen,
+    ] = useState(false);
+
+    const [
+        presetDraft,
+        setPresetDraft,
+    ] = useState<SalePreset[]>(
+        [],
+    );
+
+    useEffect(() => {
+        const refresh =
+            () => {
+                setSalePresets(
+                    getSalePresets(),
+                );
+            };
+
+        const unsubscribe =
+            subscribeSalePresets(
+                refresh,
+            );
+
+        void hydrateSalePresets();
+
+        return unsubscribe;
+    }, []);
+    const saleActionAvailability = {
+        profile:
+            activeProfile,
+
+        cartLineCount:
+            cartLines.length,
+
+        heldSaleCount:
+            heldSales.length,
+
+        selectedSaleLineId:
+            selectedLineId &&
+            cartLines.some(
+                (line) =>
+                    line.id ===
+                        selectedLineId &&
+                    line.kind ===
+                        "sale",
+            )
+                ? selectedLineId
+                : null,
+    };
+
+    const eligibleSaleActions =
+        getEligibleSaleActions(
+            saleActionAvailability,
+        );
+
+    const runSaleAction = (
+        actionId: string,
+    ) => {
+        executeSaleAction(
+            actionId,
+            saleActionAvailability,
+            {
+                openCustomer:
+                    () => {
+                        setCustomerPickerOpen(
+                            true,
+                        );
+
+                        setCustomerSearchTerm(
+                            "",
+                        );
+                    },
+
+                openCoupon:
+                    () => {
+                        setCouponDialogRequestId(
+                            (current) =>
+                                current + 1,
+                        );
+                    },
+
+                openLineDiscount:
+                    () => {
+                        if (
+                            !saleActionAvailability
+                                .selectedSaleLineId
+                        ) {
+                            return;
+                        }
+
+                        setEditingDiscountLineId(
+                            saleActionAvailability
+                                .selectedSaleLineId,
+                        );
+                    },
+
+                openTransactionDiscount:
+                    () => {
+                        setShowTransactionDiscount(
+                            true,
+                        );
+                    },
+
+                openLineNote:
+                    () => {
+                        if (
+                            !saleActionAvailability
+                                .selectedSaleLineId
+                        ) {
+                            return;
+                        }
+
+                        setMoreActionsOpen(
+                            false,
+                        );
+
+                        setNoteEditorKind(
+                            "line",
+                        );
+                    },
+
+                openDocumentNote:
+                    () => {
+                        if (
+                            saleActionAvailability
+                                .cartLineCount <= 0
+                        ) {
+                            return;
+                        }
+
+                        setMoreActionsOpen(
+                            false,
+                        );
+
+                        setNoteEditorKind(
+                            "document",
+                        );
+                    },
+                openPriceOverride:
+                    () => {
+                        if (
+                            !saleActionAvailability
+                                .selectedSaleLineId
+                        ) {
+                            return;
+                        }
+
+                        setEditingPriceLineId(
+                            saleActionAvailability
+                                .selectedSaleLineId,
+                        );
+                    },
+
+                holdSale:
+                    () => {
+                        void holdCurrentSale();
+                    },
+
+                openHeldSales:
+                    () => {
+                        refreshHeldSales();
+
+                        setHeldSalesOpen(
+                            true,
+                        );
+                    },
+
+                openReturnItem:
+                    () => {
+                        setMode(
+                            "return-item",
+                        );
+                    },
+
+                openGiftCardBalance:
+                    () => {
+                        setGiftCardBalanceOpen(
+                            true,
+                        );
+                    },
+
+                openDrawer:
+                    () => {
+                        requestCashDrawerOpen(
+                            "manual",
+                        );
+                    },
+            },
+        );
+    };
     const filteredProducts =
         useMemo(() => {
             const value =
@@ -603,6 +925,187 @@ function SalePage({
             selectedCategory,
         ]);
 
+    const productSalesUnits =
+        (() => {
+            const totals =
+                new Map<
+                    string,
+                    number
+                >();
+
+            if (
+                catalogSortMode !==
+                "top"
+            ) {
+                return totals;
+            }
+
+            /*
+             * Transactions preserve SKU/barcode snapshots.
+             * Map those identities back to the current
+             * catalog product, including fashion variants.
+             */
+            const identityToProductId =
+                new Map<
+                    string,
+                    string
+                >();
+
+            products.forEach(
+                (product) => {
+                    if (product.sku) {
+                        identityToProductId.set(
+                            `sku:${product.sku}`,
+                            product.id,
+                        );
+                    }
+
+                    if (product.barcode) {
+                        identityToProductId.set(
+                            `barcode:${product.barcode}`,
+                            product.id,
+                        );
+                    }
+
+                    product.variants?.forEach(
+                        (variant) => {
+                            if (variant.sku) {
+                                identityToProductId.set(
+                                    `sku:${variant.sku}`,
+                                    product.id,
+                                );
+                            }
+
+                            if (
+                                variant.barcode
+                            ) {
+                                identityToProductId.set(
+                                    `barcode:${variant.barcode}`,
+                                    product.id,
+                                );
+                            }
+                        },
+                    );
+                },
+            );
+
+            getTransactions()
+                .filter(
+                    (transaction) =>
+                        transaction.status ===
+                        "completed",
+                )
+                .forEach(
+                    (transaction) => {
+                        transaction.lines.forEach(
+                            (line) => {
+                                const productId =
+                                    (
+                                        line.sku
+                                            ? identityToProductId.get(
+                                                  `sku:${line.sku}`,
+                                              )
+                                            : undefined
+                                    ) ??
+                                    (
+                                        line.barcode
+                                            ? identityToProductId.get(
+                                                  `barcode:${line.barcode}`,
+                                              )
+                                            : undefined
+                                    );
+
+                                if (!productId) {
+                                    return;
+                                }
+
+                                const quantity =
+                                    Math.abs(
+                                        line.quantity,
+                                    );
+
+                                const signedQuantity =
+                                    line.kind ===
+                                    "return"
+                                        ? -quantity
+                                        : line.kind ===
+                                          "sale"
+                                        ? quantity
+                                        : 0;
+
+                                if (
+                                    signedQuantity ===
+                                    0
+                                ) {
+                                    return;
+                                }
+
+                                totals.set(
+                                    productId,
+                                    (
+                                        totals.get(
+                                            productId,
+                                        ) ?? 0
+                                    ) +
+                                        signedQuantity,
+                                );
+                            },
+                        );
+                    },
+                );
+
+            return totals;
+        })();
+
+    const sortedProducts =
+        [...filteredProducts]
+            .sort(
+                (
+                    left,
+                    right,
+                ) => {
+                    if (
+                        catalogSortMode ===
+                        "top"
+                    ) {
+                        const salesDifference =
+                            (
+                                productSalesUnits.get(
+                                    right.id,
+                                ) ?? 0
+                            ) -
+                            (
+                                productSalesUnits.get(
+                                    left.id,
+                                ) ?? 0
+                            );
+
+                        if (
+                            salesDifference !==
+                            0
+                        ) {
+                            return salesDifference;
+                        }
+                    }
+
+                    const nameComparison =
+                        left.name.localeCompare(
+                            right.name,
+                            "he",
+                            {
+                                sensitivity:
+                                    "base",
+                                numeric:
+                                    true,
+                            },
+                        );
+
+                    return catalogSortMode ===
+                        "za"
+                        ? -nameComparison
+                        : nameComparison;
+                },
+            );
     const selectedCartLine =
         selectedLineId
             ? pricing.lines.find(
@@ -632,6 +1135,17 @@ function SalePage({
                 line.kind === "sale",
         ) ?? null;
 
+    const selectedNoteLine =
+        selectedLineId
+            ? cartLines.find(
+                  (line) =>
+                      line.id ===
+                          selectedLineId &&
+                      line.kind ===
+                          "sale",
+              ) ?? null
+            : null;
+
     const editingPriceLine =
         pricing.lines.find(
             (line) =>
@@ -648,6 +1162,10 @@ function SalePage({
 
     const addProduct = (
         product: Product,
+        sellerOverride?: {
+            id: string;
+            name: string;
+        },
     ) => {
         const existing =
             pricing.lines.find(
@@ -668,6 +1186,10 @@ function SalePage({
             existing?.id ??
             newLineId,
         );
+
+        const sellerForLine =
+            sellerOverride ??
+            currentSeller;
 
         updateCartLines((current) => {
             const currentExisting =
@@ -705,12 +1227,12 @@ function SalePage({
                 product,
 
                 seller:
-                    currentSeller
+                    sellerForLine
                         ? {
                               employeeId:
-                                  currentSeller.id,
+                                  sellerForLine.id,
                               employeeName:
-                                  currentSeller.name,
+                                  sellerForLine.name,
                           }
                         : undefined,
 
@@ -873,6 +1395,10 @@ function SalePage({
 
     const continueProductSelection = (
         product: Product,
+        sellerOverride?: {
+            id: string;
+            name: string;
+        },
     ) => {
         if (
             activeProfile.operatingModel ===
@@ -890,6 +1416,7 @@ function SalePage({
 
         addProduct(
             product,
+            sellerOverride,
         );
     };
 
@@ -1340,6 +1867,12 @@ function SalePage({
                         descriptionOverride:
                             line.descriptionOverride,
 
+                        note:
+                            line.note,
+
+                        printNoteOnDocument:
+                            line.printNoteOnDocument,
+
                         sku:
                             line.product.sku,
 
@@ -1403,10 +1936,33 @@ function SalePage({
                 },
             );
 
+    const reserveOpenTransactionNumber =
+        async () => {
+            if (
+                reservedTransactionNumber
+            ) {
+                return reservedTransactionNumber;
+            }
+
+            const transactionNumber =
+                allocateSaleNumber();
+
+            await flushSaleNumberPersistence();
+
+            setReservedTransactionNumber(
+                transactionNumber,
+            );
+
+            return transactionNumber;
+        };
+
     const completeTransaction = async (
         payments: Payment[],
         applyCancellationFee = false,
     ) => {
+        const transactionNumber =
+            await reserveOpenTransactionNumber();
+
         const transactionId =
             crypto.randomUUID();
 
@@ -1476,6 +2032,9 @@ function SalePage({
                 {
                     transactionId,
 
+
+                    transactionNumber,
+
                     shiftId:
                         getActiveRegisterShift()
                             ?.id,
@@ -1484,6 +2043,10 @@ function SalePage({
 
                     coupon:
                         appliedSaleCoupon,
+
+                    documentNote,
+
+                    printDocumentNote,
                 },
             );
 
@@ -1542,6 +2105,9 @@ function SalePage({
         clearPricingRules();
         setSelectedLineId(null);
         setCompletedSale(sale);
+        setDocumentNote("");
+        setPrintDocumentNote(false);
+        setNoteEditorKind(null);
         setCheckoutTotal(null);
     };
 
@@ -1641,6 +2207,9 @@ function SalePage({
 
         setCustomerPickerOpen(false);
         setCustomerSearchTerm("");
+        setDocumentNote("");
+        setPrintDocumentNote(false);
+        setNoteEditorKind(null);
         setMoreActionsOpen(false);
         setSelectedLineId(null);
     };
@@ -1657,13 +2226,9 @@ function SalePage({
                 cartLines.length === 0
             ) {
                 return;
-            }
-
-            saveHeldSale({
+            }saveHeldSale({
                 id:
-                    crypto.randomUUID(),
-
-                heldAt:
+                    crypto.randomUUID(),heldAt:
                     new Date()
                         .toISOString(),
 
@@ -1678,6 +2243,15 @@ function SalePage({
 
                 couponCode:
                     appliedCoupon?.code,
+
+                documentNote:
+                    documentNote || undefined,
+
+                printDocumentNote:
+                    documentNote &&
+                    printDocumentNote
+                        ? true
+                        : undefined,
 
                 currentSellerId,
 
@@ -1694,6 +2268,10 @@ function SalePage({
             refreshHeldSales();
 
             clearSale();
+
+            setReservedTransactionNumber(
+                null,
+            );
 
             setSearchTerm("");
             setSelectedCategory(
@@ -1713,6 +2291,9 @@ function SalePage({
 
             removeCoupon();
 
+
+            setReservedTransactionNumber(null);
+
             setCartLines(
                 heldSale.cartLines,
             );
@@ -1723,6 +2304,18 @@ function SalePage({
 
             setSelectedCustomer(
                 heldSale.customer,
+            );
+
+            setDocumentNote(
+                heldSale.documentNote ??
+                "",
+            );
+
+            setPrintDocumentNote(
+                Boolean(
+                    heldSale.documentNote &&
+                    heldSale.printDocumentNote,
+                ),
             );
 
             setCurrentSellerId(
@@ -1763,15 +2356,6 @@ function SalePage({
         async (
             id: string,
         ) => {
-            const confirmed =
-                window.confirm(
-                    "למחוק את העסקה המושהית?",
-                );
-
-            if (!confirmed) {
-                return;
-            }
-
             deleteHeldSale(
                 id,
             );
@@ -1789,6 +2373,10 @@ function SalePage({
         setCheckoutTotal(null);
 
         clearSale();
+
+        setReservedTransactionNumber(
+            null,
+        );
 
         setSearchTerm("");
         setSelectedCategory("all");
@@ -2039,45 +2627,56 @@ function SalePage({
                 aria-labelledby="sale-page-title"
             >
                 <div className="sale-page__operator-topbar">
-                    <header className="sale-page__heading">
-                    <div className="sale-page__heading-title">
-                        <p className="sale-page__eyebrow">
-                            עסקה חדשה
-                        </p>
+                    <div className="sale-page__merchant-zone">
+                        <div className="sale-page__merchant-compact">
+                            <div
+                                className="sale-page__merchant-monogram"
+                                aria-hidden="true"
+                            >
+                                {(
+                                    activeProfile.identity.tradingName ??
+                                    activeProfile.identity.businessName
+                                )
+                                    .trim()
+                                    .charAt(0)
+                                    .toUpperCase()}
+                            </div>
 
-                        <h1 id="sale-page-title">
-                            מכירה
-                        </h1>
-                    </div>
+                            <div className="sale-page__merchant-copy">
+                                <strong>
+                                    {activeProfile.identity.tradingName ??
+                                        activeProfile.identity.businessName}
+                                </strong>
 
-                    <div className="sale-page__merchant-compact">
-                        <div
-                            className="sale-page__merchant-monogram"
-                            aria-hidden="true"
-                        >
-                            {(
-                                activeProfile.identity.tradingName ??
-                                activeProfile.identity.businessName
-                            )
-                                .trim()
-                                .charAt(0)
-                                .toUpperCase()}
-                        </div>
-
-                        <div className="sale-page__merchant-copy">
-                            <strong>
-                                {activeProfile.identity.tradingName ??
-                                    activeProfile.identity.businessName}
-                            </strong>
-
-                            {activeProfile.identity.branchName && (
-                                <span>
-                                    {activeProfile.identity.branchName}
-                                </span>
-                            )}
+                                {activeProfile.identity.branchName && (
+                                    <span>
+                                        {activeProfile.identity.branchName}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </header>
+
+                    <div className="sale-page__transaction-zone">
+                        <div className="sale-page__transaction-identity">
+                            <strong id="sale-page-title">
+                            <span>
+                                עסקה
+                            </span>
+
+                            <span
+                                className="sale-page__transaction-number"
+                                dir="ltr"
+                            >
+                                {openTransactionNumber}
+                            </span>
+                        </strong>
+
+                            <span className="sale-page__transaction-state">
+                                פתוחה
+                            </span>
+                        </div>
+                    </div>
 
                 <div className="sale-page__transaction-context">
                     <div className="sale-page__context-field sale-page__customer-tools">
@@ -2106,6 +2705,25 @@ function SalePage({
                             </span>
                         </button>
 
+                        <button
+                            type="button"
+                            className="sale-page__customer-create-trigger"
+                            onClick={() => {
+                                setCustomerPickerOpen(
+                                    false,
+                                );
+
+                                setCustomerSearchTerm(
+                                    "",
+                                );
+
+                                setCustomerCreateOpen(
+                                    true,
+                                );
+                            }}
+                        >
+                            + לקוח
+                        </button>
                         {customerPickerOpen && (
                             <div className="sale-page__customer-popover">
                                 <input
@@ -2499,16 +3117,77 @@ function SalePage({
 
                             <button
                                 type="button"
-                                className="sale-page__secondary-button"
+                                className={`sale-page__secondary-button sale-page__view-toggle ${
+                                    catalogViewMode ===
+                                    "list"
+                                        ? "sale-page__view-toggle--active"
+                                        : ""
+                                }`}
+                                aria-pressed={
+                                    catalogViewMode ===
+                                    "list"
+                                }
+                                onClick={() =>
+                                    setCatalogViewMode(
+                                        (current) =>
+                                            current ===
+                                            "cards"
+                                                ? "list"
+                                                : "cards",
+                                    )
+                                }
+                                title="החלף תצוגת קטלוג"
                             >
-                                ברקוד
+                                {catalogViewMode ===
+                                "cards"
+                                    ? "▦ תמונות"
+                                    : "☷ רשימה"}
                             </button>
-
                             <button
                                 type="button"
-                                className="sale-page__secondary-button"
+                                className="sale-page__secondary-button sale-page__sort-toggle"
+                                onClick={() =>
+                                    setCatalogSortMode(
+                                        (current) =>
+                                            current ===
+                                            "az"
+                                                ? "za"
+                                                : current ===
+                                                  "za"
+                                                ? "top"
+                                                : "az",
+                                    )
+                                }
+                                title="החלף מיון מוצרים"
                             >
-                                תצוגה
+                                מיון:{" "}
+                                {catalogSortMode ===
+                                "az"
+                                    ? "א–ת"
+                                    : catalogSortMode ===
+                                      "za"
+                                    ? "ת–א"
+                                    : "טופ סלר"}
+                            </button>
+                            <button
+                                type="button"
+                                className="sale-page__secondary-button sale-page__preset-config-button"
+                                onClick={() => {
+                                    setPresetDraft(
+                                        salePresets.map(
+                                            (preset) => ({
+                                                ...preset,
+                                            }),
+                                        ),
+                                    );
+
+                                    setPresetEditorOpen(
+                                        true,
+                                    );
+                                }}
+                                title="הגדרת קיצורים"
+                            >
+                                ⚡ קיצורים
                             </button>
                         </div>
 
@@ -2537,12 +3216,147 @@ function SalePage({
                             )}
                         </div>
 
+                        {salePresets.length > 0 && (
+                            <div className="sale-page__preset-strip">
+                                {salePresets.map(
+                                    (preset) => {
+                                        const product =
+                                            preset.kind ===
+                                            "product"
+                                                ? products.find(
+                                                      (candidate) =>
+                                                          candidate.id ===
+                                                              preset.targetId &&
+                                                          candidate.isActive,
+                                                  )
+                                                : undefined;
+
+                                        const category =
+                                            preset.kind ===
+                                            "category"
+                                                ? categories.find(
+                                                      (candidate) =>
+                                                          candidate.id ===
+                                                          preset.targetId,
+                                                  )
+                                                : undefined;
+                                        const action =
+                                            preset.kind ===
+                                            "action"
+                                                ? getSaleActionDefinition(
+                                                      preset.targetId,
+                                                  )
+                                                : undefined;
+
+                                        const label =
+                                            product?.name ??
+                                            category?.label ??
+                                            action?.label ??
+                                            "פעולה";
+
+                                        const unavailable =
+                                            (
+                                                preset.kind ===
+                                                    "product" &&
+                                                !product
+                                            ) ||
+                                            (
+                                                preset.kind ===
+                                                    "category" &&
+                                                !category
+                                            ) ||
+                                            (
+                                                preset.kind ===
+                                                    "action" &&
+                                                (
+                                                    !action ||
+                                                    !isSaleActionEnabled(
+                                                        preset.targetId,
+                                                        saleActionAvailability,
+                                                    )
+                                                )
+                                            );
+
+                                        return (
+                                            <button
+                                                key={
+                                                    preset.id
+                                                }
+                                                type="button"
+                                                className="sale-page__preset-chip"
+                                                disabled={
+                                                    unavailable
+                                                }
+                                                onClick={() => {
+                                                    if (
+                                                        preset.kind ===
+                                                        "product"
+                                                    ) {
+                                                        if (
+                                                            product
+                                                        ) {
+                                                            handleProductSelection(
+                                                                product,
+                                                            );
+                                                        }
+
+                                                        return;
+                                                    }
+
+                                                    if (
+                                                        preset.kind ===
+                                                        "category"
+                                                    ) {
+                                                        if (
+                                                            category
+                                                        ) {
+                                                            setSelectedCategory(
+                                                                category.id,
+                                                            );
+
+                                                            setSearchTerm(
+                                                                "",
+                                                            );
+                                                        }
+
+                                                        return;
+                                                    }
+                                                    runSaleAction(
+                                                        preset.targetId,
+                                                    );
+                                                }}
+                                            >
+                                                <span
+                                                    className="sale-page__preset-chip-icon"
+                                                    aria-hidden="true"
+                                                >
+                                                    {preset.kind ===
+                                                    "product"
+                                                        ? "◆"
+                                                        : preset.kind ===
+                                                          "category"
+                                                        ? "▦"
+                                                        : "⚡"}
+                                                </span>
+
+                                                <span>
+                                                    {
+                                                        label
+                                                    }
+                                                </span>
+                                            </button>
+                                        );
+                                    },
+                                )}
+                            </div>
+                        )}
                         <ProductGrid
-                            products={
-                                filteredProducts
-                            }
+                            products={sortedProducts}
                             onSelectProduct={
                                 handleProductSelection
+                            }
+                            viewMode={
+                                catalogViewMode
                             }
                         />
 
@@ -2696,6 +3510,91 @@ function SalePage({
                                                     type="button"
                                                     className="sale-page__more-actions-card"
                                                     disabled={
+                                                        !selectedNoteLine
+                                                    }
+                                                    onClick={() => {
+                                                        if (
+                                                            !selectedNoteLine
+                                                        ) {
+                                                            return;
+                                                        }
+
+                                                        setMoreActionsOpen(
+                                                            false,
+                                                        );
+
+                                                        setNoteEditorKind(
+                                                            "line",
+                                                        );
+                                                    }}
+                                                >
+                                                    <strong>
+                                                        {selectedNoteLine
+                                                            ?.note
+                                                            ?.trim()
+                                                            ? "הערת פריט ✓"
+                                                            : "הערת פריט"}
+                                                    </strong>
+
+                                                    <span>
+                                                        {selectedNoteLine
+                                                            ? selectedNoteLine
+                                                                  .product
+                                                                  .name
+                                                            : "בחר פריט בעגלה"}
+                                                    </span>
+
+                                                    <small>
+                                                        {selectedNoteLine
+                                                            ?.note
+                                                            ?.trim()
+                                                            ? selectedNoteLine
+                                                                  .printNoteOnDocument
+                                                                ? "מודפסת במסמך"
+                                                                : "פנימית בלבד"
+                                                            : "הערה לפריט שנבחר"}
+                                                    </small>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="sale-page__more-actions-card"
+                                                    disabled={
+                                                        cartLines.length === 0
+                                                    }
+                                                    onClick={() => {
+                                                        setMoreActionsOpen(
+                                                            false,
+                                                        );
+
+                                                        setNoteEditorKind(
+                                                            "document",
+                                                        );
+                                                    }}
+                                                >
+                                                    <strong>
+                                                        {documentNote
+                                                            .trim()
+                                                            ? "הערת מסמך ✓"
+                                                            : "הערת מסמך"}
+                                                    </strong>
+
+                                                    <span>
+                                                        הערה כללית לעסקה
+                                                    </span>
+
+                                                    <small>
+                                                        {documentNote
+                                                            .trim()
+                                                            ? printDocumentNote
+                                                                ? "מודפסת במסמך"
+                                                                : "פנימית בלבד"
+                                                            : "ללא הערה"}
+                                                    </small>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="sale-page__more-actions-card"
+                                                    disabled={
                                                         heldSales.length === 0 ||
                                                         cartLines.length > 0
                                                     }
@@ -2773,6 +3672,7 @@ function SalePage({
                     <section className="sale-page__cart">
                         <CartPanel
                             lines={pricing.lines}
+                            activeSellers={activeSellers}
                             appliedCoupon={appliedCoupon}
                             couponDiscountAmount={
                                 couponDiscountAmount
@@ -2804,6 +3704,12 @@ function SalePage({
                             onSelectLine={
                                 setSelectedLineId
                             }
+                            onChangeSellerForLine={
+                                changeSellerForLine
+                            }
+                            onChangeSellerFromLineToEnd={
+                                changeSellerFromLineToEnd
+                            }
 
 
 onEditDescription={
@@ -2817,6 +3723,157 @@ onEditDescription={
                 </div>
             </section>
 
+            {customerCreateOpen && (
+
+                <SaleCustomerQuickCreateDialog
+
+                    onClose={() =>
+
+                        setCustomerCreateOpen(
+
+                            false,
+
+                        )
+
+                    }
+
+                    onCreated={(
+
+                        customer,
+
+                    ) => {
+
+                        setSelectedCustomer(
+
+                            customer,
+
+                        );
+
+
+                        setCustomerCreateOpen(
+
+                            false,
+
+                        );
+
+
+                        setCustomerPickerOpen(
+
+                            false,
+
+                        );
+
+
+                        setCustomerSearchTerm(
+
+                            "",
+
+                        );
+
+                    }}
+
+                />
+
+            )}
+
+            {noteEditorKind && (
+                <NoteEditorDialog
+                    kind={
+                        noteEditorKind
+                    }
+                    initialNote={
+                        noteEditorKind ===
+                        "line"
+                            ? selectedNoteLine
+                                  ?.note
+                            : documentNote
+                    }
+                    initialPrintOnDocument={
+                        noteEditorKind ===
+                        "line"
+                            ? Boolean(
+                                  selectedNoteLine
+                                      ?.note &&
+                                      selectedNoteLine
+                                          .printNoteOnDocument,
+                              )
+                            : Boolean(
+                                  documentNote &&
+                                      printDocumentNote,
+                              )
+                    }
+                    contextLabel={
+                        noteEditorKind ===
+                            "line" &&
+                        selectedNoteLine
+                            ? selectedNoteLine
+                                  .product
+                                  .name
+                            : undefined
+                    }
+                    onClose={() =>
+                        setNoteEditorKind(
+                            null,
+                        )
+                    }
+                    onSave={(
+                        note,
+                        printOnDocument,
+                    ) => {
+                        if (
+                            noteEditorKind ===
+                            "line"
+                        ) {
+                            if (
+                                selectedNoteLine
+                            ) {
+                                updateCartLines(
+                                    (
+                                        current,
+                                    ) =>
+                                        current.map(
+                                            (
+                                                line,
+                                            ) =>
+                                                line.id ===
+                                                    selectedNoteLine.id &&
+                                                line.kind ===
+                                                    "sale"
+                                                    ? {
+                                                          ...line,
+
+                                                          note,
+
+                                                          printNoteOnDocument:
+                                                              note &&
+                                                              printOnDocument
+                                                                  ? true
+                                                                  : undefined,
+                                                      }
+                                                    : line,
+                                        ),
+                                );
+                            }
+                        }
+                        else {
+                            setDocumentNote(
+                                note ?? "",
+                            );
+
+                            setPrintDocumentNote(
+                                Boolean(
+                                    note &&
+                                        printOnDocument,
+                                ),
+                            );
+                        }
+
+                        setNoteEditorKind(
+                            null,
+                        );
+                    }}
+                />
+            )}
             {heldSalesOpen && (
                 <HeldSalesDialog
                     heldSales={
@@ -2939,6 +3996,7 @@ onEditDescription={
 
                                                 continueProductSelection(
                                                     product,
+                                                    employee,
                                                 );
                                             }}
                                             style={{
@@ -2971,6 +4029,108 @@ onEditDescription={
                 </div>
             )}
 
+            <GiftCardBalanceDialog
+                open={
+                    giftCardBalanceOpen
+                }
+                onClose={() =>
+                    setGiftCardBalanceOpen(
+                        false,
+                    )
+                }
+            />
+            <QuickPresetEditorDialog
+                open={
+                    presetEditorOpen
+                }
+                maxPresets={
+                    MAX_SALE_PRESETS
+                }
+                presets={
+                    presetDraft
+                }
+                productOptions={
+                    products
+                        .filter(
+                            (product) =>
+                                product.isActive,
+                        )
+                        .map(
+                            (product) => ({
+                                id:
+                                    product.id,
+                                label:
+                                    product.name,
+                            }),
+                        )
+                }
+                categoryOptions={
+                    categories.map(
+                        (category) => ({
+                            id:
+                                category.id,
+                            label:
+                                category.label,
+                        }),
+                    )
+                }
+                actions={
+                    eligibleSaleActions
+                }
+                onChange={
+                    setPresetDraft
+                }
+                onCancel={() =>
+                    setPresetEditorOpen(
+                        false,
+                    )
+                }
+                onSave={(draft) => {
+                    const valid =
+                        draft.filter(
+                            (preset) => {
+                                if (
+                                    preset.kind ===
+                                    "product"
+                                ) {
+                                    return products.some(
+                                        (
+                                            product,
+                                        ) =>
+                                            product.id ===
+                                                preset.targetId &&
+                                            product.isActive,
+                                    );
+                                }
+
+                                if (
+                                    preset.kind ===
+                                    "category"
+                                ) {
+                                    return categories.some(
+                                        (
+                                            category,
+                                        ) =>
+                                            category.id ===
+                                            preset.targetId,
+                                    );
+                                }
+
+                                return isSaleActionId(
+                                    preset.targetId,
+                                );
+                            },
+                        );
+
+                    saveSalePresets(
+                        valid,
+                    );
+
+                    setPresetEditorOpen(
+                        false,
+                    );
+                }}
+            />
             {selectedFashionProduct && (
                 <FashionVariantSelector
                     product={

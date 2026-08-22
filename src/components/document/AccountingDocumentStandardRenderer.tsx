@@ -214,6 +214,14 @@ function AccountingDocumentStandardRenderer({
                                             }
                                         </span>
                                     )}
+                                    {line.note && (
+                                        <span className="receipt-line__note">
+                                            <strong>
+                                                הערה:
+                                            </strong>{" "}
+                                            {line.note}
+                                        </span>
+                                    )}
 
                                     <span>
                                         {
@@ -278,6 +286,17 @@ function AccountingDocumentStandardRenderer({
                         )}
                     </strong>
                 </div>
+            )}
+            {data.documentNote && (
+                <section className="receipt__document-note">
+                    <strong>
+                        הערה
+                    </strong>
+
+                    <p>
+                        {data.documentNote}
+                    </p>
+                </section>
             )}
             <section className="receipt__summary">
                 <div>

@@ -56,6 +56,14 @@ function ProductCard({
                         <img
                             src={product.imageUrl}
                             alt=""
+                            aria-hidden="true"
+                            className="product-card__image-backdrop"
+                            loading="lazy"
+                        />
+
+                        <img
+                            src={product.imageUrl}
+                            alt=""
                             className="product-card__image"
                             loading="lazy"
                         />

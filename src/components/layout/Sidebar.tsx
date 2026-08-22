@@ -30,6 +30,9 @@ type SidebarProps = {
   onOpenCashMovement: () => void;
   onOpenXReport: () => void;
   onCloseRegisterShift: () => void;
+
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
 };
 
 type SidebarItem = {
@@ -49,6 +52,8 @@ function Sidebar({
   onOpenCashMovement,
   onOpenXReport,
   onCloseRegisterShift,
+  collapsed = false,
+  onToggleCollapsed,
 }: SidebarProps) {
   const profile =
     getActiveBusinessOperatingProfile();
@@ -148,7 +153,7 @@ function Sidebar({
 
   return (
     <aside
-      className="pos-sidebar"
+      className={`pos-sidebar ${collapsed ? "pos-sidebar--collapsed" : ""}`}
       dir="rtl"
       aria-label="ניווט ראשי"
     >
@@ -169,6 +174,29 @@ function Sidebar({
             RETAIL POS
           </span>
         </div>
+
+        {onToggleCollapsed && (
+          <button
+            type="button"
+            className="pos-sidebar__collapse-toggle"
+            onClick={onToggleCollapsed}
+            aria-label={
+              collapsed
+                ? "הרחב תפריט"
+                : "צמצם תפריט"
+            }
+            title={
+              collapsed
+                ? "הרחב תפריט"
+                : "צמצם תפריט"
+            }
+          >
+            <span aria-hidden="true">
+              {collapsed ? "→" : "←"}
+            </span>
+          </button>
+        )}
+
       </div>
 
       <div className="pos-sidebar__merchant-card">
@@ -214,6 +242,11 @@ function Sidebar({
                 aria-current={
                   isActive
                     ? "page"
+                    : undefined
+                }
+                title={
+                  collapsed
+                    ? item.label
                     : undefined
                 }
                 disabled={!item.view}

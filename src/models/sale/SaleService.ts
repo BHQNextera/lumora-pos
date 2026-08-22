@@ -238,8 +238,11 @@ function registerLinkedReturns(
 
 export type CompleteSaleOptions = {
     transactionId?: string;
+    transactionNumber?: string;
     shiftId?: string;
     coupon?: AppliedSaleCoupon;
+    documentNote?: string;
+    printDocumentNote?: boolean;
     applyCancellationFee?: boolean;
 };
 
@@ -328,6 +331,7 @@ export async function completeSale(
             crypto.randomUUID(),
 
         number:
+            options.transactionNumber ??
             allocateSaleNumber(),
 
         status:
@@ -360,6 +364,16 @@ export async function completeSale(
                     discountApplied:
                         couponDiscount,
                 }
+                : undefined,
+
+        documentNote:
+            options.documentNote?.trim() ||
+            undefined,
+
+        printDocumentNote:
+            options.documentNote?.trim() &&
+            options.printDocumentNote
+                ? true
                 : undefined,
 
         cancellationFeeAmount:

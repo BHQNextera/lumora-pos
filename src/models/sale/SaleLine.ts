@@ -54,6 +54,17 @@ export type SaleLine = {
      */
     descriptionOverride?: string;
 
+    /**
+     * Line note captured with the completed transaction.
+     */
+    note?: string;
+
+    /**
+     * Whether the line note was approved for inclusion
+     * in the customer-facing accounting document.
+     */
+    printNoteOnDocument?: boolean;
+
     sku: string;
     barcode: string;
 

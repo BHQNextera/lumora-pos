@@ -1,4 +1,4 @@
-﻿.held-sales-dialog__backdrop {
+.held-sales-dialog__backdrop {
     position: fixed;
     z-index: 13500;
     inset: 0;
@@ -155,4 +155,132 @@
     border: 1px solid #e0e2e4;
     background: #fff;
     color: #555b62;
+}
+/* HELD SALE DELETE CONFIRM V1 */
+
+.held-sales-dialog__confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 16000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgb(20 23 27 / 32%);
+    backdrop-filter: blur(2px);
+}
+
+.held-sales-dialog__confirm {
+    width: min(390px, calc(100vw - 40px));
+    padding: 16px;
+    border: 1px solid #dedfe1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 24px 70px rgb(15 18 21 / 22%);
+    color: #20242a;
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+}
+
+.held-sales-dialog__confirm-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eceeef;
+}
+
+.held-sales-dialog__confirm-header strong,
+.held-sales-dialog__confirm-header span {
+    display: block;
+}
+
+.held-sales-dialog__confirm-header strong {
+    color: #20242a;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.held-sales-dialog__confirm-header span {
+    margin-top: 3px;
+    color: #8b9198;
+    font-size: 10px;
+}
+
+.held-sales-dialog__confirm-header > button {
+    display: grid;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid #dedfe1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #687079;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.held-sales-dialog__confirm-header > button:hover {
+    border-color: #e5d2aa;
+    background: #faf3e4;
+    color: #b47d1e;
+}
+
+.held-sales-dialog__confirm > p {
+    margin: 15px 0 0;
+    color: #20242a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.held-sales-dialog__confirm > small {
+    display: block;
+    margin-top: 4px;
+    color: #8b9198;
+    font-size: 10px;
+}
+
+.held-sales-dialog__confirm-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.held-sales-dialog__confirm-actions button {
+    min-width: 86px;
+    min-height: 34px;
+    padding: 0 14px;
+    border: 1px solid #dedfe1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #20242a;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.held-sales-dialog__confirm-actions button:hover {
+    border-color: #e5d2aa;
+    background: #faf3e4;
+}
+
+.held-sales-dialog__confirm-actions
+.held-sales-dialog__confirm-delete {
+    border-color: #20242a;
+    background: #20242a;
+    color: #ffffff;
+}
+
+.held-sales-dialog__confirm-actions
+.held-sales-dialog__confirm-delete:hover {
+    border-color: #20242a;
+    background: #20242a;
+    color: #ffffff;
 }

@@ -300,6 +300,11 @@ function AppShell() {
     setShowNavigation,
   ] = useState(false);
 
+  const [
+    sidebarCollapsed,
+    setSidebarCollapsed,
+  ] = useState(false);
+
   return (
     <div
       className={`pos-app-shell ${
@@ -356,6 +361,18 @@ function AppShell() {
       <Sidebar
         activeView={
           activeView
+        }
+        collapsed={
+          activeView === "sale" &&
+          sidebarCollapsed
+        }
+        onToggleCollapsed={
+          activeView === "sale"
+            ? () =>
+                setSidebarCollapsed(
+                  (current) => !current,
+                )
+            : undefined
         }
         onNavigate={(view) => {
           setActiveView(view);
