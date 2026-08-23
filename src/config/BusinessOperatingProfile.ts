@@ -92,7 +92,9 @@ export type BusinessIdentityProfile = {
     tradingName?: string;
     branchName?: string;
 
-    businessNumber?: string;
+
+    logoUrl?: string;
+businessNumber?: string;
     vatNumber?: string;
 
     phone?: string;

@@ -1,0 +1,1078 @@
+.register-v3 {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    grid-template-columns:
+        64px
+        minmax(0, 1fr)
+        64px;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    color: #20242a;
+    background: #f7f7f5;
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+}
+
+.register-v3__rail {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            180deg,
+            #171a1e,
+            #101215
+        );
+}
+
+.register-v3__rail--right {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.register-v3__rail--left {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.register-v3__rail-mark {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    transform: rotate(45deg);
+    opacity: .84;
+}
+
+.register-v3__rail-mark span {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius:
+        6px 6px 2px 6px;
+    background: #c9942f;
+}
+
+.register-v3__rail-mark span:nth-child(1) {
+    top: 1px;
+    left: 1px;
+}
+
+.register-v3__rail-mark span:nth-child(2) {
+    top: 1px;
+    right: 1px;
+    transform: rotate(90deg);
+}
+
+.register-v3__rail-mark span:nth-child(3) {
+    right: 1px;
+    bottom: 1px;
+    transform: rotate(180deg);
+}
+
+.register-v3__rail-mark span:nth-child(4) {
+    bottom: 1px;
+    left: 1px;
+    transform: rotate(270deg);
+}
+
+.register-v3__rail-word {
+    color:
+        rgb(255 255 255 / 48%);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .26em;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+.register-v3__rail-powered {
+    position: absolute;
+    bottom: 20px;
+    color:
+        rgb(229 210 170 / 34%);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: .13em;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+.register-v3__stage {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    padding: 20px 34px 18px;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.register-v3__merchant-header {
+    display: flex;
+    min-height: 62px;
+    padding-bottom: 14px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom:
+        1px solid
+        #e2e3e4;
+}
+
+.register-v3__merchant {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+}
+
+.register-v3__merchant-logo {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    overflow: hidden;
+    border:
+        1px solid
+        #e5d2aa;
+    border-radius: 11px;
+    color: #8c641d;
+    background: #faf3e4;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.register-v3__merchant-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.register-v3__merchant-name {
+    overflow: hidden;
+    color: #20242a;
+    font-size: 16px;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.register-v3__merchant-branch {
+    margin-top: 3px;
+    color: #8b9198;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.register-v3__register-pill {
+    display: inline-flex;
+    min-height: 34px;
+    padding: 0 13px;
+    align-items: center;
+    gap: 6px;
+    border:
+        1px solid
+        #e5d2aa;
+    border-radius: 999px;
+    color: #7f6228;
+    background: #faf3e4;
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.register-v3__register-pill strong {
+    color: #20242a;
+    font-size: 11px;
+}
+
+.register-v3__content {
+    display: flex;
+    width: min(980px, 100%);
+    min-height: 0;
+    margin: auto;
+    padding-top: 16px;
+    flex-direction: column;
+}
+
+.register-v3__content--existing {
+    max-width: 680px;
+    justify-content: center;
+}
+
+.register-v3__title-row {
+    display: flex;
+    margin-bottom: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.register-v3__eyebrow {
+    color: #b47d1e;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .16em;
+}
+
+.register-v3__title-row h1 {
+    margin: 3px 0 0;
+    color: #20242a;
+    font-size: 26px;
+    font-weight: 750;
+    line-height: 1.12;
+}
+
+.register-v3__title-row p {
+    margin: 5px 0 0;
+    color: #8b9198;
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.register-v3__active-badge {
+    display: inline-flex;
+    min-height: 30px;
+    padding: 0 11px;
+    align-items: center;
+    gap: 7px;
+    border:
+        1px solid
+        #e5d2aa;
+    border-radius: 999px;
+    color: #805f20;
+    background: #faf3e4;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.register-v3__active-badge span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #c9942f;
+}
+
+.register-v3__employee-row {
+    display: grid;
+    grid-template-columns:
+        78px
+        minmax(0, 1fr);
+    margin-bottom: 12px;
+    align-items: center;
+    gap: 10px;
+}
+
+.register-v3__employee-row label {
+    color: #4f555c;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.register-v3__employee-row select {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border:
+        1px solid
+        #dedfe1;
+    border-radius: 9px;
+    outline: none;
+    color: #20242a;
+    background: #fff;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.register-v3__employee-row select:focus {
+    border-color: #c9942f;
+    box-shadow:
+        0 0 0 3px
+        rgb(201 148 47 / 9%);
+}
+
+.register-v3__declaration {
+    padding: 14px 16px 11px;
+    border:
+        1px solid
+        #dedfe1;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow:
+        0 12px 38px
+        rgb(15 18 21 / 5%);
+}
+
+.register-v3__declaration-head {
+    display: flex;
+    padding-bottom: 10px;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    border-bottom:
+        1px solid
+        #eceeef;
+}
+
+.register-v3__declaration-head > div:first-child > span {
+    color: #b47d1e;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+.register-v3__declaration-head h2 {
+    margin: 2px 0 0;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.register-v3__grand-total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.register-v3__grand-total small {
+    color: #8b9198;
+    font-size: 8px;
+    font-weight: 650;
+}
+
+.register-v3__grand-total strong {
+    color: #b47d1e;
+    font-size: 17px;
+    font-weight: 800;
+    font-variant-numeric:
+        tabular-nums;
+}
+
+.register-v3__money-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    margin-top: 10px;
+    gap: 14px;
+}
+
+.register-v3__money-group {
+    overflow: hidden;
+    border:
+        1px solid
+        #e6e7e8;
+    border-radius: 10px;
+}
+
+.register-v3__money-group-title {
+    padding: 7px 10px;
+    color: #4c5259;
+    background: #f7f8f8;
+    font-size: 9px;
+    font-weight: 750;
+}
+
+.register-v3__money-head,
+.register-v3__money-row {
+    display: grid;
+    grid-template-columns:
+        72px
+        82px
+        minmax(90px, 1fr);
+    align-items: center;
+    gap: 9px;
+}
+
+.register-v3__money-head {
+    min-height: 24px;
+    padding: 0 10px;
+    color: #8b9198;
+    border-top:
+        1px solid
+        #eceeef;
+    border-bottom:
+        1px solid
+        #eceeef;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.register-v3__money-row {
+    min-height: 34px;
+    padding: 3px 10px;
+    border-bottom:
+        1px solid
+        #f0f1f2;
+}
+
+.register-v3__money-row:last-child {
+    border-bottom: 0;
+}
+
+.register-v3__money-row strong {
+    color: #30353b;
+    font-size: 10px;
+    font-weight: 750;
+    font-variant-numeric:
+        tabular-nums;
+}
+
+.register-v3__money-row input {
+    width: 72px;
+    height: 27px;
+    padding: 0 7px;
+    border:
+        1px solid
+        #dedfe1;
+    border-radius: 7px;
+    outline: none;
+    color: #20242a;
+    background: #fff;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 650;
+    text-align: center;
+    font-variant-numeric:
+        tabular-nums;
+    box-sizing: border-box;
+}
+
+.register-v3__money-row input:focus {
+    border-color: #c9942f;
+    box-shadow:
+        0 0 0 2px
+        rgb(201 148 47 / 10%);
+}
+
+.register-v3__money-row > span {
+    overflow: hidden;
+    color: #5f666e;
+    font-size: 9px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric:
+        tabular-nums;
+}
+
+.register-v3__quantity-note {
+    margin-top: 7px;
+    color: #9a9fa5;
+    font-size: 7px;
+}
+
+.register-v3__error {
+    margin-top: 8px;
+    padding: 7px 9px;
+    border:
+        1px solid
+        #e8caca;
+    border-radius: 8px;
+    color: #8f3f3f;
+    background: #fff7f7;
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.register-v3__primary {
+    display: flex;
+    width: 100%;
+    min-height: 40px;
+    margin-top: 10px;
+    padding: 0 16px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border:
+        1px solid
+        #b47d1e;
+    border-radius: 9px;
+    color: #fff;
+    background: #c9942f;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.register-v3__primary:hover {
+    background: #b47d1e;
+}
+
+.register-v3__confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 31000;
+    display: grid;
+    padding: 24px;
+    place-items: center;
+    background:
+        rgb(20 23 27 / 32%);
+    backdrop-filter: blur(2px);
+}
+
+.register-v3__confirm {
+    width:
+        min(
+            440px,
+            calc(100vw - 48px)
+        );
+    padding: 26px;
+    border:
+        1px solid
+        #dedfe1;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow:
+        0 24px 70px
+        rgb(15 18 21 / 22%);
+    text-align: center;
+}
+
+.register-v3__confirm-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 12px;
+    place-items: center;
+    border:
+        1px solid
+        #e5d2aa;
+    border-radius: 12px;
+    color: #986c1d;
+    background: #faf3e4;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.register-v3__confirm-kicker {
+    color: #b47d1e;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.register-v3__confirm h2 {
+    margin: 7px 0 0;
+    color: #20242a;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.register-v3__confirm-total {
+    margin-top: 8px;
+    color: #b47d1e;
+    font-size: 28px;
+    font-weight: 800;
+    font-variant-numeric:
+        tabular-nums;
+}
+
+.register-v3__confirm p {
+    margin: 11px 0 0;
+    color: #6f767e;
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.register-v3__confirm-meta {
+    display: flex;
+    margin-top: 14px;
+    padding: 9px 10px;
+    justify-content: center;
+    gap: 8px;
+    border:
+        1px solid
+        #eceeef;
+    border-radius: 9px;
+    color: #7d848c;
+    background: #fafafa;
+    font-size: 8px;
+}
+
+.register-v3__confirm-meta span + span::before {
+    content: "·";
+    margin-left: 8px;
+    color: #c0c4c8;
+}
+
+.register-v3__confirm-actions {
+    display: grid;
+    grid-template-columns:
+        1fr
+        1fr;
+    margin-top: 18px;
+    gap: 8px;
+}
+
+.register-v3__confirm-actions button {
+    min-height: 38px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.register-v3__confirm-actions button:first-child {
+    border:
+        1px solid
+        #dedfe1;
+    color: #4f555c;
+    background: #fff;
+}
+
+.register-v3__confirm-actions button:last-child {
+    border:
+        1px solid
+        #b47d1e;
+    color: #fff;
+    background: #c9942f;
+}
+
+@media (max-width: 860px) {
+    .register-v3 {
+        grid-template-columns:
+            42px
+            minmax(0, 1fr)
+            42px;
+    }
+
+    .register-v3__stage {
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+
+    .register-v3__money-head,
+    .register-v3__money-row {
+        grid-template-columns:
+            58px
+            72px
+            minmax(76px, 1fr);
+    }
+
+    .register-v3__money-row input {
+        width: 64px;
+    }
+}
+
+@media (max-width: 680px) {
+    .register-v3 {
+        grid-template-columns:
+            12px
+            minmax(0, 1fr)
+            12px;
+    }
+
+    .register-v3__rail-mark,
+    .register-v3__rail-word,
+    .register-v3__rail-powered {
+        display: none;
+    }
+
+    .register-v3__stage {
+        padding: 14px;
+        overflow-y: auto;
+    }
+
+    .register-v3__money-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .register-v3__merchant-header {
+        align-items: flex-start;
+    }
+}
+/* REGISTER GATEWAY V3.1 ALIGN + ACTION VISIBILITY */
+
+/*
+ * Keep the complete opening flow, errors and main action
+ * visible on a standard 900px-high POS display.
+ */
+.register-v3__stage {
+    padding:
+        12px 28px 10px;
+}
+
+.register-v3__merchant-header {
+    min-height: 52px;
+    padding-bottom: 9px;
+}
+
+.register-v3__merchant-logo {
+    width: 38px;
+    height: 38px;
+}
+
+.register-v3__content {
+    margin:
+        8px auto 0;
+    padding-top: 0;
+}
+
+.register-v3__title-row {
+    margin-bottom: 7px;
+}
+
+.register-v3__title-row h1 {
+    font-size: 24px;
+}
+
+.register-v3__title-row p {
+    margin-top: 3px;
+}
+
+.register-v3__employee-row {
+    margin-bottom: 8px;
+}
+
+.register-v3__employee-row select {
+    height: 35px;
+}
+
+.register-v3__declaration {
+    padding:
+        9px 13px 8px;
+}
+
+.register-v3__declaration-head {
+    padding-bottom: 6px;
+}
+
+.register-v3__money-grid {
+    margin-top: 6px;
+    gap: 10px;
+    align-items: start;
+}
+
+.register-v3__money-group-title {
+    padding:
+        5px 8px;
+}
+
+.register-v3__money-head,
+.register-v3__money-row {
+    /*
+     * Physical columns, left -> right:
+     * total | quantity | denomination value.
+     * Explicit placement below prevents RTL auto-placement
+     * from making the rows look staggered.
+     */
+    direction: ltr;
+    grid-template-columns:
+        minmax(104px, 1fr)
+        82px
+        72px;
+    gap: 8px;
+}
+
+.register-v3__money-head {
+    min-height: 21px;
+    padding:
+        0 8px;
+}
+
+.register-v3__money-row {
+    min-height: 29px;
+    padding:
+        2px 8px;
+}
+
+/* Header: ערך | כמות | סה"כ in RTL reading order. */
+.register-v3__money-head > span:nth-child(1) {
+    grid-column: 3;
+}
+
+.register-v3__money-head > span:nth-child(2) {
+    grid-column: 2;
+}
+
+.register-v3__money-head > span:nth-child(3) {
+    grid-column: 1;
+}
+
+.register-v3__money-head > span {
+    justify-self: stretch;
+    text-align: center;
+    direction: rtl;
+}
+
+/* Rows align exactly below their matching headers. */
+.register-v3__money-row > strong {
+    grid-column: 3;
+    justify-self: stretch;
+    text-align: center;
+}
+
+.register-v3__money-row > input {
+    grid-column: 2;
+    justify-self: center;
+}
+
+.register-v3__money-row > span {
+    grid-column: 1;
+    justify-self: stretch;
+    text-align: center;
+}
+
+.register-v3__money-row input {
+    width: 70px;
+    height: 25px;
+}
+
+.register-v3__quantity-note {
+    margin-top: 4px;
+}
+
+.register-v3__action-dock {
+    flex: 0 0 auto;
+    margin-top: 7px;
+    padding-top: 0;
+}
+
+.register-v3__error {
+    margin:
+        0 0 6px;
+    padding:
+        6px 9px;
+}
+
+.register-v3__primary {
+    min-height: 37px;
+    margin-top: 0;
+}
+
+/*
+ * Extra safety for the common 768-820px effective-height
+ * Electron/POS viewport.
+ */
+@media (max-height: 820px) and (min-width: 681px) {
+    .register-v3__stage {
+        padding-top: 8px;
+        padding-bottom: 7px;
+    }
+
+    .register-v3__merchant-header {
+        min-height: 46px;
+        padding-bottom: 6px;
+    }
+
+    .register-v3__merchant-logo {
+        width: 34px;
+        height: 34px;
+    }
+
+    .register-v3__content {
+        margin-top: 5px;
+    }
+
+    .register-v3__title-row {
+        margin-bottom: 5px;
+    }
+
+    .register-v3__title-row h1 {
+        font-size: 22px;
+    }
+
+    .register-v3__employee-row {
+        margin-bottom: 6px;
+    }
+
+    .register-v3__employee-row select {
+        height: 32px;
+    }
+
+    .register-v3__declaration {
+        padding-top: 7px;
+        padding-bottom: 6px;
+    }
+
+    .register-v3__money-row {
+        min-height: 27px;
+    }
+
+    .register-v3__money-row input {
+        height: 23px;
+    }
+
+    .register-v3__primary {
+        min-height: 35px;
+    }
+}
+/* REGISTER GATEWAY V3.2 SINGLE-ROW FIX */
+
+/*
+ * V3.1 explicitly positioned each cell by column but left
+ * grid-row on auto, so CSS Grid placed the three cells on
+ * separate implicit rows. Pin every header/cell to row 1.
+ */
+.register-v3__money-head > span,
+.register-v3__money-row > strong,
+.register-v3__money-row > input,
+.register-v3__money-row > span {
+    grid-row: 1;
+}
+/* REGISTER GATEWAY POLISH V3.3 */
+
+.register-v3__stage {
+    position: relative;
+    padding-bottom: 24px;
+}
+
+.register-v3__merchant-header {
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.register-v3__merchant-name {
+    font-size: 15px;
+}
+
+.register-v3__merchant-branch {
+    color: #7e858d;
+}
+
+.register-v3__content:not(.register-v3__content--existing)
+.register-v3__employee-row {
+    width: min(620px, 100%);
+    margin-right: 0;
+    margin-left: auto;
+    grid-template-columns:
+        62px
+        minmax(0, 1fr);
+}
+
+.register-v3__content:not(.register-v3__content--existing)
+.register-v3__title-row {
+    margin-bottom: 6px;
+}
+
+.register-v3__declaration-head {
+    align-items: center;
+}
+
+.register-v3__money-head {
+    color: #777f87;
+    background: #fbfbfb;
+    font-size: 8.5px;
+    font-weight: 750;
+}
+
+.register-v3__money-row > strong {
+    color: #24292f;
+}
+
+.register-v3__money-row > span {
+    color: #59616a;
+    font-weight: 700;
+}
+
+.register-v3__money-row input {
+    background: #fcfcfc;
+}
+
+.register-v3__money-row input:focus {
+    background: #fff;
+}
+
+.register-v3__quantity-note {
+    display: none;
+}
+
+.register-v3__content--existing {
+    flex: 1 1 auto;
+    width: min(720px, 100%);
+    min-height: 0;
+    margin: 0 auto;
+    padding: 0;
+    justify-content: center;
+}
+
+.register-v3__content--existing
+.register-v3__title-row {
+    margin-bottom: 16px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+.register-v3__content--existing
+.register-v3__active-badge {
+    order: 2;
+    flex: 0 0 auto;
+}
+
+.register-v3__content--existing
+.register-v3__title-row > div {
+    order: 1;
+}
+
+.register-v3__content--existing
+.register-v3__employee-row {
+    width: min(600px, 100%);
+    margin: 0 auto 10px;
+    grid-template-columns:
+        62px
+        minmax(0, 1fr);
+}
+
+.register-v3__content--existing
+.register-v3__action-dock {
+    width: min(600px, 100%);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.register-v3__content--existing
+.register-v3__primary {
+    min-height: 40px;
+}
+
+.register-v3__confirm-meta {
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+.register-v3__powered {
+    position: absolute;
+    right: 0;
+    bottom: 7px;
+    left: 0;
+    color: #a3a8ad;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-align: center;
+    pointer-events: none;
+}
+
+.register-v3__powered span {
+    opacity: .72;
+}
+
+@media (max-height: 820px) and (min-width: 681px) {
+    .register-v3__stage {
+        padding-bottom: 20px;
+    }
+
+    .register-v3__content--existing
+    .register-v3__title-row {
+        margin-bottom: 12px;
+    }
+
+    .register-v3__powered {
+        bottom: 5px;
+    }
+}

@@ -1,0 +1,186 @@
+.lumora-welcome {
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    color: #fff;
+    background:
+        radial-gradient(
+            circle at 50% 42%,
+            rgb(201 148 47 / 11%),
+            transparent 32%
+        ),
+        linear-gradient(
+            145deg,
+            #111316 0%,
+            #1b1e22 52%,
+            #101215 100%
+        );
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lumora-welcome:focus-visible {
+    outline: 2px solid #c9942f;
+    outline-offset: -6px;
+}
+
+.lumora-welcome__glow {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%);
+    border-radius: 999px;
+    background:
+        radial-gradient(
+            circle,
+            rgb(201 148 47 / 8%),
+            transparent 68%
+        );
+    pointer-events: none;
+}
+
+.lumora-welcome__content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    width: min(620px, calc(100vw - 48px));
+    transform: translate(-50%, -50%);
+    flex-direction: column;
+    align-items: center;
+}
+
+.lumora-welcome__mark {
+    position: relative;
+    width: 74px;
+    height: 74px;
+    margin-bottom: 26px;
+    transform: rotate(45deg);
+}
+
+.lumora-welcome__mark span {
+    position: absolute;
+    width: 31px;
+    height: 31px;
+    border: 1px solid rgb(229 210 170 / 72%);
+    border-radius: 13px 13px 5px 13px;
+    background: linear-gradient(145deg, #c9942f, #b47d1e);
+    box-shadow: 0 8px 24px rgb(201 148 47 / 16%);
+}
+
+.lumora-welcome__mark span:nth-child(1) {
+    top: 4px;
+    left: 4px;
+}
+
+.lumora-welcome__mark span:nth-child(2) {
+    top: 4px;
+    right: 4px;
+    transform: rotate(90deg);
+}
+
+.lumora-welcome__mark span:nth-child(3) {
+    right: 4px;
+    bottom: 4px;
+    transform: rotate(180deg);
+}
+
+.lumora-welcome__mark span:nth-child(4) {
+    bottom: 4px;
+    left: 4px;
+    transform: rotate(270deg);
+}
+
+.lumora-welcome__eyebrow {
+    margin-bottom: 8px;
+    color: rgb(229 210 170 / 78%);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .34em;
+}
+
+.lumora-welcome__brand {
+    color: #fff;
+    font-size: clamp(38px, 5vw, 64px);
+    font-weight: 650;
+    line-height: 1;
+    letter-spacing: .18em;
+    text-indent: .18em;
+}
+
+.lumora-welcome__message {
+    margin-top: 18px;
+    color: rgb(255 255 255 / 66%);
+    font-size: 14px;
+    font-weight: 450;
+}
+
+.lumora-welcome__hint {
+    display: inline-flex;
+    min-height: 38px;
+    margin-top: 38px;
+    padding: 0 16px;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid rgb(229 210 170 / 24%);
+    border-radius: 999px;
+    color: rgb(255 255 255 / 78%);
+    background: rgb(255 255 255 / 4%);
+    font-size: 11px;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+}
+
+.lumora-welcome__hint-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #c9942f;
+    box-shadow: 0 0 0 5px rgb(201 148 47 / 10%);
+    animation: lumora-welcome-pulse 2s ease-in-out infinite;
+}
+
+.lumora-welcome__footer {
+    position: absolute;
+    right: 0;
+    bottom: 28px;
+    left: 0;
+    color: rgb(255 255 255 / 34%);
+    font-size: 9px;
+    font-weight: 550;
+    letter-spacing: .04em;
+}
+
+@keyframes lumora-welcome-pulse {
+    0%,
+    100% {
+        opacity: .55;
+        transform: scale(.9);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.12);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lumora-welcome__hint-dot {
+        animation: none;
+    }
+}

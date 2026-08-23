@@ -1,15 +1,21 @@
 import {
+    useMemo,
     useState,
 } from "react";
 
-import CashDeclarationTable from "../cash/CashDeclarationTable";
-import type {
-    CashDeclaration,
+import {
+    createCashDeclaration,
+    ilsCashDenominations,
 } from "../../models/cash/CashDeclaration";
 
 import {
     employeeSeed,
 } from "../../models/employee/EmployeeSeed";
+
+import {
+    getActiveBusinessConfiguration,
+    getActiveBusinessOperatingProfile,
+} from "../../config/ActiveBusinessConfiguration";
 
 import {
     getActiveRegisterShift,
@@ -20,17 +26,63 @@ import type {
     RegisterShift,
 } from "../../models/shift/RegisterShift";
 
+import "./open-register-shift-dialog.css";
+
 type OpenRegisterShiftDialogProps = {
     onEnter: (
         shift: RegisterShift,
     ) => void;
 };
 
+const MAX_QUANTITY_PER_DENOMINATION =
+    9999;
+
+function formatIls(
+    value: number,
+) {
+    const safeValue =
+        Number.isFinite(value)
+            ? value
+            : 0;
+
+    return `₪${safeValue.toLocaleString(
+        "he-IL",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        },
+    )}`;
+}
+
+function getInitials(
+    value: string,
+) {
+    return value
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(
+            (part) =>
+                part.charAt(0),
+        )
+        .join("")
+        .toUpperCase();
+}
+
 function OpenRegisterShiftDialog({
     onEnter,
 }: OpenRegisterShiftDialogProps) {
     const existingShift =
         getActiveRegisterShift();
+
+    const businessConfiguration =
+        getActiveBusinessConfiguration();
+
+    const businessProfile =
+        getActiveBusinessOperatingProfile();
+
+    const identity =
+        businessProfile.identity;
 
     const activeEmployees =
         employeeSeed.filter(
@@ -45,12 +97,12 @@ function OpenRegisterShiftDialog({
         useState("");
 
     const [
-        openingCashDeclaration,
-        setOpeningCashDeclaration,
+        quantities,
+        setQuantities,
     ] =
-        useState<CashDeclaration | null>(
-            null,
-        );
+        useState<
+            Record<string, number>
+        >({});
 
     const [
         error,
@@ -60,6 +112,18 @@ function OpenRegisterShiftDialog({
             null,
         );
 
+    const [
+        showConfirmation,
+        setShowConfirmation,
+    ] =
+        useState(false);
+
+    const [
+        logoFailed,
+        setLogoFailed,
+    ] =
+        useState(false);
+
     const selectedEmployee =
         activeEmployees.find(
             (employee) =>
@@ -67,7 +131,101 @@ function OpenRegisterShiftDialog({
                 employeeId,
         );
 
-    const enterRegister = () => {
+    const openingCashDeclaration =
+        useMemo(
+            () =>
+                createCashDeclaration(
+                    quantities,
+                ),
+            [
+                quantities,
+            ],
+        );
+
+    const banknotes =
+        ilsCashDenominations.filter(
+            (denomination) =>
+                denomination.type ===
+                "banknote",
+        );
+
+    const coins =
+        ilsCashDenominations.filter(
+            (denomination) =>
+                denomination.type ===
+                "coin",
+        );
+
+    const registerCode =
+        existingShift?.registerCode ??
+        businessConfiguration.registerCode;
+
+    const storeCode =
+        businessConfiguration.storeCode;
+
+    const businessName =
+        identity.tradingName ??
+        identity.businessName;
+
+    const branchName =
+        identity.branchName ??
+        `סניף ${storeCode}`;
+
+    const openedTime =
+        existingShift
+            ? new Date(
+                  existingShift.openedAt,
+              ).toLocaleTimeString(
+                  "he-IL",
+                  {
+                      hour:
+                          "2-digit",
+                      minute:
+                          "2-digit",
+                  },
+              )
+            : null;
+
+    const updateQuantity = (
+        value: number,
+        rawValue: string,
+    ) => {
+        const parsed =
+            Number(
+                rawValue,
+            );
+
+        const safeQuantity =
+            rawValue === ""
+                ? 0
+                : Number.isFinite(
+                      parsed,
+                  )
+                  ? Math.min(
+                        MAX_QUANTITY_PER_DENOMINATION,
+                        Math.max(
+                            0,
+                            Math.trunc(
+                                parsed,
+                            ),
+                        ),
+                    )
+                  : 0;
+
+        setQuantities(
+            (current) => ({
+                ...current,
+                [String(value)]:
+                    safeQuantity,
+            }),
+        );
+
+        setError(
+            null,
+        );
+    };
+
+    const requestEntry = () => {
         if (!selectedEmployee) {
             setError(
                 "יש לבחור עובד.",
@@ -76,11 +234,6 @@ function OpenRegisterShiftDialog({
             return;
         }
 
-
-        /*
-         * An already-open register does not
-         * require another opening declaration.
-         */
         if (existingShift) {
             onEnter(
                 existingShift,
@@ -89,11 +242,20 @@ function OpenRegisterShiftDialog({
             return;
         }
 
-        if (!openingCashDeclaration) {
-            setError(
-                "יש לבצע הצהרת מזומן.",
-            );
+        setError(
+            null,
+        );
 
+        setShowConfirmation(
+            true,
+        );
+    };
+
+    const confirmOpening = () => {
+        if (
+            existingShift ||
+            !selectedEmployee
+        ) {
             return;
         }
 
@@ -112,231 +274,448 @@ function OpenRegisterShiftDialog({
                     openingCashDeclaration,
                 });
 
+            setShowConfirmation(
+                false,
+            );
+
             onEnter(
                 shift,
             );
         }
         catch {
+            setShowConfirmation(
+                false,
+            );
+
             setError(
                 "לא ניתן לפתוח את הקופה.",
             );
         }
     };
 
+    const renderDenominationGroup = (
+        title: string,
+        denominations:
+            typeof ilsCashDenominations,
+    ) => (
+        <section className="register-v3__money-group">
+            <div className="register-v3__money-group-title">
+                {title}
+            </div>
+
+            <div className="register-v3__money-head">
+                <span>
+                    ערך
+                </span>
+
+                <span>
+                    כמות
+                </span>
+
+                <span>
+                    סה״כ
+                </span>
+            </div>
+
+            <div className="register-v3__money-rows">
+                {denominations.map(
+                    (denomination) => {
+                        const key =
+                            String(
+                                denomination.value,
+                            );
+
+                        const quantity =
+                            quantities[
+                                key
+                            ] ??
+                            0;
+
+                        const lineTotal =
+                            denomination.value *
+                            quantity;
+
+                        return (
+                            <div
+                                key={
+                                    key
+                                }
+                                className="register-v3__money-row"
+                            >
+                                <strong dir="ltr">
+                                    ₪
+                                    {
+                                        denomination.value
+                                    }
+                                </strong>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max={
+                                        MAX_QUANTITY_PER_DENOMINATION
+                                    }
+                                    step="1"
+                                    inputMode="numeric"
+                                    value={
+                                        quantity ===
+                                        0
+                                            ? ""
+                                            : quantity
+                                    }
+                                    placeholder="0"
+                                    onChange={(event) =>
+                                        updateQuantity(
+                                            denomination.value,
+                                            event
+                                                .target
+                                                .value,
+                                        )
+                                    }
+                                    aria-label={`כמות לערך ${denomination.value}`}
+                                />
+
+                                <span dir="ltr">
+                                    {formatIls(
+                                        lineTotal,
+                                    )}
+                                </span>
+                            </div>
+                        );
+                    },
+                )}
+            </div>
+        </section>
+    );
+
     return (
         <div
+            className="register-v3"
             dir="rtl"
-            style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 10000,
-                display: "grid",
-                placeItems: "center",
-                padding: "24px",
-                background: "#f4f6f5",
-                overflowY: "auto",
-            }}
         >
-            <div
-                style={{
-                    width:
-                        "min(520px, 94vw)",
-                    maxHeight:
-                        "calc(100vh - 48px)",
-                    overflowY: "auto",
-                    padding: "30px",
-                    border:
-                        "1px solid #dfe4e2",
-                    borderRadius: "18px",
-                    background: "#fff",
-                    boxShadow:
-                        "0 20px 60px rgba(15,23,42,.12)",
-                }}
+            <aside
+                className="register-v3__rail register-v3__rail--right"
+                aria-hidden="true"
             >
-                <div
-                    style={{
-                        marginBottom: "24px",
-                    }}
-                >
-                    <div
-                        style={{
-                            fontSize: "12px",
-                            fontWeight: 800,
-                            letterSpacing: ".08em",
-                        }}
-                    >
-                        LUMORA
-                    </div>
-
-                    <h1
-                        style={{
-                            margin: "6px 0",
-                        }}
-                    >
-                        {
-                            existingShift
-                                ? "כניסה לקופה"
-                                : "פתיחת קופה"
-                        }
-                    </h1>
-
-                    <div
-                        style={{
-                            opacity: .7,
-                        }}
-                    >
-                        {
-                            existingShift
-                                ? "קיימת משמרת פתוחה. אין צורך בהצהרת מזומן נוספת."
-                                : "זיהוי עובד, נוכחות והצהרת מזומן לפתיחת יום."
-                        }
-                    </div>
+                <div className="register-v3__rail-mark">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
                 </div>
+            </aside>
 
-                {existingShift && (
-                    <div
-                        style={{
-                            marginBottom: "18px",
-                            padding: "12px",
-                            borderRadius: "10px",
-                            background: "#f4f7f5",
-                        }}
-                    >
-                        <strong>
-                            משמרת קיימת
-                        </strong>
+            <main className="register-v3__stage">
+                <header className="register-v3__merchant-header">
+                    <div className="register-v3__merchant">
+                        <div className="register-v3__merchant-logo">
+                            {identity.logoUrl &&
+                            !logoFailed ? (
+                                <img
+                                    src={
+                                        identity.logoUrl
+                                    }
+                                    alt=""
+                                    onError={() =>
+                                        setLogoFailed(
+                                            true,
+                                        )
+                                    }
+                                />
+                            ) : (
+                                <span>
+                                    {getInitials(
+                                        businessName,
+                                    )}
+                                </span>
+                            )}
+                        </div>
 
                         <div>
-                            קופה{" "}
-                            {
-                                existingShift.registerCode
-                            }
-                            {" · "}
-                            נפתחה ב־
-                            {
-                                new Date(
-                                    existingShift.openedAt,
-                                ).toLocaleTimeString(
-                                    "he-IL",
-                                    {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    },
-                                )
-                            }
+                            <div className="register-v3__merchant-name">
+                                {businessName}
+                            </div>
+
+                            <div className="register-v3__merchant-branch">
+                                {branchName}
+                                {" · "}
+                                מספר סניף{" "}
+                                <span dir="ltr">
+                                    {storeCode}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                )}
 
-                <label
-                    style={{
-                        display: "block",
-                        marginBottom: "18px",
-                    }}
-                >
-                    <strong>
-                        עובד
-                    </strong>
+                    <div className="register-v3__register-pill">
+                        <span>
+                            קופה
+                        </span>
 
-                    <select
-                        value={
-                            employeeId
-                        }
-                        onChange={(event) => {
-                            setEmployeeId(
-                                event.target.value,
-                            );
-
-                            setError(
-                                null,
-                            );
-                        }}
-                        style={{
-                            display: "block",
-                            width: "100%",
-                            minHeight: "42px",
-                            marginTop: "7px",
-                        }}
-                    >
-                        <option value="">
-                            יש לבחור עובד
-                        </option>
-
-                        {activeEmployees.map(
-                            (employee) => (
-                                <option
-                                    key={
-                                        employee.id
-                                    }
-                                    value={
-                                        employee.id
-                                    }
-                                >
-                                    {
-                                        employee.name
-                                    }
-                                </option>
-                            ),
-                        )}
-                    </select>
-                </label>
-
-                {!existingShift && (
-                    <div
-                        style={{
-                            marginTop: "16px",
-                        }}
-                    >
-                        <strong>
-                            הצהרת מזומן תחילת יום
+                        <strong dir="ltr">
+                            {registerCode}
                         </strong>
+                    </div>
+                </header>
 
-                        <CashDeclarationTable
-                            onChange={(declaration) => {
-                                setOpeningCashDeclaration(
-                                    declaration,
+                <section
+                    className={`register-v3__content ${
+                        existingShift
+                            ? "register-v3__content--existing"
+                            : ""
+                    }`}
+                >
+                    <div className="register-v3__title-row">
+                        <div>
+                            <div className="register-v3__eyebrow">
+                                {existingShift
+                                    ? "ACTIVE REGISTER"
+                                    : "OPEN REGISTER"}
+                            </div>
+
+                            <h1>
+                                {existingShift
+                                    ? "כניסה לקופה"
+                                    : "פתיחת קופה"}
+                            </h1>
+
+                            <p>
+                                {existingShift
+                                    ? `משמרת פעילה · נפתחה ב־${openedTime}`
+                                    : "בחירת עובד והצהרת מזומן לתחילת יום."}
+                            </p>
+                        </div>
+
+                        {existingShift && (
+                            <div className="register-v3__active-badge">
+                                <span />
+                                משמרת פעילה
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="register-v3__employee-row">
+                        <label htmlFor="register-v3-employee">
+                            עובד
+                        </label>
+
+                        <select
+                            id="register-v3-employee"
+                            value={
+                                employeeId
+                            }
+                            onChange={(event) => {
+                                setEmployeeId(
+                                    event.target.value,
                                 );
 
                                 setError(
                                     null,
                                 );
                             }}
-                        />
-                    </div>
-                )}
+                        >
+                            <option value="">
+                                יש לבחור עובד
+                            </option>
 
-                {error && (
+                            {activeEmployees.map(
+                                (employee) => (
+                                    <option
+                                        key={
+                                            employee.id
+                                        }
+                                        value={
+                                            employee.id
+                                        }
+                                    >
+                                        {
+                                            employee.name
+                                        }
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    </div>
+
+                    {!existingShift && (
+                        <section className="register-v3__declaration">
+                            <div className="register-v3__declaration-head">
+                                <div>
+                                    <span>
+                                        OPENING CASH
+                                    </span>
+
+                                    <h2>
+                                        הצהרת מזומן
+                                    </h2>
+                                </div>
+
+                                <div className="register-v3__grand-total">
+                                    <small>
+                                        סכום ההצהרה
+                                    </small>
+
+                                    <strong dir="ltr">
+                                        {formatIls(
+                                            openingCashDeclaration.total,
+                                        )}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div className="register-v3__money-grid">
+                                {renderDenominationGroup(
+                                    "שטרות",
+                                    banknotes,
+                                )}
+
+                                {renderDenominationGroup(
+                                    "מטבעות",
+                                    coins,
+                                )}
+                            </div>
+
+                            <div className="register-v3__quantity-note">
+                                ניתן להזין עד{" "}
+                                {MAX_QUANTITY_PER_DENOMINATION.toLocaleString(
+                                    "he-IL",
+                                )}{" "}
+                                יחידות מכל ערך.
+                            </div>
+                        </section>
+                    )}
+
+                    <div className="register-v3__action-dock">
+                        {error && (
+                            <div
+                                className="register-v3__error"
+                                role="alert"
+                            >
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            type="button"
+                            className="register-v3__primary"
+                            onClick={
+                                requestEntry
+                            }
+                        >
+                            {existingShift
+                                ? "כניסה לקופה"
+                                : "המשך לאישור ההצהרה"}
+
+                            <span aria-hidden="true">
+                                ←
+                            </span>
+                        </button>
+                    </div>
+                </section>
+
+                <div className="register-v3__powered">
+                    Powered by Coeuria
+                    <span aria-hidden="true">
+                        {" "}🍀
+                    </span>
+                </div>
+            </main>
+
+            <aside
+                className="register-v3__rail register-v3__rail--left"
+                aria-hidden="true"
+            >
+                <div className="register-v3__rail-word">
+                    LUMORA
+                </div>
+
+                <div className="register-v3__rail-powered">
+                    COEURIA
+                </div>
+            </aside>
+
+            {showConfirmation &&
+                !existingShift &&
+                selectedEmployee && (
                     <div
-                        style={{
-                            marginTop: "14px",
-                            padding: "10px",
-                            border:
-                                "1px solid #dc2626",
-                            borderRadius: "8px",
-                        }}
+                        className="register-v3__confirm-overlay"
+                        role="presentation"
                     >
-                        {error}
+                        <section
+                            className="register-v3__confirm"
+                            role="alertdialog"
+                            aria-modal="true"
+                            aria-labelledby="register-v3-confirm-title"
+                        >
+                            <div className="register-v3__confirm-icon">
+                                ₪
+                            </div>
+
+                            <div className="register-v3__confirm-kicker">
+                                אישור הצהרת פתיחה
+                            </div>
+
+                            <h2 id="register-v3-confirm-title">
+                                סכום ההצהרה עומד על
+                            </h2>
+
+                            <div
+                                className="register-v3__confirm-total"
+                                dir="ltr"
+                            >
+                                {formatIls(
+                                    openingCashDeclaration.total,
+                                )}
+                            </div>
+
+                            <p>
+                                האם לאשר את פתיחת קופה{" "}
+                                <strong dir="ltr">
+                                    {registerCode}
+                                </strong>
+                                {" "}בסכום זה?
+                            </p>
+
+                            <div className="register-v3__confirm-meta">
+                                <span>
+                                    {businessName}
+                                </span>
+
+                                <span>
+                                    {branchName}
+                                </span>
+
+                                <span>
+                                    {
+                                        selectedEmployee.name
+                                    }
+                                </span>
+                            </div>
+
+                            <div className="register-v3__confirm-actions">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowConfirmation(
+                                            false,
+                                        )
+                                    }
+                                >
+                                    חזרה לתיקון
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        confirmOpening
+                                    }
+                                >
+                                    אישור ופתיחת קופה
+                                </button>
+                            </div>
+                        </section>
                     </div>
                 )}
-
-                <button
-                    type="button"
-                    onClick={
-                        enterRegister
-                    }
-                    style={{
-                        width: "100%",
-                        minHeight: "44px",
-                        marginTop: "22px",
-                    }}
-                >
-                    {
-                        existingShift
-                            ? "כניסה לקופה"
-                            : "פתיחת קופה וכניסה"
-                    }
-                </button>
-            </div>
         </div>
     );
 }

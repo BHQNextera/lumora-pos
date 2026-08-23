@@ -2604,3 +2604,45 @@ Only after standalone Pilot stability unless a real blocker changes priority:
 - Large `global.css` consolidation.
 - Customer-club domain expansion.
 - Canvas / configurable layout builder.
+---
+
+# Checkpoint — 2026-08-23 — Welcome + Register Gateway
+
+## Completed
+- Startup Welcome screen added and visually approved.
+- Welcome screen also works as a 60-second idle/screensaver overlay.
+- Idle overlay preserves the active application/cart state underneath.
+- Tap from idle returns to the Sale workspace.
+- Register entry redesigned into the Lumora V3 visual language.
+- Lumora branding moved to narrow side rails so merchant identity owns the main workspace.
+- Merchant identity shown from the active business profile:
+  - business / trading name
+  - branch name
+  - store code
+  - register code
+  - optional merchant logo with initials fallback
+- Existing active-shift entry redesigned as a compact quick-entry flow.
+- Opening cash declaration redesigned:
+  - banknotes and coins grouped separately
+  - columns are Value / Quantity / Total
+  - no redundant cash-type column
+  - ILS values use formatted currency display
+  - denomination quantity is capped at 9,999 as an input guardrail
+- Opening register now requires a final confirmation step showing the declared total.
+- `openRegisterShift()` is called only after explicit final confirmation.
+- Error state and primary action remain visible without vertical scrolling.
+- `Powered by Coeuria 🍀` added as subtle footer branding.
+- Register Gateway V3.3 visual state approved as GREEN.
+
+## Current UI status
+- Sale Topbar V3: GREEN.
+- Cart Visual: GREEN.
+- Quantity Direct Entry: GREEN.
+- Line Seller Override: GREEN.
+- Sale Number Policy: GREEN.
+- Welcome Startup: GREEN.
+- Welcome Idle / Screensaver: GREEN.
+- Register Gateway / Opening Declaration / Confirmation: GREEN.
+
+## Exact next action
+Continue side-screen visual modernization one screen at a time, beginning with the next sidebar operational screen. Do not reopen Sale, Welcome, or Register Gateway unless a real regression is found.

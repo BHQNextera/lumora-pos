@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import Sidebar from "../components/layout/Sidebar";
+import WelcomeScreen from "../components/welcome/WelcomeScreen";
 import AttendancePanel from "../components/attendance/AttendancePanel";
 import CashMovementDialog from "../components/cash/CashMovementDialog";
 import ShiftXReportDialog from "../components/shift/ShiftXReportDialog";
@@ -101,6 +102,77 @@ function AppShell() {
     useState<AppView>(
       "sale",
     );
+  const [
+    showIdleWelcome,
+    setShowIdleWelcome,
+  ] =
+    useState(false);
+
+  useEffect(() => {
+    if (
+      !activeShift ||
+      showOpenShiftDialog ||
+      showIdleWelcome
+    ) {
+      return;
+    }
+
+    let timer =
+      window.setTimeout(
+        () => {
+          setShowIdleWelcome(
+            true,
+          );
+        },
+        60_000,
+      );
+
+    const resetIdleTimer = () => {
+      window.clearTimeout(
+        timer,
+      );
+
+      timer =
+        window.setTimeout(
+          () => {
+            setShowIdleWelcome(
+              true,
+            );
+          },
+          60_000,
+        );
+    };
+
+    window.addEventListener(
+      "pointerdown",
+      resetIdleTimer,
+    );
+
+    window.addEventListener(
+      "keydown",
+      resetIdleTimer,
+    );
+
+    return () => {
+      window.clearTimeout(
+        timer,
+      );
+
+      window.removeEventListener(
+        "pointerdown",
+        resetIdleTimer,
+      );
+
+      window.removeEventListener(
+        "keydown",
+        resetIdleTimer,
+      );
+    };
+  }, [
+    activeShift,
+    showOpenShiftDialog,
+    showIdleWelcome,
+  ]);
 
   const [
     pendingReturnLines,
@@ -628,6 +700,40 @@ function AppShell() {
             );
 
             setShowOpenShiftDialog(
+              false,
+            );
+          }}
+        />
+      )}
+      {showIdleWelcome && (
+        <WelcomeScreen
+          mode="idle"
+          onContinue={() => {
+            setShowIdleWelcome(
+              false,
+            );
+
+            setActiveView(
+              "sale",
+            );
+
+            setShowNavigation(
+              false,
+            );
+
+            setShowAttendance(
+              false,
+            );
+
+            setShowCashMovement(
+              false,
+            );
+
+            setShowXReport(
+              false,
+            );
+
+            setShowCloseShift(
               false,
             );
           }}
