@@ -1,3 +1,5 @@
+import { flushLumoraNexteraOutboxToNextera } from "../../integrations/nextera/LumoraNexteraSender";
+import { getDocumentsForTransaction } from "../document/DocumentRepository";
 import {
     getReturnPolicy,
     isWithinReturnWindow,
@@ -34,6 +36,8 @@ import {
     flushTransactionPersistence,
     getTransaction,
     saveSale,
+    enqueueLumoraNexteraSale,
+    flushLumoraNexteraOutboxPersistence,
 } from "../transaction/TransactionRepository";
 import type {
     ReturnLine,
@@ -807,6 +811,43 @@ export async function completeSale(
         flushReturnPersistence(),
         flushDocumentPersistence(),
     ]);
+
+    /*
+     * LUMORA_NEXTERA_OUTBOX_V1
+     *
+     * At this point the commercial transaction and its accounting
+     * documents are already durable locally.
+     *
+     * Outbox persistence is best-effort from the sale completion
+     * perspective: a Nextera replication problem must never roll back
+     * or block a completed POS transaction.
+     */
+    try {
+        enqueueLumoraNexteraSale(
+            sale,
+            getDocumentsForTransaction(
+                sale.id,
+            ),
+        );
+
+        await flushLumoraNexteraOutboxPersistence();
+
+        /*
+         * Network delivery is deliberately detached from sale
+         * completion. A Nextera outage cannot make the POS fail.
+         */
+        void flushLumoraNexteraOutboxToNextera();
+    }
+    catch (error) {
+        console.error(
+            "LUMORA_NEXTERA_OUTBOX_PERSISTENCE_FAILED",
+            {
+                saleId:
+                    sale.id,
+                error,
+            },
+        );
+    }
 
     return sale;
 }
