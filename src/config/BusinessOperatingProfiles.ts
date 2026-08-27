@@ -10,16 +10,16 @@ export type BusinessOperatingProfileId =
 
 const baseIdentity = {
     tenantId:
-        "coffee-time-demo",
+        "lumora-unprovisioned",
 
     businessName:
-        "Coffee Time",
+        "Lumora - Unprovisioned",
 
     tradingName:
-        "Coffee Time",
+        "Lumora - Unprovisioned",
 
     branchName:
-        "סניף רחובות",
+        "",
 
     countryCode:
         "IL",
@@ -45,10 +45,10 @@ const baseRegister = {
 
     hardware: {
         scannerEnabled:
-            true,
+            false,
 
         paymentTerminalEnabled:
-            true,
+            false,
     },
 };
 
@@ -464,22 +464,18 @@ function createProfile(
                         false,
                 },
 /**
-
-                 * STORE CREDIT TEST ENABLEMENT V1
-
-                 * Temporary local/demo configuration until the
-
-                 * payment-method administration UI is available.
-
+                 * Safe local payment-method baseline.
+                 * Integrated payment methods stay disabled until
+                 * their provider connection is explicitly configured.
                  */
 
                 paymentMethods: [
 
                     { code: "cash", isActive: true, sortOrder: 10 },
 
-                    { code: "card_terminal", isActive: true, sortOrder: 20 },
+                    { code: "card_terminal", isActive: false, sortOrder: 20 },
 
-                    { code: "echo", isActive: true, sortOrder: 30 },
+                    { code: "echo", isActive: false, sortOrder: 30 },
 
                     { code: "credit_voucher", isActive: true, sortOrder: 40 },
 

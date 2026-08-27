@@ -77,7 +77,7 @@ export const defaultPaymentMethods: PaymentMethod[] = [
         code: "echo",
         name: "Echo",
         kind: "integrated",
-        isActive: true,
+        isActive: false,
         sortOrder: 30,
         requiresExternalReference: true,
         allowsPartialPayment: true,

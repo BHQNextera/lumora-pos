@@ -57,7 +57,7 @@ const STORAGE_KEY =
 const defaultConfiguration:
     ActiveBusinessConfiguration = {
         tenantId:
-            "coffee-time-demo",
+            "lumora-unprovisioned",
 
         storeCode:
             "01",
@@ -303,16 +303,26 @@ export function resetActiveBusinessConfiguration() {
 
 export function getActiveBusinessOperatingProfile():
 BusinessOperatingProfile {
-    return applyBusinessIdentitySettingsToProfile(
-        applyCustomerCreditPolicyToBusinessOperatingProfile(
-            applyReturnPolicyToBusinessOperatingProfile(
-                getBusinessOperatingProfile(
-                    activeConfiguration.profileId,
+    const profile =
+        applyBusinessIdentitySettingsToProfile(
+            applyCustomerCreditPolicyToBusinessOperatingProfile(
+                applyReturnPolicyToBusinessOperatingProfile(
+                    getBusinessOperatingProfile(
+                        activeConfiguration.profileId,
+                    ),
                 ),
             ),
-        ),
-        activeConfiguration.storeCode,
-    );
+            activeConfiguration.storeCode,
+        );
+
+    return {
+        ...profile,
+        identity: {
+            ...profile.identity,
+            tenantId:
+                activeConfiguration.tenantId,
+        },
+    };
 }
 
 export function getActiveRegisterProfile() {

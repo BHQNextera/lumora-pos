@@ -211,11 +211,11 @@ export type BusinessOperatingProfile = {
 };
 
 /**
- * Development/default profile.
+ * Safe local/default profile.
  *
- * This is intentionally explicit rather than inferred.
- * Later it will be loaded from installation/business
- * configuration and may be supplied by Nextera.
+ * Fresh installations start unprovisioned. Business identity,
+ * register hardware, and connected services are enabled only
+ * through explicit local onboarding or Nextera provisioning.
  */
 export const defaultBusinessOperatingProfile:
     BusinessOperatingProfile = {
@@ -223,13 +223,13 @@ export const defaultBusinessOperatingProfile:
 
     identity: {
         tenantId:
-            "coffee-time-demo",
+            "lumora-unprovisioned",
 
         businessName:
-            "Coffee Time",
+            "Lumora - Unprovisioned",
 
         tradingName:
-            "Coffee Time",
+            "Lumora - Unprovisioned",
 
         countryCode:
             "IL",
@@ -378,10 +378,10 @@ export const defaultBusinessOperatingProfile:
 
             hardware: {
                 scannerEnabled:
-                    true,
+                    false,
 
                 paymentTerminalEnabled:
-                    true,
+                    false,
             },
         },
     ],
