@@ -12,6 +12,10 @@ import type {
     CashDeclaration,
 } from "../../models/cash/CashDeclaration";
 
+import {
+    formatMoney,
+} from "../../utils/MoneyFormatter";
+
 type CashDeclarationTableProps = {
     onChange: (
         declaration:
@@ -83,20 +87,8 @@ function CashDeclarationTable({
     };
 
     return (
-        <div
-            style={{
-                marginTop:
-                    "12px",
-            }}
-        >
-            <table
-                style={{
-                    width:
-                        "100%",
-                    borderCollapse:
-                        "collapse",
-                }}
-            >
+        <div className="close-register-shift-dialog__cash-table-wrap">
+            <table className="close-register-shift-dialog__cash-table">
                 <thead>
                     <tr>
                         <th>
@@ -151,11 +143,12 @@ function CashDeclarationTable({
                                         }
                                     </td>
 
-                                    <td>
-                                        ₪
-                                        {
-                                            denomination.value
-                                        }
+                                    <td className="close-register-shift-dialog__money-cell">
+                                        <bdi>
+                                            {formatMoney(
+                                                denomination.value,
+                                            )}
+                                        </bdi>
                                     </td>
 
                                     <td>
@@ -163,8 +156,17 @@ function CashDeclarationTable({
                                             type="number"
                                             min="0"
                                             step="1"
+                                            inputMode="numeric"
                                             value={
                                                 quantity
+                                            }
+                                            aria-label={`כמות עבור ${formatMoney(
+                                                denomination.value,
+                                            )}`}
+                                            onFocus={(
+                                                event,
+                                            ) =>
+                                                event.currentTarget.select()
                                             }
                                             onChange={(
                                                 event,
@@ -174,20 +176,15 @@ function CashDeclarationTable({
                                                     event.target.value,
                                                 )
                                             }
-                                            style={{
-                                                width:
-                                                    "80px",
-                                            }}
                                         />
                                     </td>
 
-                                    <td>
-                                        ₪
-                                        {
-                                            amount.toFixed(
-                                                2,
-                                            )
-                                        }
+                                    <td className="close-register-shift-dialog__money-cell close-register-shift-dialog__money-cell--total">
+                                        <bdi>
+                                            {formatMoney(
+                                                amount,
+                                            )}
+                                        </bdi>
                                     </td>
                                 </tr>
                             );
@@ -207,14 +204,13 @@ function CashDeclarationTable({
                             </strong>
                         </td>
 
-                        <td>
+                        <td className="close-register-shift-dialog__money-cell close-register-shift-dialog__money-cell--grand-total">
                             <strong>
-                                ₪
-                                {
-                                    declaration.total.toFixed(
-                                        2,
-                                    )
-                                }
+                                <bdi>
+                                    {formatMoney(
+                                        declaration.total,
+                                    )}
+                                </bdi>
                             </strong>
                         </td>
                     </tr>

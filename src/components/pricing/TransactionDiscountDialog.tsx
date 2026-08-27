@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+import {
+    rejectBarcodeLikeNumericInput,
+} from "../../utils/numericInputSafety";
+
 import "./transaction-discount-dialog.css";
 
 type TransactionDiscountDialogProps = {
@@ -154,6 +158,7 @@ function TransactionDiscountDialog({
                     </span>
 
                     <input
+                        data-lumora-numeric-safe="transaction-discount"
                         type="number"
                         min="0"
                         max={
@@ -165,11 +170,26 @@ function TransactionDiscountDialog({
                         inputMode="decimal"
                         autoFocus
                         value={value}
-                        onChange={(event) =>
-                            setValue(
-                                event.target.value,
-                            )
-                        }
+                        onChange={(event) => {
+                                /* LUMORA TRANSACTION DISCOUNT BARCODE GUARD V1 */
+                                const nextValue =
+                                    event.target.value;
+
+                                if (
+                                    rejectBarcodeLikeNumericInput(
+                                        nextValue,
+                                        "זוהתה סריקת ברקוד בשדה הנחת העסקה. ההנחה לא שונתה.",
+                                    )
+                                ) {
+                                    event.currentTarget.value =
+                                        value;
+                                    return;
+                                }
+
+                                setValue(
+                                    nextValue,
+                                );
+                            }}
                         onKeyDown={(event) => {
                             if (
                                 event.key === "Enter"

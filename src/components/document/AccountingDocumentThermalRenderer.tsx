@@ -1,6 +1,11 @@
+import { formatMoney } from "../../utils/MoneyFormatter";
+
 import type {
     AccountingDocumentData,
 } from "../../models/document/AccountingDocumentData";
+import {
+    getDocumentFooterSettings,
+} from "../../config/DocumentFooterSettings";
 
 import DocumentBarcode from "./DocumentBarcode";
 
@@ -13,18 +18,6 @@ type AccountingDocumentThermalRendererProps = {
     format?: ThermalPaperFormat;
 };
 
-function formatMoney(
-    value: number,
-) {
-    const sign =
-        value < 0
-            ? "-"
-            : "";
-
-    return `${sign}₪${Math.abs(
-        value,
-    ).toFixed(2)}`;
-}
 
 function formatDateTime(
     value: string,
@@ -47,6 +40,9 @@ function AccountingDocumentThermalRenderer({
     data,
     format = "80mm",
 }: AccountingDocumentThermalRendererProps) {
+    const footer =
+        getDocumentFooterSettings();
+
     return (
         <article
             className={`thermal-receipt thermal-receipt--${format}`}
@@ -398,7 +394,73 @@ function AccountingDocumentThermalRenderer({
                 </div>
             </section>
 
-            <section className="thermal-receipt__payments">
+                        {data.storeCreditObligo && (
+                <section className="thermal-receipt__payments">
+                    <strong className="thermal-receipt__section-title">
+                        חשבון לקוח
+                    </strong>
+
+                    <div className="thermal-payment thermal-payment--summary">
+                        <span>
+                            {data.storeCreditObligo.beforeBalance <
+                            -0.001
+                                ? "יתרת זכות קודמת"
+                                : "חוב קודם"}
+                        </span>
+
+                        <strong
+                            dir="ltr"
+                            className="thermal-money"
+                        >
+                            {formatMoney(
+                                Math.abs(
+                                    data.storeCreditObligo.beforeBalance,
+                                ),
+                            )}
+                        </strong>
+                    </div>
+
+                    <div className="thermal-payment thermal-payment--summary">
+                        <span>
+                            {data.storeCreditObligo.afterBalance <
+                            -0.001
+                                ? "יתרת זכות נוכחית"
+                                : "חוב נוכחי"}
+                        </span>
+
+                        <strong
+                            dir="ltr"
+                            className="thermal-money"
+                        >
+                            {formatMoney(
+                                Math.abs(
+                                    data.storeCreditObligo.afterBalance,
+                                ),
+                            )}
+                        </strong>
+                    </div>
+
+                    <div className="thermal-payment thermal-payment--summary">
+                        <span>
+                            יתרה זמינה להקפה
+                        </span>
+
+                        <strong
+                            dir="ltr"
+                            className="thermal-money"
+                        >
+                            {formatMoney(
+                                Math.max(
+                                    0,
+                                    data.storeCreditObligo.creditLimit -
+                                        data.storeCreditObligo.afterBalance,
+                                ),
+                            )}
+                        </strong>
+                    </div>
+                </section>
+            )}
+<section className="thermal-receipt__payments">
                 <strong className="thermal-receipt__section-title">
                     תשלומים / החזרים
                 </strong>
@@ -497,6 +559,52 @@ function AccountingDocumentThermalRenderer({
                         ),
                     )}
                 </section>
+            )}
+
+            {footer.enabled && (
+                <footer className="thermal-receipt__custom-footer">
+                    {footer.thankYouText && (
+                        <strong>
+                            {footer.thankYouText}
+                        </strong>
+                    )}
+
+                    {footer.returnPolicyText && (
+                        <span>
+                            {footer.returnPolicyText}
+                        </span>
+                    )}
+
+                    {footer.businessPhone && (
+                        <span dir="ltr">
+                            {footer.businessPhone}
+                        </span>
+                    )}
+
+                    {footer.website && (
+                        <span dir="ltr">
+                            {footer.website}
+                        </span>
+                    )}
+
+                    {footer.instagram && (
+                        <span dir="ltr">
+                            Instagram · {footer.instagram}
+                        </span>
+                    )}
+
+                    {footer.facebook && (
+                        <span dir="ltr">
+                            Facebook · {footer.facebook}
+                        </span>
+                    )}
+
+                    {footer.customText && (
+                        <span className="thermal-receipt__custom-footer-note">
+                            {footer.customText}
+                        </span>
+                    )}
+                </footer>
             )}
         </article>
     );

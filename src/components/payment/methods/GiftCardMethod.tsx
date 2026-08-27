@@ -1,10 +1,15 @@
 import {
+    useEffect,
+    useMemo,
     useState,
 } from "react";
 
 import {
     validateMonetaryValueForPayment,
 } from "../../../models/monetary-value/MonetaryValueService";
+import {
+    formatMoney,
+} from "../../../utils/MoneyFormatter";
 
 type GiftCardMethodProps = {
     remainingAmount: number;
@@ -15,6 +20,17 @@ type GiftCardMethodProps = {
     ) => void;
 };
 
+function roundCurrency(
+    value: number,
+) {
+    return (
+        Math.round(
+            (value + Number.EPSILON) *
+                100,
+        ) / 100
+    );
+}
+
 function GiftCardMethod({
     remainingAmount,
     onRedeem,
@@ -22,25 +38,76 @@ function GiftCardMethod({
     const [
         number,
         setNumber,
-    ] =
-        useState("");
+    ] = useState("");
 
     const [
         balance,
         setBalance,
-    ] =
-        useState<number | null>(
-            null,
-        );
+    ] = useState<number | null>(
+        null,
+    );
+
+    const [
+        redeemAmountInput,
+        setRedeemAmountInput,
+    ] = useState("");
 
     const [
         error,
         setError,
-    ] =
-        useState("");
+    ] = useState("");
 
     const normalizedNumber =
         number.trim();
+
+    useEffect(() => {
+        if (balance === null) {
+            setRedeemAmountInput("");
+            return;
+        }
+
+        setRedeemAmountInput(
+            Math.min(
+                balance,
+                remainingAmount,
+            ).toFixed(2),
+        );
+    }, [
+        balance,
+        remainingAmount,
+    ]);
+
+    const redeemAmount =
+        useMemo(() => {
+            const value =
+                Number(
+                    redeemAmountInput,
+                );
+
+            if (
+                !Number.isFinite(value)
+            ) {
+                return 0;
+            }
+
+            return roundCurrency(
+                value,
+            );
+        }, [redeemAmountInput]);
+
+    const maxRedeemAmount =
+        balance === null
+            ? 0
+            : Math.min(
+                balance,
+                remainingAmount,
+            );
+
+    const isValidRedeemAmount =
+        balance !== null &&
+        redeemAmount > 0 &&
+        redeemAmount <=
+            maxRedeemAmount;
 
     const checkGiftCard = () => {
         setError("");
@@ -48,9 +115,8 @@ function GiftCardMethod({
 
         if (!normalizedNumber) {
             setError(
-                "יש להזין מספר Gift Card",
+                "יש להזין מספר כרטיס מתנה",
             );
-
             return;
         }
 
@@ -61,9 +127,8 @@ function GiftCardMethod({
 
         if (!validation.valid) {
             setError(
-                "ה־Gift Card אינו זמין למימוש",
+                "כרטיס המתנה אינו זמין למימוש",
             );
-
             return;
         }
 
@@ -72,9 +137,8 @@ function GiftCardMethod({
             "gift_card"
         ) {
             setError(
-                "המספר שהוזן אינו Gift Card",
+                "המספר שהוזן אינו כרטיס מתנה",
             );
-
             return;
         }
 
@@ -86,131 +150,194 @@ function GiftCardMethod({
 
     const redeem = () => {
         if (
-            balance === null ||
-            balance <= 0 ||
-            remainingAmount <= 0
+            !isValidRedeemAmount
         ) {
             return;
         }
 
         onRedeem(
             normalizedNumber,
-            Math.min(
-                balance,
-                remainingAmount,
-            ),
+            redeemAmount,
         );
     };
 
     return (
-        <div className="cash-payment">
-            <label className="cash-payment__custom">
+        <div className="gift-card-v2">
+            <div className="gift-card-v2__header">
+                <div>
+                    <span>
+                        כרטיס מתנה
+                    </span>
+
+                    <strong>
+                        מימוש יתרה
+                    </strong>
+                </div>
+
+                {balance !== null && (
+                    <span className="gift-card-v2__status">
+                        נמצא
+                    </span>
+                )}
+            </div>
+
+            <label className="gift-card-v2__field">
                 <span>
-                    מספר Gift Card
+                    מספר כרטיס מתנה
                 </span>
 
-                <input
-                    type="text"
-                    value={number}
-                    autoFocus
-                    onChange={(event) => {
-                        setNumber(
-                            event.target.value,
-                        );
+                <div className="gift-card-v2__card-input">
+                    <input
+                        type="text"
+                        value={number}
+                        autoFocus
+                        onChange={(
+                            event,
+                        ) => {
+                            setNumber(
+                                event
+                                    .target
+                                    .value,
+                            );
+                            setBalance(
+                                null,
+                            );
+                            setError("");
+                        }}
+                        onKeyDown={(
+                            event,
+                        ) => {
+                            if (
+                                event.key ===
+                                "Enter"
+                            ) {
+                                checkGiftCard();
+                            }
+                        }}
+                    />
 
-                        setBalance(null);
-                        setError("");
-                    }}
-                    onKeyDown={(event) => {
-                        if (
-                            event.key ===
-                            "Enter"
-                        ) {
-                            checkGiftCard();
+                    <button
+                        type="button"
+                        disabled={
+                            !normalizedNumber
                         }
-                    }}
-                />
+                        onClick={
+                            checkGiftCard
+                        }
+                    >
+                        בדיקה
+                    </button>
+                </div>
             </label>
 
-            <button
-                type="button"
-                className="payment-page__confirm"
-                disabled={
-                    !normalizedNumber
-                }
-                onClick={checkGiftCard}
-            >
-                בדוק יתרה
-            </button>
-
             {error && (
-                <div className="payment-page__method-state">
-                    <p>
-                        {error}
-                    </p>
+                <div
+                    className="gift-card-v2__error"
+                    role="alert"
+                >
+                    {error}
                 </div>
             )}
 
             {balance !== null && (
                 <>
-                    <div className="cash-payment__calculation">
+                    <div className="gift-card-v2__balance">
                         <div>
                             <span>
                                 יתרה זמינה
                             </span>
 
-                            <strong>
-                                ₪
-                                {balance.toFixed(
-                                    2,
-                                )}
+                            <strong className="lumora-money-value">
+                                {formatMoney(balance)}
                             </strong>
                         </div>
 
                         <div>
                             <span>
-                                ימומש כעת
+                                נותר בעסקה
                             </span>
 
-                            <strong>
-                                ₪
-                                {Math.min(
-                                    balance,
-                                    remainingAmount,
-                                ).toFixed(2)}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>
-                                יתרה לאחר מימוש
-                            </span>
-
-                            <strong>
-                                ₪
-                                {Math.max(
-                                    0,
-                                    balance -
-                                    Math.min(
-                                        balance,
-                                        remainingAmount,
-                                    ),
-                                ).toFixed(2)}
+                            <strong className="lumora-money-value">
+                                {formatMoney(remainingAmount)}
                             </strong>
                         </div>
                     </div>
 
+                    <label className="gift-card-v2__amount">
+                        <div>
+                            <span>
+                                סכום למימוש
+                            </span>
+
+                            <small>
+                                עד{" "}
+                                <bdi className="lumora-money-value">
+                                    {formatMoney(maxRedeemAmount)}
+                                </bdi>
+                            </small>
+                        </div>
+
+                        <div className="gift-card-v2__amount-input">
+                            <span aria-hidden="true">
+                                ₪
+                            </span>
+
+                            <input
+                                type="number"
+                                min="0.01"
+                                max={
+                                    maxRedeemAmount
+                                }
+                                step="0.01"
+                                inputMode="decimal"
+                                value={
+                                    redeemAmountInput
+                                }
+                                onChange={(
+                                    event,
+                                ) =>
+                                    setRedeemAmountInput(
+                                        event
+                                            .target
+                                            .value,
+                                    )
+                                }
+                                onFocus={(
+                                    event,
+                                ) =>
+                                    event.currentTarget.select()
+                                }
+                                aria-label="סכום למימוש מכרטיס מתנה"
+                            />
+                        </div>
+                    </label>
+
+                    {!isValidRedeemAmount &&
+                        redeemAmountInput !==
+                            "" && (
+                        <div className="gift-card-v2__error">
+                            יש להזין סכום גדול מ־0 ועד{" "}
+                            <bdi className="lumora-money-value">
+                                {formatMoney(maxRedeemAmount)}
+                            </bdi>
+                        </div>
+                    )}
+
                     <button
                         type="button"
-                        className="payment-page__confirm"
+                        className="payment-page__confirm gift-card-v2__confirm"
                         disabled={
-                            balance <= 0 ||
-                            remainingAmount <=
-                            0
+                            !isValidRedeemAmount
                         }
-                        onClick={redeem}
+                        onClick={
+                            redeem
+                        }
                     >
-                        ממש Gift Card
+                        {isValidRedeemAmount
+                            ? `ממש כרטיס מתנה · ${formatMoney(
+                                  redeemAmount,
+                              )}`
+                            : "הזן סכום למימוש"}
                     </button>
                 </>
             )}

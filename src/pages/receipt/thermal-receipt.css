@@ -1,4 +1,6 @@
 .thermal-receipt {
+    --thermal-money-column-width: 27mm;
+
     width: 80mm;
     max-width: 100%;
     box-sizing: border-box;
@@ -159,8 +161,32 @@
 }
 
 .thermal-money {
+    display: inline-block;
+    direction: ltr;
+    unicode-bidi: isolate;
+    box-sizing: border-box;
+    text-align: right;
     font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
     white-space: nowrap;
+}
+
+.thermal-line__top > .thermal-money,
+.thermal-line__detail > .thermal-money,
+.thermal-line__main > .thermal-money,
+.thermal-receipt__totals > div > .thermal-money,
+.thermal-payment__main > .thermal-money,
+.thermal-payment--summary > .thermal-money {
+    flex: 0 0 var(--thermal-money-column-width);
+    inline-size: var(--thermal-money-column-width);
+}
+
+.thermal-line__main,
+.thermal-payment--summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .thermal-line__description,
@@ -347,6 +373,8 @@
 }
 /* 57mm full-feature compact thermal format */
 .thermal-receipt--57mm {
+    --thermal-money-column-width: 22mm;
+
     width: 57mm;
     padding: 4mm 3mm;
     font-size: 9px;
@@ -471,4 +499,35 @@
 .thermal-receipt--57mm
 .thermal-receipt__document-note > strong {
     font-size: 7px;
+}
+
+/* LUMORA DOCUMENT FOOTER · REAL OUTPUT V1 */
+.thermal-receipt__custom-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 7px 0 0;
+    border-top: 1px dashed #777;
+    text-align: center;
+    white-space: pre-wrap;
+}
+
+.thermal-receipt__custom-footer > strong {
+    font-size: 10px;
+}
+
+.thermal-receipt__custom-footer > span {
+    max-width: 100%;
+    color: #444;
+    font-size: 8px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.thermal-receipt__custom-footer-note {
+    margin-top: 2px;
+    padding-top: 4px;
+    border-top: 1px dotted #aaa;
+    color: #222 !important;
 }

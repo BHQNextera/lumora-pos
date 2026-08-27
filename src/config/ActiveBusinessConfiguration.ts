@@ -21,6 +21,18 @@ import type {
 import type {
     BusinessOperatingProfileId,
 } from "./BusinessOperatingProfiles";
+import {
+    applyReturnPolicyToBusinessOperatingProfile,
+} from "./ReturnPolicy";
+import {
+    applyCustomerCreditPolicyToBusinessOperatingProfile,
+} from "./CustomerCreditPolicy";
+import {
+    applyBusinessIdentitySettingsToProfile,
+} from "./BusinessIdentitySettings";
+import {
+    applyRegisterLocalSettingsToProfile,
+} from "./RegisterLocalSettings";
 
 export type ConfigurationSource =
     | "local"
@@ -64,6 +76,36 @@ let activeConfiguration:
     ActiveBusinessConfiguration = {
         ...defaultConfiguration,
     };
+
+type ConfigurationListener =
+    () => void;
+
+const configurationListeners =
+    new Set<ConfigurationListener>();
+
+function notifyConfigurationListeners() {
+    for (
+        const listener
+        of configurationListeners
+    ) {
+        listener();
+    }
+}
+
+export function subscribeActiveBusinessConfiguration(
+    listener:
+        ConfigurationListener,
+): () => void {
+    configurationListeners.add(
+        listener,
+    );
+
+    return () => {
+        configurationListeners.delete(
+            listener,
+        );
+    };
+}
 
 let configurationStoragePromise:
     Promise<RuntimeStorage> | null =
@@ -181,6 +223,8 @@ Promise<void> {
         parseConfiguration(
             raw,
         );
+
+    notifyConfigurationListeners();
 }
 
 function persistConfiguration() {
@@ -223,6 +267,7 @@ export function saveActiveBusinessConfiguration(
         ...configuration,
     };
 
+    notifyConfigurationListeners();
     persistConfiguration();
 
     return getActiveBusinessConfiguration();
@@ -232,6 +277,8 @@ export function resetActiveBusinessConfiguration() {
     activeConfiguration = {
         ...defaultConfiguration,
     };
+
+    notifyConfigurationListeners();
 
     if (isTauri()) {
         window.localStorage.removeItem(
@@ -256,8 +303,15 @@ export function resetActiveBusinessConfiguration() {
 
 export function getActiveBusinessOperatingProfile():
 BusinessOperatingProfile {
-    return getBusinessOperatingProfile(
-        activeConfiguration.profileId,
+    return applyBusinessIdentitySettingsToProfile(
+        applyCustomerCreditPolicyToBusinessOperatingProfile(
+            applyReturnPolicyToBusinessOperatingProfile(
+                getBusinessOperatingProfile(
+                    activeConfiguration.profileId,
+                ),
+            ),
+        ),
+        activeConfiguration.storeCode,
     );
 }
 
@@ -265,11 +319,19 @@ export function getActiveRegisterProfile() {
     const profile =
         getActiveBusinessOperatingProfile();
 
-    return profile.registers.find(
-        (register) =>
-            register.storeCode ===
-                activeConfiguration.storeCode &&
-            register.registerCode ===
-                activeConfiguration.registerCode,
+    const base =
+        profile.registers.find(
+            (register) =>
+                register.storeCode ===
+                    activeConfiguration.storeCode &&
+                register.registerCode ===
+                    activeConfiguration.registerCode,
+        ) ??
+        profile.registers[0];
+
+    return applyRegisterLocalSettingsToProfile(
+        base,
+        activeConfiguration.storeCode,
+        activeConfiguration.registerCode,
     );
 }

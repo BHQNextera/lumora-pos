@@ -1,6 +1,7 @@
-import type {
-    Dispatch,
-    SetStateAction,
+import {
+    useState,
+    type Dispatch,
+    type SetStateAction,
 } from "react";
 
 import type {
@@ -256,6 +257,34 @@ function PromotionBuilderDialog({
     onCancel,
     onSave,
 }: PromotionBuilderDialogProps) {
+    const [activeStep, setActiveStep] =
+        useState(1);
+
+    const steps = [
+        { id: 1, label: "פרטים" },
+        { id: 2, label: "מוצרים וקטגוריות" },
+        { id: 3, label: "הטבה" },
+        { id: 4, label: "קהל ותזמון" },
+        { id: 5, label: "סיכום" },
+    ];
+
+    const isFirstStep =
+        activeStep === 1;
+
+    const isLastStep =
+        activeStep === 5;
+
+    const goPrevious = () => {
+        setActiveStep((current) =>
+            Math.max(1, current - 1),
+        );
+    };
+
+    const goNext = () => {
+        setActiveStep((current) =>
+            Math.min(5, current + 1),
+        );
+    };
     const updateField = <
         K extends keyof PromotionDraft,
     >(
@@ -413,8 +442,7 @@ function PromotionBuilderDialog({
                         </h2>
 
                         <span>
-                            הגדר את המבצע לפי האוכלוסייה,
-                            התנאי וההטבה.
+                            בנה את המבצע בחמישה שלבים פשוטים.
                         </span>
                     </div>
 
@@ -427,23 +455,57 @@ function PromotionBuilderDialog({
                     </button>
                 </header>
 
-                <div className="promotion-builder__body">
-                    <section className="promotion-builder__section">
+                <nav
+                    className="promotion-builder__steps"
+                    aria-label="שלבי בניית מבצע"
+                >
+                    {steps.map((step) => (
+                        <button
+                            key={step.id}
+                            type="button"
+                            className={
+                                step.id === activeStep
+                                    ? "promotion-builder__step promotion-builder__step--active"
+                                    : step.id < activeStep
+                                      ? "promotion-builder__step promotion-builder__step--done"
+                                      : "promotion-builder__step"
+                            }
+                            onClick={() =>
+                                setActiveStep(step.id)
+                            }
+                        >
+                            <span>{step.id}</span>
+                            <strong>{step.label}</strong>
+                        </button>
+                    ))}
+                </nav>
+
+                <div
+                    className="promotion-builder__body"
+                    data-step={activeStep}
+                >
+                    <section
+                        className="promotion-builder__section"
+                        hidden={activeStep !== 1}
+                    >
                         <div className="promotion-builder__section-title">
                             <span>1</span>
                             <div>
                                 <strong>
-                                    מה המבצע?
+                                    פרטי המבצע
                                 </strong>
                                 <small>
-                                    שם ותבנית המבצע
+                                    שם המבצע וסוג ההטבה
                                 </small>
                             </div>
                         </div>
 
                         <div className="promotion-builder__fields">
                             <label className="promotion-builder__wide">
-                                שם המבצע
+                                <span className="promotion-builder__label-text">
+                                    שם המבצע
+                                    <b aria-hidden="true">*</b>
+                                </span>
                                 <input
                                     value={draft.name}
                                     onChange={(event) =>
@@ -484,7 +546,10 @@ function PromotionBuilderDialog({
                         </div>
                     </section>
 
-                    <section className="promotion-builder__section">
+                    <section
+                        className="promotion-builder__section"
+                        hidden={activeStep !== 2}
+                    >
                         <div className="promotion-builder__section-title">
                             <span>2</span>
                             <div>
@@ -492,26 +557,20 @@ function PromotionBuilderDialog({
                                     {draft.type ===
                                     "bundle_price"
                                         ? "מה מרכיבי החבילה?"
-                                        : "על מה המבצע חל?"}
+                                        : "מוצרים וקטגוריות"}
                                 </strong>
                                 <small>
                                     {draft.type ===
                                     "bundle_price"
                                         ? "כל רכיב מגדיר אוכלוסייה וכמות נדרשת"
-                                        : "אפשר לשלב כמה קטגוריות וכמה פריטים"}
+                                        : "בחר מה משתתף במבצע ומה מוחרג"}
                                 </small>
                             </div>
                         </div>
 
                         {draft.type ===
                             "bundle_price" ? (
-                            <div
-                                style={{
-                                    display:
-                                        "grid",
-                                    gap: 14,
-                                }}
-                            >
+                            <div className="promotion-builder__bundle-list">
                                 {draft.bundleComponents.map(
                                     (
                                         component,
@@ -521,29 +580,9 @@ function PromotionBuilderDialog({
                                             key={
                                                 component.id
                                             }
-                                            style={{
-                                                border:
-                                                    "1px solid rgba(15, 23, 42, 0.12)",
-                                                borderRadius:
-                                                    14,
-                                                padding:
-                                                    14,
-                                                display:
-                                                    "grid",
-                                                gap: 12,
-                                            }}
+                                            className="promotion-builder__bundle-component"
                                         >
-                                            <div
-                                                style={{
-                                                    display:
-                                                        "flex",
-                                                    alignItems:
-                                                        "center",
-                                                    justifyContent:
-                                                        "space-between",
-                                                    gap: 12,
-                                                }}
-                                            >
+                                            <div className="promotion-builder__bundle-component-head">
                                                 <strong>
                                                     רכיב{" "}
                                                     {index +
@@ -631,8 +670,8 @@ function PromotionBuilderDialog({
                             </div>
                         ) : (
                             <PromotionPopulationEditor
-                                title="אוכלוסיית המבצע"
-                                description="פריט ייכלל אם הוא נמצא באחת הבחירות. החרגה תמיד גוברת."
+                                title="מוצרים וקטגוריות במבצע"
+                                description="בחר קטגוריות ו/או פריטים. החרגה תמיד גוברת על הכללה."
                                 value={
                                     draft.targetPopulation
                                 }
@@ -650,12 +689,15 @@ function PromotionBuilderDialog({
                         )}
                     </section>
 
-                    <section className="promotion-builder__section">
+                    <section
+                        className="promotion-builder__section"
+                        hidden={activeStep !== 3}
+                    >
                         <div className="promotion-builder__section-title">
                             <span>3</span>
                             <div>
                                 <strong>
-                                    מה התנאי ומה מקבלים?
+                                    תנאי והטבה
                                 </strong>
                                 <small>
                                     מוצגים רק השדות הרלוונטיים לסוג המבצע
@@ -708,15 +750,7 @@ function PromotionBuilderDialog({
                                 <label>
                                     {valueLabel}
 
-                                    <div
-                                        style={{
-                                            display:
-                                                "grid",
-                                            gridTemplateColumns:
-                                                "minmax(0, 1fr) 72px",
-                                            gap: 8,
-                                        }}
-                                    >
+                                    <div className="promotion-builder__value-control">
                                         <input
                                             type="number"
                                             min="0"
@@ -818,7 +852,10 @@ function PromotionBuilderDialog({
                         )}
                     </section>
 
-                    <section className="promotion-builder__section">
+                    <section
+                        className="promotion-builder__section"
+                        hidden={activeStep !== 4}
+                    >
                         <div className="promotion-builder__section-title">
                             <span>4</span>
                             <div>
@@ -974,15 +1011,18 @@ function PromotionBuilderDialog({
                         </div>
                     </section>
 
-                    <section className="promotion-builder__section">
+                    <section
+                        className="promotion-builder__section"
+                        hidden={activeStep !== 5}
+                    >
                         <div className="promotion-builder__section-title">
                             <span>5</span>
                             <div>
                                 <strong>
-                                    הגדרות מתקדמות
+                                    בדיקה ושמירה
                                 </strong>
                                 <small>
-                                    בדרך כלל אין צורך לשנות
+                                    בדיקה אחרונה לפני שמירה והפעלה
                                 </small>
                             </div>
                         </div>
@@ -1039,7 +1079,10 @@ function PromotionBuilderDialog({
                         </div>
                     </section>
 
-                    <section className="promotion-builder__preview">
+                    <section
+                        className="promotion-builder__preview"
+                        hidden={activeStep !== 5}
+                    >
                         <span>
                             כך המבצע יתנהג בקופה
                         </span>
@@ -1056,20 +1099,41 @@ function PromotionBuilderDialog({
                     )}
                 </div>
 
-                <footer>
+                <footer className="promotion-builder__footer">
+                    <div className="promotion-builder__footer-primary">
+                        {isLastStep ? (
+                            <button
+                                type="button"
+                                className="promotion-management__primary"
+                                onClick={onSave}
+                            >
+                                שמירת מבצע
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="promotion-management__primary"
+                                onClick={goNext}
+                            >
+                                הבא
+                            </button>
+                        )}
+
+                        {!isFirstStep && (
+                            <button
+                                type="button"
+                                onClick={goPrevious}
+                            >
+                                הקודם
+                            </button>
+                        )}
+                    </div>
+
                     <button
                         type="button"
                         onClick={onCancel}
                     >
                         ביטול
-                    </button>
-
-                    <button
-                        type="button"
-                        className="promotion-management__primary"
-                        onClick={onSave}
-                    >
-                        שמירת מבצע
                     </button>
                 </footer>
             </div>

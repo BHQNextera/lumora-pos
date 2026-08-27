@@ -1,6 +1,23 @@
+// LUMORA SELLER EMPLOYEE SYNC V1
+import {
+    applyStoreCreditBalanceMovement,
+    getCustomerCreditSnapshot,
+} from "../../models/store-credit/StoreCreditService";
+import {
+    getStoreCreditRefundLimit,
+} from "../../models/store-credit/StoreCreditRefundService";
+import {
+    saveCustomer,
+} from "../../models/customer/CustomerRepository";
+import {
+    getTransaction,
+} from "../../models/transaction/TransactionRepository";
 import SaleCustomerQuickCreateDialog from "../../components/pos/SaleCustomerQuickCreateDialog";
+
 import "./SaleTopbarV3.css";
+
 import NoteEditorDialog from "../../components/pos/NoteEditorDialog";
+
 import {
     useEffect,
     useMemo,
@@ -8,35 +25,56 @@ import {
 } from "react";
 
 import LineDiscountDialog from "../../components/pricing/LineDiscountDialog";
+
 import PriceOverrideDialog from "../../components/pricing/PriceOverrideDialog";
+
 import TransactionDiscountDialog from "../../components/pricing/TransactionDiscountDialog";
+
 import CalculatorSaleEntry from "../../components/pos/CalculatorSaleEntry";
+
 import FashionVariantSelector from "../../components/pos/FashionVariantSelector";
+
 import CartPanel from "../../components/pos/CartPanel";
+
 import HeldSalesDialog from "../../components/pos/HeldSalesDialog";
+
 import ProductGrid from "../../components/pos/ProductGrid";
+
 import {
     getActiveBusinessOperatingProfile,
 } from "../../config/ActiveBusinessConfiguration";
 import {
+    getReturnPolicy,
+} from "../../config/ReturnPolicy";
+import {
     getPresentSellers,
 } from "../../models/employee/AvailableSellerService";
+import {
+    subscribeEmployees,
+} from "../../models/employee/EmployeeRepository";
 import {
     subscribeAttendance,
 } from "../../models/attendance/AttendanceRepository";
 import { usePricing } from "../../context/usePricing";
+
 import { useCatalog } from "../../context/useCatalog";
+
 import { translate } from "../../i18n";
+
 import { categorySeed } from "../../models/catalog/Category";
+
 import {
     getCustomers,
     getWalkInCustomer,
+    subscribeCustomers,
 } from "../../models/customer/CustomerRepository";
 import {
     getDocumentsForTransaction,
 } from "../../models/document/DocumentRepository";
 import { issueMonetaryValue } from "../../models/monetary-value/MonetaryValueService";
+
 import type { Payment } from "../../models/Payment";
+
 import {
     getOriginalGiftCardRefundSource,
     restoreGiftCardRefundPayments,
@@ -67,11 +105,13 @@ import type {
     HeldSale,
 } from "../../models/held-sale/HeldSale";
 import type { CartLine } from "../../models/sale/CartLine";
+
 import type {
     AppliedSaleCoupon,
     Sale,
 } from "../../models/sale/Sale";
 import type { SaleLine } from "../../models/sale/SaleLine";
+
 import {
     allocateSaleNumber,
     flushSaleNumberPersistence,
@@ -79,6 +119,7 @@ import {
 } from "../../models/sale/SaleNumbering";
 
 import { completeSale } from "../../models/sale/SaleService";
+
 import {
     getTransactions,
 } from "../../models/transaction/TransactionRepository";
@@ -107,15 +148,24 @@ import {
     isSaleActionId,
 } from "../../models/preset/SaleActionRegistry";
 import type { Product } from "../../types/product";
+
+import SystemMessageDialog from "../../components/feedback/SystemMessageDialog";
+
 import GiftCardBalanceDialog from "../../components/pos/GiftCardBalanceDialog";
+
 import QuickPresetEditorDialog from "../../components/pos/QuickPresetEditorDialog";
+
 import {
     requestCashDrawerOpen,
 } from "../../models/drawer/CashDrawerService";
 import PaymentPage from "../payment/PaymentPage";
+
 import RefundPage from "../payment/RefundPage";
+
 import ReturnItemPage from "../return-item/ReturnItemPage";
+
 import SaleCompletePage from "../sale-complete/SaleCompletePage";
+
 
 type SalePageProps = {
     incomingReturnLines?: CartLine[];
@@ -180,8 +230,13 @@ function SalePage({
                 );
             };
 
-        const unsubscribe =
+        const unsubscribeAttendance =
             subscribeAttendance(
+                refreshActiveSellers,
+            );
+
+        const unsubscribeEmployees =
+            subscribeEmployees(
                 refreshActiveSellers,
             );
 
@@ -191,7 +246,10 @@ function SalePage({
          */
         refreshActiveSellers();
 
-        return unsubscribe;
+        return () => {
+            unsubscribeAttendance();
+            unsubscribeEmployees();
+        };
     }, []);
 
     const [
@@ -356,6 +414,208 @@ function SalePage({
         applyCoupon,
         removeCoupon,
     } = usePricing();
+
+    /*
+     * CUSTOMER_MASTER_RUNTIME_SYNC_V1
+     *
+     * The pricing context may keep the object that was selected before
+     * the customer was edited in Customer Management. Rebind the active
+     * customer to the current customer-master record so group, credit
+     * permission, obligo and balance cannot become stale.
+     */
+    useEffect(() => {
+        const refreshSelectedCustomer =
+            () => {
+                if (
+                    selectedCustomer.id ===
+                    "walk-in"
+                ) {
+                    return;
+                }
+
+                const currentCustomer =
+                    getCustomers().find(
+                        (customer) =>
+                            customer.id ===
+                            selectedCustomer.id,
+                    );
+
+                if (!currentCustomer) {
+                    return;
+                }
+
+                const changed =
+                    currentCustomer.updatedAt !==
+                        selectedCustomer.updatedAt ||
+                    currentCustomer.storeCreditEnabled !==
+                        selectedCustomer.storeCreditEnabled ||
+                    currentCustomer.creditLimit !==
+                        selectedCustomer.creditLimit ||
+                    currentCustomer.accountBalance !==
+                        selectedCustomer.accountBalance ||
+                    currentCustomer.name !==
+                        selectedCustomer.name ||
+                    currentCustomer.phone !==
+                        selectedCustomer.phone ||
+                    currentCustomer.externalId !==
+                        selectedCustomer.externalId ||
+                    currentCustomer.isClubMember !==
+                        selectedCustomer.isClubMember ||
+                    currentCustomer.groupIds.join(
+                        "|",
+                    ) !==
+                        selectedCustomer.groupIds.join(
+                            "|",
+                        );
+
+                if (changed) {
+                    setSelectedCustomer(
+                        currentCustomer,
+                    );
+                }
+            };
+
+        refreshSelectedCustomer();
+
+        return subscribeCustomers(
+            refreshSelectedCustomer,
+        );
+    }, [
+        selectedCustomer,
+        setSelectedCustomer,
+    ]);
+
+    /*
+     * STORE_CREDIT_CUSTOMER_STATUS_POPUP_V1
+     * Compact, non-blocking indication when an enabled
+     * store-credit customer becomes the active customer.
+     */
+    const [
+        storeCreditCustomerPopupVisible,
+        setStoreCreditCustomerPopupVisible,
+    ] =
+        useState(false);
+
+    const storeCreditCustomerSnapshot =
+        useMemo(
+            () =>
+                getCustomerCreditSnapshot(
+                    selectedCustomer,
+                ),
+            [
+                selectedCustomer,
+            ],
+        );
+
+    useEffect(() => {
+        if (
+            selectedCustomer.id ===
+                "walk-in" ||
+            selectedCustomer.storeCreditEnabled !==
+                true
+        ) {
+            setStoreCreditCustomerPopupVisible(
+                false,
+            );
+
+            return;
+        }
+
+        setStoreCreditCustomerPopupVisible(
+            true,
+        );
+
+        const timeout =
+            window.setTimeout(
+                () => {
+                    setStoreCreditCustomerPopupVisible(
+                        false,
+                    );
+                },
+                4500,
+            );
+
+        return () =>
+            window.clearTimeout(
+                timeout,
+            );
+    }, [
+        selectedCustomer.id,
+        selectedCustomer.storeCreditEnabled,
+    ]);
+    /*
+     * LINKED_RETURN_CUSTOMER_BINDING_V1
+     *
+     * A return loaded from an original transaction belongs to
+     * that transaction's customer. Do not leave the workspace on
+     * walk-in and do not allow store-credit reduction against a
+     * different customer.
+     */
+    useEffect(() => {
+        const sourceSaleIds =
+            Array.from(
+                new Set(
+                    cartLines
+                        .map(
+                            (line) =>
+                                line.origin
+                                    ?.saleId,
+                        )
+                        .filter(
+                            (
+                                saleId,
+                            ): saleId is string =>
+                                Boolean(
+                                    saleId,
+                                ),
+                        ),
+                ),
+            );
+
+        if (
+            sourceSaleIds.length !==
+            1
+        ) {
+            return;
+        }
+
+        const sourceSale =
+            getTransaction(
+                sourceSaleIds[0],
+            );
+
+        const sourceCustomerId =
+            sourceSale?.customer.id;
+
+        if (
+            !sourceCustomerId ||
+            sourceCustomerId ===
+                "walk-in" ||
+            sourceCustomerId ===
+                selectedCustomer.id
+        ) {
+            return;
+        }
+
+        const sourceCustomer =
+            getCustomers().find(
+                (customer) =>
+                    customer.id ===
+                    sourceCustomerId,
+            );
+
+        if (!sourceCustomer) {
+            return;
+        }
+
+        setSelectedCustomer(
+            sourceCustomer,
+        );
+    }, [
+        cartLines,
+        selectedCustomer.id,
+        setSelectedCustomer,
+    ]);
 
     const [
         documentNote,
@@ -587,6 +847,13 @@ const [
         giftCardBalanceOpen,
         setGiftCardBalanceOpen,
     ] = useState(false);
+
+    const [
+        systemMessage,
+        setSystemMessage,
+    ] = useState<string | null>(
+        null,
+    );
 
     const [
         showTransactionDiscount,
@@ -1160,6 +1427,27 @@ const [
                 editingDiscountLineId,
         ) ?? null;
 
+    const blockSaleItemForReturnOnlyTransaction =
+        () => {
+            if (
+                getReturnPolicy()
+                    .exchangesEnabled ||
+                !pricing.lines.some(
+                    (line) =>
+                        line.kind ===
+                        "return",
+                )
+            ) {
+                return false;
+            }
+
+            setSystemMessage(
+                "\u05dc\u05d0 \u05e0\u05d9\u05ea\u05df \u05dc\u05e7\u05d9\u05d9\u05dd \u05d4\u05d7\u05dc\u05e4\u05d4 \u05d1\u05e2\u05e1\u05e7\u05d4 \u05d6\u05d5. \u05d4\u05d7\u05dc\u05e4\u05d5\u05ea \u05db\u05d1\u05d5\u05d9\u05d5\u05ea \u05d1\u05d4\u05d2\u05d3\u05e8\u05d5\u05ea.",
+            );
+
+            return true;
+        };
+
     const addProduct = (
         product: Product,
         sellerOverride?: {
@@ -1167,6 +1455,12 @@ const [
             name: string;
         },
     ) => {
+        if (
+            blockSaleItemForReturnOnlyTransaction()
+        ) {
+            return;
+        }
+
         const existing =
             pricing.lines.find(
                 (line) =>
@@ -1257,6 +1551,12 @@ const [
         product: FashionProduct,
         variant: ProductVariant,
     ) => {
+        if (
+            blockSaleItemForReturnOnlyTransaction()
+        ) {
+            return;
+        }
+
         const variantProduct: Product = {
             ...product,
 
@@ -1515,6 +1815,23 @@ const [
     const addReturnLines = (
         lines: CartLine[],
     ) => {
+        if (
+            !getReturnPolicy()
+                .exchangesEnabled &&
+            pricing.lines.some(
+                (line) =>
+                    line.kind ===
+                    "sale",
+            )
+        ) {
+            setSystemMessage(
+                "\u05dc\u05d0 \u05e0\u05d9\u05ea\u05df \u05dc\u05d4\u05d5\u05e1\u05d9\u05e3 \u05e4\u05e8\u05d9\u05d8 \u05de\u05d5\u05d7\u05d6\u05e8 \u05dc\u05e2\u05e1\u05e7\u05ea \u05de\u05db\u05d9\u05e8\u05d4. \u05d4\u05d7\u05dc\u05e4\u05d5\u05ea \u05db\u05d1\u05d5\u05d9\u05d5\u05ea \u05d1\u05d4\u05d2\u05d3\u05e8\u05d5\u05ea.",
+            );
+
+            setMode("sale");
+            return;
+        }
+
         updateCartLines(
             (current) => [
                 ...current,
@@ -2012,6 +2329,80 @@ const [
                     redemption.discountApplied,
             };
         }
+        const effectiveSelectedCustomer =
+            getCustomers().find(
+                (customer) =>
+                    customer.id ===
+                    selectedCustomer.id,
+            ) ??
+            selectedCustomer;
+
+        const storeCreditMovementAmount =
+            Math.round(
+                (
+                    payments
+                        .filter(
+                            (payment) =>
+                                payment.status ===
+                                    "approved" &&
+                                payment.method ===
+                                    "store_credit",
+                        )
+                        .reduce(
+                            (sum, payment) =>
+                                sum +
+                                payment.amount,
+                            0,
+                        ) +
+                    Number.EPSILON
+                ) * 100,
+            ) / 100;
+
+        const storeCreditBalanceBefore =
+            Math.round(
+                (
+                    (
+                        effectiveSelectedCustomer.accountBalance ??
+                        0
+                    ) +
+                    Number.EPSILON
+                ) * 100,
+            ) / 100;
+
+        const storeCreditObligo =
+            Math.abs(
+                storeCreditMovementAmount,
+            ) > 0.001
+                ? {
+                      beforeBalance:
+                          storeCreditBalanceBefore,
+                      creditLimit:
+                          Math.max(
+                              0,
+                              Math.round(
+                                  (
+                                      (
+                                          effectiveSelectedCustomer.creditLimit ??
+                                          0
+                                      ) +
+                                      Number.EPSILON
+                                  ) * 100,
+                              ) / 100,
+                          ),
+
+                      movementAmount:
+                          storeCreditMovementAmount,
+
+                      afterBalance:
+                          Math.round(
+                              (
+                                  storeCreditBalanceBefore +
+                                  storeCreditMovementAmount +
+                                  Number.EPSILON
+                              ) * 100,
+                          ) / 100,
+                  }
+                : undefined;
 
         const sale =
             await completeSale(
@@ -2019,15 +2410,15 @@ const [
                 payments,
                 {
                     id:
-                        selectedCustomer.id,
+                        effectiveSelectedCustomer.id,
                     name:
-                        selectedCustomer.name,
+                        effectiveSelectedCustomer.name,
                     phone:
-                        selectedCustomer.phone,
+                        effectiveSelectedCustomer.phone,
                     groupIds:
-                        selectedCustomer.groupIds,
+                        effectiveSelectedCustomer.groupIds,
                     isClubMember:
-                        selectedCustomer.isClubMember,
+                        effectiveSelectedCustomer.isClubMember,
                 },
                 {
                     transactionId,
@@ -2047,9 +2438,28 @@ const [
                     documentNote,
 
                     printDocumentNote,
+
+
+                    storeCreditObligo,
                 },
             );
+        if (
+            Math.abs(
+                storeCreditMovementAmount,
+            ) > 0.001
+        ) {
+            const updatedCustomer =
+                saveCustomer(
+                    applyStoreCreditBalanceMovement(
+                        effectiveSelectedCustomer,
+                        storeCreditMovementAmount,
+                    ),
+                );
 
+            setSelectedCustomer(
+                updatedCustomer,
+            );
+        }
 
         await restoreGiftCardRefundPayments(
             payments,
@@ -2390,176 +2800,11 @@ const [
                     onNewSale={
                         startNewSale
                     }
+                    refundVoucher={
+                        issuedRefundVoucher
+                    }
                 />
-
-                {issuedRefundVoucher && (
-                    <div
-                        role="presentation"
-                        style={{
-                            position:
-                                "fixed",
-                            inset:
-                                0,
-                            zIndex:
-                                6000,
-                            display:
-                                "grid",
-                            placeItems:
-                                "center",
-                            padding:
-                                "24px",
-                            background:
-                                "rgba(17, 24, 39, 0.34)",
-                        }}
-                    >
-                        <div
-                            dir="rtl"
-                            role="dialog"
-                            aria-modal="true"
-                            style={{
-                                width:
-                                    "min(460px, 100%)",
-                                padding:
-                                    "22px",
-                                border:
-                                    "1px solid #dde4e1",
-                                borderRadius:
-                                    "18px",
-                                background:
-                                    "#ffffff",
-                                boxShadow:
-                                    "0 24px 70px rgba(15, 23, 42, 0.20)",
-                            }}
-                        >
-                            <div
-                                style={{
-                                    color:
-                                        "#7a8580",
-                                    fontSize:
-                                        "10px",
-                                    fontWeight:
-                                        800,
-                                    letterSpacing:
-                                        "0.08em",
-                                }}
-                            >
-                                החזרה הושלמה
-                            </div>
-
-                            <h2
-                                style={{
-                                    margin:
-                                        "8px 0 6px",
-                                    fontSize:
-                                        "22px",
-                                }}
-                            >
-                                שובר זיכוי הונפק
-                            </h2>
-
-                            <div
-                                style={{
-                                    marginTop:
-                                        "14px",
-                                    padding:
-                                        "14px",
-                                    borderRadius:
-                                        "12px",
-                                    background:
-                                        "#f5f8f6",
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        fontSize:
-                                            "11px",
-                                        color:
-                                            "#68736f",
-                                    }}
-                                >
-                                    מספר שובר
-                                </div>
-
-                                <div
-                                    dir="ltr"
-                                    style={{
-                                        marginTop:
-                                            "3px",
-                                        fontSize:
-                                            "18px",
-                                        fontWeight:
-                                            850,
-                                    }}
-                                >
-                                    {
-                                        issuedRefundVoucher.number
-                                    }
-                                </div>
-
-                                <div
-                                    style={{
-                                        marginTop:
-                                            "12px",
-                                        fontSize:
-                                            "11px",
-                                        color:
-                                            "#68736f",
-                                    }}
-                                >
-                                    סכום הזיכוי
-                                </div>
-
-                                <div
-                                    style={{
-                                        marginTop:
-                                            "3px",
-                                        fontSize:
-                                            "28px",
-                                        fontWeight:
-                                            850,
-                                    }}
-                                >
-                                    ₪
-                                    {issuedRefundVoucher.amount.toFixed(
-                                        2,
-                                    )}
-                                </div>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setIssuedRefundVoucher(
-                                        null,
-                                    )
-                                }
-                                style={{
-                                    width:
-                                        "100%",
-                                    minHeight:
-                                        "42px",
-                                    marginTop:
-                                        "16px",
-                                    border:
-                                        0,
-                                    borderRadius:
-                                        "10px",
-                                    background:
-                                        "var(--primary)",
-                                    color:
-                                        "#fff",
-                                    fontWeight:
-                                        750,
-                                    cursor:
-                                        "pointer",
-                                }}
-                            >
-                                אישור
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </>
+</>
         );
     }
 
@@ -2575,7 +2820,12 @@ const [
                         createSaleLines(),
                     )
                 }
-                onBack={() =>
+                                storeCreditRefundLimit={
+                    getStoreCreditRefundLimit(
+                        createSaleLines(),
+                        selectedCustomer,
+                    )
+                }onBack={() =>
                     setCheckoutTotal(
                         null,
                     )
@@ -3418,6 +3668,26 @@ const [
                                 .allowReturnWithoutDocument && (
                                     <button
                                         type="button"
+                                        disabled={
+                                            !getReturnPolicy()
+                                                .exchangesEnabled &&
+                                            pricing.lines.some(
+                                                (line) =>
+                                                    line.kind ===
+                                                    "sale",
+                                            )
+                                        }
+                                        title={
+                                            !getReturnPolicy()
+                                                .exchangesEnabled &&
+                                            pricing.lines.some(
+                                                (line) =>
+                                                    line.kind ===
+                                                    "sale",
+                                            )
+                                                ? "\u05dc\u05d0 \u05e0\u05d9\u05ea\u05df \u05dc\u05d4\u05ea\u05d7\u05d9\u05dc \u05d4\u05d7\u05d6\u05e8\u05d4 \u05d1\u05e2\u05e1\u05e7\u05ea \u05de\u05db\u05d9\u05e8\u05d4 \u05db\u05d0\u05e9\u05e8 \u05d4\u05d7\u05dc\u05e4\u05d5\u05ea \u05db\u05d1\u05d5\u05d9\u05d5\u05ea."
+                                                : undefined
+                                        }
                                         onClick={() =>
                                             setMode(
                                                 "return-item",
@@ -3723,7 +3993,85 @@ onEditDescription={
                 </div>
             </section>
 
-            {customerCreateOpen && (
+                        {storeCreditCustomerPopupVisible &&
+                selectedCustomer.storeCreditEnabled ===
+                    true && (
+                <div
+                    className="sale-page__store-credit-popup"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <button
+                        type="button"
+                        className="sale-page__store-credit-popup-close"
+                        aria-label="סגור"
+                        onClick={() =>
+                            setStoreCreditCustomerPopupVisible(
+                                false,
+                            )
+                        }
+                    >
+                        ×
+                    </button>
+
+                    <div className="sale-page__store-credit-popup-head">
+                        <span>
+                            לקוח הקפה
+                        </span>
+
+                        <strong>
+                            {selectedCustomer.name}
+                        </strong>
+                    </div>
+
+                    <div className="sale-page__store-credit-popup-grid">
+                        <div>
+                            <span>
+                                {storeCreditCustomerSnapshot.accountBalance <
+                                -0.001
+                                    ? "יתרת זכות"
+                                    : "חוב נוכחי"}
+                            </span>
+
+                            <strong>
+                                ₪
+                                {Math.abs(
+                                    storeCreditCustomerSnapshot.accountBalance,
+                                ).toFixed(
+                                    2,
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                זמין להקפה
+                            </span>
+
+                            <strong>
+                                ₪
+                                {storeCreditCustomerSnapshot.availableCredit.toFixed(
+                                    2,
+                                )}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                מסגרת
+                            </span>
+
+                            <strong>
+                                ₪
+                                {storeCreditCustomerSnapshot.creditLimit.toFixed(
+                                    2,
+                                )}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            )}
+{customerCreateOpen && (
 
                 <SaleCustomerQuickCreateDialog
 
@@ -3899,6 +4247,7 @@ onEditDescription={
 
             {pendingProductForSeller && (
                 <div
+                    className="sale-page__seller-selection-overlay"
                     dir="rtl"
                     style={{
                         position: "fixed",
@@ -3908,7 +4257,7 @@ onEditDescription={
                         placeItems: "center",
                         padding: "24px",
                         background:
-                            "rgba(15,23,42,.42)",
+                            "rgb(20 23 27 / 32%)",
                     }}
                 >
                     <section
@@ -3916,10 +4265,10 @@ onEditDescription={
                             width:
                                 "min(440px, 94vw)",
                             padding: "24px",
-                            borderRadius: "18px",
+                            borderRadius: "16px",
                             background: "#fff",
                             boxShadow:
-                                "0 24px 70px rgba(15,23,42,.22)",
+                                "0 24px 70px rgb(15 18 21 / 22%)",
                         }}
                     >
                         <h2
@@ -4028,6 +4377,20 @@ onEditDescription={
                     </section>
                 </div>
             )}
+
+            <SystemMessageDialog
+                title={
+                    "\u05e4\u05e2\u05d5\u05dc\u05d4 \u05dc\u05d0 \u05d6\u05de\u05d9\u05e0\u05d4"
+                }
+                message={
+                    systemMessage
+                }
+                onClose={() =>
+                    setSystemMessage(
+                        null,
+                    )
+                }
+            />
 
             <GiftCardBalanceDialog
                 open={

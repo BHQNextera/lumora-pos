@@ -12,6 +12,9 @@ import {
 import {
     getReturnsForSale,
 } from "../../models/transaction/ReturnRepository";
+import {
+    formatMoney,
+} from "../../utils/MoneyFormatter";
 
 import ReceiptPage from "../receipt/ReceiptPage";
 
@@ -63,6 +66,9 @@ function getPaymentLabel(method: string) {
 
         case "card_terminal":
             return "אשראי";
+
+                case "store_credit":
+                    return "הקפה";
 
         case "echo":
             return "Echo";
@@ -284,8 +290,12 @@ function TransactionDetailsPage({
                                                 {line.kind === "return"
                                                     ? "החזרה · "
                                                     : ""}
-                                                {line.quantity} × ₪
-                                                {line.unitPrice.toFixed(2)}
+                                                {line.quantity} ×{" "}
+                                                <span className="lumora-money-value">
+                                                    {formatMoney(
+                                                        line.unitPrice,
+                                                    )}
+                                                </span>
                                             </span>
 
                                             {line.originalSaleNumber && (
@@ -317,18 +327,14 @@ function TransactionDetailsPage({
                                         )}
 
                                         <strong
-                                            className={`transaction-details-line__amount ${line.netAmount < 0
+                                            className={`lumora-money-value transaction-details-line__amount ${line.netAmount < 0
                                                     ? "transaction-details-line__amount--negative"
                                                     : ""
                                                 }`}
                                         >
-                                            {line.netAmount < 0
-                                                ? "‎-"
-                                                : ""}
-                                            ₪
-                                            {Math.abs(
+                                            {formatMoney(
                                                 line.netAmount,
-                                            ).toFixed(2)}
+                                            )}
                                         </strong>
                                     </article>
                                 );
@@ -435,38 +441,39 @@ function TransactionDetailsPage({
                                             {payment.tenderedAmount !==
                                                 undefined && (
                                                     <span>
-                                                        התקבל ₪
-                                                        {payment.tenderedAmount.toFixed(
-                                                            2,
-                                                        )}
+                                                        התקבל{" "}
+                                                        <span className="lumora-money-value">
+                                                            {formatMoney(
+                                                                payment.tenderedAmount,
+                                                            )}
+                                                        </span>
                                                     </span>
                                                 )}
 
                                             {(payment.changeAmount ??
                                                 0) > 0 && (
                                                     <span>
-                                                        עודף ₪
-                                                        {payment.changeAmount?.toFixed(
-                                                            2,
-                                                        )}
+                                                        עודף{" "}
+                                                        <span className="lumora-money-value">
+                                                            {formatMoney(
+                                                                payment.changeAmount ??
+                                                                    0,
+                                                            )}
+                                                        </span>
                                                     </span>
                                                 )}
                                         </div>
 
                                         <strong
-                                            className={
+                                            className={`lumora-money-value ${
                                                 payment.amount < 0
                                                     ? "transaction-details-payment__negative"
                                                     : ""
-                                            }
+                                            }`}
                                         >
-                                            {payment.amount < 0
-                                                ? "‎-"
-                                                : ""}
-                                            ₪
-                                            {Math.abs(
+                                            {formatMoney(
                                                 payment.amount,
-                                            ).toFixed(2)}
+                                            )}
                                         </strong>
                                     </div>
                                 ))
@@ -480,14 +487,10 @@ function TransactionDetailsPage({
                         <div>
                             <span>סכום ביניים</span>
 
-                            <strong>
-                                {sale.subtotal < 0
-                                    ? "‎-"
-                                    : ""}
-                                ₪
-                                {Math.abs(
+                            <strong className="lumora-money-value">
+                                {formatMoney(
                                     sale.subtotal,
-                                ).toFixed(2)}
+                                )}
                             </strong>
                         </div>
 
@@ -495,9 +498,10 @@ function TransactionDetailsPage({
                             <div>
                                 <span>הנחות</span>
 
-                                <strong>
-                                    ‎-₪
-                                    {sale.discount.toFixed(2)}
+                                <strong className="lumora-money-value">
+                                    {formatMoney(
+                                        -sale.discount,
+                                    )}
                                 </strong>
                             </div>
                         )}
@@ -510,19 +514,15 @@ function TransactionDetailsPage({
                             </span>
 
                             <strong
-                                className={
+                                className={`lumora-money-value ${
                                     sale.total < 0
                                         ? "transaction-details-summary__negative"
                                         : ""
-                                }
+                                }`}
                             >
-                                {sale.total < 0
-                                    ? "‎-"
-                                    : ""}
-                                ₪
-                                {Math.abs(
+                                {formatMoney(
                                     sale.total,
-                                ).toFixed(2)}
+                                )}
                             </strong>
                         </div>
                     </section>

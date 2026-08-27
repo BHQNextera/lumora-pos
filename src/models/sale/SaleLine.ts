@@ -4,6 +4,12 @@ import type {
 import type {
     SellerAssignment,
 } from "./SellerAssignment";
+import type {
+    ProductTaxClass,
+} from "../../types/product";
+import type {
+    SaleLineTaxSnapshot,
+} from "../tax/TaxPolicy";
 
 export type SaleLineKind =
     | "sale"
@@ -87,6 +93,20 @@ export type SaleLine = {
     appliedPromotions?: AppliedSalePromotion[];
 
     netAmount: number;
+
+    /**
+     * Product tax classification captured at transaction time.
+     * Legacy transactions may omit it and are treated as standard.
+     */
+    taxClass?: ProductTaxClass;
+
+    /**
+     * Immutable effective tax treatment for this exact line.
+     *
+     * This prevents later changes to VAT rate, branch profile or
+     * product master data from rewriting transaction history.
+     */
+    taxSnapshot?: SaleLineTaxSnapshot;
 
     returnSource?: ReturnSource;
     returnReason?: string;

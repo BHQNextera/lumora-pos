@@ -80,6 +80,12 @@ export type AccountingDocumentPayment = {
     providerReference?: string;
 };
 
+export type AccountingDocumentStoreCreditObligo = {
+    beforeBalance: number;
+    creditLimit: number;
+    movementAmount: number;
+    afterBalance: number;
+};
 export type AccountingDocumentTotals = {
     subtotal: number;
     discount: number;
@@ -158,6 +164,9 @@ export type AccountingDocumentData = {
 
     payments:
         AccountingDocumentPayment[];
+
+    storeCreditObligo?:
+        AccountingDocumentStoreCreditObligo;
 
     barcode:
         AccountingDocumentBarcode;

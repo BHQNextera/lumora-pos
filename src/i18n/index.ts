@@ -19,6 +19,7 @@ export const supportedLocales:
         "he",
         "en",
         "el",
+        "ru",
     ];
 
 export function getDirection(

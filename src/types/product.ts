@@ -30,6 +30,28 @@ export type ProductLocalizedNames = {
     el?: string;
 };
 
+/**
+ * Product tax classification.
+ *
+ * standard:
+ *   Uses the active branch tax profile.
+ *
+ * exempt:
+ *   Exempt treatment with no VAT amount.
+ *
+ * zero_rate:
+ *   Zero-rate treatment with no VAT amount.
+ *
+ * standard_rate_always:
+ *   Uses the normal configured VAT rate even when the active
+ *   branch profile provides Eilat relief.
+ */
+export type ProductTaxClass =
+    | "standard"
+    | "exempt"
+    | "zero_rate"
+    | "standard_rate_always";
+
 export type Product = {
     id: string;
 
@@ -45,6 +67,11 @@ export type Product = {
     price: number;
 
     costPrice?: number;
+
+    /**
+     * Tax class defaults to "standard" for legacy products.
+     */
+    taxClass?: ProductTaxClass;
 
     category:
         Exclude<

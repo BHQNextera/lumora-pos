@@ -1,11 +1,23 @@
 import {
-    useMemo,
+useMemo,
     useState,
+    useEffect,
 } from "react";
 
 import {
     useCatalog,
 } from "../../context/useCatalog";
+import {
+    getInventoryHierarchyNodes,
+    hydrateInventoryHierarchy,
+    seedInventoryHierarchyFromProducts,
+    subscribeInventoryHierarchy,
+} from "../../models/inventory/InventoryHierarchyRepository";
+import {
+    getSuppliers,
+    hydrateSuppliers,
+    subscribeSuppliers,
+} from "../../models/inventory/SupplierRepository";
 import ProductVariantManagementDialog from "../../components/product/ProductVariantManagementDialog";
 import {
     categorySeed,
@@ -13,15 +25,24 @@ import {
 import type {
     Product,
     ProductLocalizedNames,
+    ProductTaxClass,
 } from "../../types/product";
 
 import "./product-management-page.css";
 
+import {
+    resolveProductTaxRate,
+} from "../../models/tax/TaxPolicy";
+import {
+    formatMoney,
+} from "../../utils/MoneyFormatter";
 type ProductDraft = {
     names: ProductLocalizedNames;
     price: string;
     costPrice: string;
+    taxClass: ProductTaxClass;
     category: string;
+    hierarchyCategory: string;
     department: string;
     subcategory: string;
     supplierName: string;
@@ -40,7 +61,9 @@ const emptyDraft: ProductDraft = {
     },
     price: "",
     costPrice: "",
+    taxClass: "standard",
     category: "hot-drinks",
+    hierarchyCategory: "",
     department: "",
     subcategory: "",
     supplierName: "",
@@ -77,8 +100,14 @@ function productToDraft(
                 : String(
                       product.costPrice,
                   ),
+        taxClass:
+            product.taxClass ??
+            "standard",
         category:
             product.category,
+        hierarchyCategory:
+            product.hierarchy?.category ??
+            "",
         department:
             product.hierarchy?.department ??
             "",
@@ -116,6 +145,77 @@ function displayName(
     );
 }
 
+function formatGrossProfitPercent(
+    sellingPriceIncludingVat: number,
+    costPriceBeforeVat?: number,
+    taxClass:
+        ProductTaxClass =
+        "standard",
+) {
+    if (
+        costPriceBeforeVat === undefined ||
+        !Number.isFinite(
+            costPriceBeforeVat,
+        ) ||
+        costPriceBeforeVat < 0 ||
+        !Number.isFinite(
+            sellingPriceIncludingVat,
+        ) ||
+        sellingPriceIncludingVat <= 0
+    ) {
+        return "—";
+    }
+
+    const effectiveTaxRate =
+        resolveProductTaxRate(
+            taxClass,
+        );
+
+    const costIncludingTax =
+        costPriceBeforeVat *
+        (
+            1 +
+            effectiveTaxRate
+        );
+
+    const grossProfitPercent =
+        (
+            (
+                sellingPriceIncludingVat -
+                costIncludingTax
+            ) /
+            sellingPriceIncludingVat
+        ) *
+        100;
+
+    return `${grossProfitPercent.toFixed(
+        1,
+    )}%`;
+}
+
+function getTaxClassLabel(
+    taxClass?:
+        ProductTaxClass,
+) {
+    switch (
+        taxClass ??
+        "standard"
+    ) {
+        case "exempt":
+            return "פטור";
+
+        case "zero_rate":
+            return "שיעור 0%";
+
+        case "standard_rate_always":
+            return "שיעור רגיל תמיד";
+
+        case "standard":
+        default:
+            return "רגיל";
+    }
+}
+/* LUMORA PRODUCT EDITOR CLARITY + GP V1 */
 function ProductManagementPage() {
     const {
         products,
@@ -123,6 +223,41 @@ function ProductManagementPage() {
         updateProduct,
         setProductActive,
     } = useCatalog();
+
+    /* LUMORA INVENTORY MASTER + ITEM HISTORY V1 */
+    const [masterDataRevision, setMasterDataRevision] =
+        useState(0);
+
+    useEffect(() => {
+        let alive = true;
+
+        const refresh = () => {
+            if (alive) {
+                setMasterDataRevision((current) => current + 1);
+            }
+        };
+
+        const unsubscribeSuppliers =
+            subscribeSuppliers(refresh);
+        const unsubscribeHierarchy =
+            subscribeInventoryHierarchy(refresh);
+
+        Promise.all([
+            hydrateSuppliers(),
+            hydrateInventoryHierarchy(),
+        ])
+            .then(() => {
+                seedInventoryHierarchyFromProducts(products);
+                refresh();
+            })
+            .catch(() => refresh());
+
+        return () => {
+            alive = false;
+            unsubscribeSuppliers();
+            unsubscribeHierarchy();
+        };
+    }, [products]);
 
     const [query, setQuery] = useState("");
     const [showInactive, setShowInactive] = useState(false);
@@ -157,6 +292,51 @@ function ProductManagementPage() {
                             b.sortOrder,
                     ),
             [],
+        );
+
+    const productSuppliers =
+        getSuppliers();
+
+    const hierarchyNodes =
+        getInventoryHierarchyNodes();
+
+    void masterDataRevision;
+
+    const departmentOptions =
+        hierarchyNodes.filter(
+            (node) =>
+                node.level === "department" &&
+                node.isActive,
+        );
+
+    const selectedDepartment =
+        departmentOptions.find(
+            (node) =>
+                node.name === draft.department,
+        );
+
+    const hierarchyCategoryOptions =
+        hierarchyNodes.filter(
+            (node) =>
+                node.level === "category" &&
+                node.isActive &&
+                (!selectedDepartment ||
+                    node.parentId === selectedDepartment.id),
+        );
+
+    const selectedHierarchyCategory =
+        hierarchyCategoryOptions.find(
+            (node) =>
+                node.name === draft.hierarchyCategory,
+        );
+
+    const subcategoryOptions =
+        hierarchyNodes.filter(
+            (node) =>
+                node.level === "subcategory" &&
+                node.isActive &&
+                (!selectedHierarchyCategory ||
+                    node.parentId === selectedHierarchyCategory.id),
         );
 
     const visibleProducts =
@@ -238,7 +418,15 @@ function ProductManagementPage() {
         const fallbackName =
             heName || enName || elName;
 
-        const price = Number(draft.price);
+        const priceValue =
+            draft.price.trim();
+
+        if (!priceValue) {
+            setError("יש להזין מחיר מכירה.");
+            return;
+        }
+
+        const price = Number(priceValue);
 
         if (!fallbackName) {
             setError("יש להזין שם פריט לפחות בשפה אחת.");
@@ -309,6 +497,25 @@ function ProductManagementPage() {
                   )
                 : undefined;
 
+        const selectedSupplier =
+            draft.supplierName.trim()
+                ? productSuppliers.find(
+                      (supplier) =>
+                          supplier.name ===
+                          draft.supplierName.trim(),
+                  )
+                : undefined;
+
+        if (
+            draft.supplierName.trim() &&
+            !selectedSupplier
+        ) {
+            setError(
+                "יש לבחור ספק מטבלת הספקים.",
+            );
+            return;
+        }
+
         const product: Product = {
             id:
                 current?.id ??
@@ -326,6 +533,8 @@ function ProductManagementPage() {
                 Number.isFinite(costPrice)
                     ? costPrice
                     : undefined,
+            taxClass:
+                draft.taxClass,
             category:
                 draft.category as Product["category"],
             hierarchy: {
@@ -334,7 +543,8 @@ function ProductManagementPage() {
                     parent?.name ||
                     current?.hierarchy?.department,
                 category:
-                    category?.name ??
+                    draft.hierarchyCategory.trim() ||
+                    category?.name ||
                     current?.hierarchy?.category,
                 subcategory:
                     draft.subcategory.trim() ||
@@ -345,6 +555,7 @@ function ProductManagementPage() {
                 draft.supplierSku.trim()
                     ? {
                           id:
+                              selectedSupplier?.id ??
                               current?.supplier?.id,
                           name:
                               draft.supplierName.trim() ||
@@ -444,6 +655,8 @@ function ProductManagementPage() {
                             <th>קטגוריה</th>
                             <th>ספק</th>
                             <th>מחיר</th>
+                            <th>עלות</th>
+                            <th>GP%</th>
                             <th>מלאי</th>
                             <th>סטטוס</th>
                             <th>פעולות</th>
@@ -456,6 +669,11 @@ function ProductManagementPage() {
                                     <strong>
                                         {displayName(product)}
                                     </strong>
+                                    <small className="product-management__tax-class">
+                                        מס · {getTaxClassLabel(
+                                            product.taxClass,
+                                        )}
+                                    </small>
                                     {(product.names?.en ||
                                         product.names?.el) && (
                                         <small>
@@ -482,7 +700,30 @@ function ProductManagementPage() {
                                     {product.supplier?.name ?? "—"}
                                 </td>
                                 <td>
-                                    ₪{product.price.toFixed(2)}
+                                    <span className="lumora-money-value">
+                                        {formatMoney(
+                                            product.price,
+                                        )}
+                                    </span>
+                                </td>
+                                <td>
+                                    {product.costPrice ===
+                                    undefined
+                                        ? "—"
+                                        : (
+                                              <span className="lumora-money-value">
+                                                  {formatMoney(
+                                                      product.costPrice,
+                                                  )}
+                                              </span>
+                                          )}
+                                </td>
+                                <td>
+                                    {formatGrossProfitPercent(
+                                        product.price,
+                                        product.costPrice,
+                                        product.taxClass,
+                                    )}
                                 </td>
                                 <td>
                                     {product.stockOnHand ?? "—"}
@@ -607,6 +848,11 @@ function ProductManagementPage() {
                         </header>
 
                         <div className="product-management__form">
+                            <div className="product-management__required-note">
+                                <span aria-hidden="true">*</span>
+                                שדות חובה · יש להזין שם פריט לפחות בשפה אחת
+                            </div>
+
                             <div className="product-management__languages">
                                 <label>
                                     שם בעברית
@@ -650,8 +896,8 @@ function ProductManagementPage() {
 
                             <div className="product-management__form-grid">
                                 <label>
-                                    מחיר מכירה
-                                    <input
+                                    <span className="product-management__label-text">מחיר מכירה <span className="product-management__required-mark" aria-hidden="true">*</span></span>
+                                    <input aria-required="true"
                                         type="number"
                                         min="0"
                                         step="0.01"
@@ -683,8 +929,56 @@ function ProductManagementPage() {
                                     />
                                 </label>
 
+                                <label className="product-management__calculated-field">
+                                    רווחיות GP%
+                                    <input
+                                        type="text"
+                                        className="product-management__calculated-input"
+                                        dir="ltr"
+                                        readOnly
+                                        tabIndex={-1}
+                                        value={formatGrossProfitPercent(
+                                            Number(draft.price),
+                                            draft.costPrice.trim()
+                                                ? Number(
+                                                      draft.costPrice,
+                                                  )
+                                                : undefined,
+                                            draft.taxClass,
+                                        )}
+                                        title="מחושב לפי סיווג המס של הפריט ופרופיל המס הפעיל בסניף"
+                                    />
+                                </label>
+
                                 <label>
-                                    קטגוריה
+                                    סיווג מס
+                                    <select
+                                        value={draft.taxClass}
+                                        onChange={(event) =>
+                                            setDraft((current) => ({
+                                                ...current,
+                                                taxClass:
+                                                    event.target.value as ProductTaxClass,
+                                            }))
+                                        }
+                                    >
+                                        <option value="standard">
+                                            רגיל — לפי פרופיל הסניף
+                                        </option>
+                                        <option value="exempt">
+                                            פטור ממע״מ
+                                        </option>
+                                        <option value="zero_rate">
+                                            שיעור 0%
+                                        </option>
+                                        <option value="standard_rate_always">
+                                            חייב בשיעור רגיל גם בפרופיל אילת
+                                        </option>
+                                    </select>
+                                </label>
+
+                                <label>
+                                    קטגוריית קופה
                                     <select
                                         value={draft.category}
                                         onChange={(event) =>
@@ -708,21 +1002,78 @@ function ProductManagementPage() {
 
                                 <label>
                                     מחלקה
-                                    <input
+                                    <select
                                         value={draft.department}
                                         onChange={(event) =>
                                             setDraft((current) => ({
                                                 ...current,
                                                 department:
                                                     event.target.value,
+                                                hierarchyCategory: "",
+                                                subcategory: "",
                                             }))
                                         }
-                                    />
+                                    >
+                                        <option value="">
+                                            ללא שיוך
+                                        </option>
+                                        {draft.department &&
+                                            !departmentOptions.some(
+                                                (node) => node.name === draft.department,
+                                            ) && (
+                                            <option value={draft.department}>
+                                                {draft.department}
+                                            </option>
+                                        )}
+                                        {departmentOptions.map((node) => (
+                                            <option
+                                                key={node.id}
+                                                value={node.name}
+                                            >
+                                                {node.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label>
+                                    קטגוריית היררכיה
+                                    <select
+                                        value={draft.hierarchyCategory}
+                                        onChange={(event) =>
+                                            setDraft((current) => ({
+                                                ...current,
+                                                hierarchyCategory:
+                                                    event.target.value,
+                                                subcategory: "",
+                                            }))
+                                        }
+                                    >
+                                        <option value="">
+                                            ללא שיוך
+                                        </option>
+                                        {draft.hierarchyCategory &&
+                                            !hierarchyCategoryOptions.some(
+                                                (node) => node.name === draft.hierarchyCategory,
+                                            ) && (
+                                            <option value={draft.hierarchyCategory}>
+                                                {draft.hierarchyCategory}
+                                            </option>
+                                        )}
+                                        {hierarchyCategoryOptions.map((node) => (
+                                            <option
+                                                key={node.id}
+                                                value={node.name}
+                                            >
+                                                {node.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
 
                                 <label>
                                     תת־קטגוריה
-                                    <input
+                                    <select
                                         value={draft.subcategory}
                                         onChange={(event) =>
                                             setDraft((current) => ({
@@ -731,7 +1082,27 @@ function ProductManagementPage() {
                                                     event.target.value,
                                             }))
                                         }
-                                    />
+                                    >
+                                        <option value="">
+                                            ללא שיוך
+                                        </option>
+                                        {draft.subcategory &&
+                                            !subcategoryOptions.some(
+                                                (node) => node.name === draft.subcategory,
+                                            ) && (
+                                            <option value={draft.subcategory}>
+                                                {draft.subcategory}
+                                            </option>
+                                        )}
+                                        {subcategoryOptions.map((node) => (
+                                            <option
+                                                key={node.id}
+                                                value={node.name}
+                                            >
+                                                {node.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
 
                                 <label>
@@ -740,19 +1111,17 @@ function ProductManagementPage() {
                                         type="number"
                                         step="1"
                                         value={draft.stockOnHand}
-                                        onChange={(event) =>
-                                            setDraft((current) => ({
-                                                ...current,
-                                                stockOnHand:
-                                                    event.target.value,
-                                            }))
-                                        }
+                                        readOnly
                                     />
+
+                                    <small className="product-management__inventory-hint">
+                                        שינוי מלאי מתבצע בלשונית התאמות מלאי.
+                                    </small>
                                 </label>
 
                                 <label>
                                     ספק
-                                    <input
+                                    <select
                                         value={draft.supplierName}
                                         onChange={(event) =>
                                             setDraft((current) => ({
@@ -761,7 +1130,37 @@ function ProductManagementPage() {
                                                     event.target.value,
                                             }))
                                         }
-                                    />
+                                    >
+                                        <option value="">
+                                            ללא ספק
+                                        </option>
+                                        {draft.supplierName &&
+                                            !productSuppliers.some(
+                                                (supplier) =>
+                                                    supplier.name === draft.supplierName,
+                                            ) && (
+                                            <option value={draft.supplierName}>
+                                                {draft.supplierName} · ספק ישן
+                                            </option>
+                                        )}
+                                        {productSuppliers
+                                            .filter(
+                                                (supplier) =>
+                                                    supplier.isActive ||
+                                                    supplier.name === draft.supplierName,
+                                            )
+                                            .map((supplier) => (
+                                                <option
+                                                    key={supplier.id}
+                                                    value={supplier.name}
+                                                >
+                                                    {supplier.name}
+                                                    {!supplier.isActive
+                                                        ? " · לא פעיל"
+                                                        : ""}
+                                                </option>
+                                            ))}
+                                    </select>
                                 </label>
 
                                 <label>
@@ -780,8 +1179,8 @@ function ProductManagementPage() {
                                 </label>
 
                                 <label>
-                                    SKU
-                                    <input
+                                    <span className="product-management__label-text">SKU <span className="product-management__required-mark" aria-hidden="true">*</span></span>
+                                    <input aria-required="true"
                                         dir="ltr"
                                         value={draft.sku}
                                         onChange={(event) =>
@@ -795,8 +1194,8 @@ function ProductManagementPage() {
                                 </label>
 
                                 <label>
-                                    ברקוד
-                                    <input
+                                    <span className="product-management__label-text">ברקוד <span className="product-management__required-mark" aria-hidden="true">*</span></span>
+                                    <input aria-required="true"
                                         dir="ltr"
                                         value={draft.barcode}
                                         onChange={(event) =>

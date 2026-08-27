@@ -488,11 +488,8 @@ function ProductVariantManagementDialog({
                 ) =>
                     total +
                     (
-                        variant.isActive
-                            ? variant
-                                  .stockOnHand ??
-                              0
-                            : 0
+                        variant.stockOnHand ??
+                        0
                     ),
                 0,
             );
@@ -669,7 +666,7 @@ function ProductVariantManagementDialog({
                                     מחיר
                                 </th>
                                 <th>
-                                    מלאי
+                                    מלאי נוכחי
                                 </th>
                                 <th>
                                     פעיל
@@ -871,22 +868,15 @@ function ProductVariantManagementDialog({
                                                 value={
                                                     variant.stockOnHand
                                                 }
-                                                onChange={(
-                                                    event,
-                                                ) =>
-                                                    updateVariant(
-                                                        variant.variantId,
-                                                        {
-                                                            stockOnHand:
-                                                                event
-                                                                    .target
-                                                                    .value,
-                                                        },
-                                                    )
-                                                }
+                                                readOnly
+                                                title="שינוי מלאי מתבצע במסך התאמות מלאי"
                                                 style={{
                                                     width:
                                                         "80px",
+                                                    background:
+                                                        "#f3f4f6",
+                                                    color:
+                                                        "#6b7280",
                                                 }}
                                             />
                                         </td>
@@ -916,6 +906,20 @@ function ProductVariantManagementDialog({
                                         <td>
                                             <button
                                                 type="button"
+                                                disabled={
+                                                    Number(
+                                                        variant.stockOnHand ||
+                                                        0,
+                                                    ) !== 0
+                                                }
+                                                title={
+                                                    Number(
+                                                        variant.stockOnHand ||
+                                                        0,
+                                                    ) !== 0
+                                                        ? "יש לאפס את המלאי דרך התאמות מלאי לפני מחיקת הווריאנט"
+                                                        : undefined
+                                                }
                                                 onClick={() =>
                                                     removeVariant(
                                                         variant.variantId,
@@ -930,6 +934,19 @@ function ProductVariantManagementDialog({
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                <div
+                    style={{
+                        marginTop:
+                            "10px",
+                        color:
+                            "#6b7280",
+                        fontSize:
+                            "13px",
+                    }}
+                >
+                    שינוי מלאי מתבצע בלשונית התאמות מלאי.
                 </div>
 
                 <button

@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+import {
+    rejectBarcodeLikeNumericInput,
+} from "../../utils/numericInputSafety";
+
 import "./line-discount-dialog.css";
 
 type DiscountMode =
@@ -134,6 +138,7 @@ function LineDiscountDialog({
                 </div>
 
                 <input
+                    data-lumora-numeric-safe="line-discount"
                     type="number"
                     min="0"
                     max={
@@ -145,11 +150,26 @@ function LineDiscountDialog({
                     step="0.01"
                     value={value}
                     autoFocus
-                    onChange={(event) =>
-                        setValue(
-                            event.target.value,
-                        )
-                    }
+                    onChange={(event) => {
+                                /* LUMORA LINE DISCOUNT BARCODE GUARD V1 */
+                                const nextValue =
+                                    event.target.value;
+
+                                if (
+                                    rejectBarcodeLikeNumericInput(
+                                        nextValue,
+                                        "זוהתה סריקת ברקוד בשדה הנחת הפריט. ההנחה לא שונתה.",
+                                    )
+                                ) {
+                                    event.currentTarget.value =
+                                        value;
+                                    return;
+                                }
+
+                                setValue(
+                                    nextValue,
+                                );
+                            }}
                     onKeyDown={(event) => {
                         if (
                             event.key ===

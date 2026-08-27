@@ -31,6 +31,23 @@ export type Customer = {
 
     isClubMember: boolean;
 
+    /**
+     * Customer may buy on account ("הקפה").
+     * Business-level visibility is controlled separately
+     * by the active payment-method configuration.
+     */
+    storeCreditEnabled?: boolean;
+
+    /**
+     * Approved customer credit ceiling.
+     */
+    creditLimit?: number;
+
+    /**
+     * Current outstanding customer debt.
+     */
+    accountBalance?: number;
+
     isActive?: boolean;
 
     createdAt?: string;

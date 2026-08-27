@@ -1,4 +1,4 @@
-﻿import {
+import {
     useState,
 } from "react";
 
@@ -15,6 +15,8 @@ import {
 import type {
     RegisterShift,
 } from "../../models/shift/RegisterShift";
+
+import "./close-register-shift-dialog.css";
 
 type CloseRegisterShiftDialogProps = {
     shift: RegisterShift;
@@ -107,71 +109,62 @@ function CloseRegisterShiftDialog({
 
     return (
         <div
+            className="close-register-shift-dialog__backdrop"
             dir="rtl"
-            style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 15000,
-                display: "grid",
-                placeItems: "center",
-                padding: "16px",
-                background:
-                    "rgba(15,23,42,.44)",
-            }}
         >
             <section
-                style={{
-                    width:
-                        "min(500px, 94vw)",
-                    maxHeight:
-                        "calc(100dvh - 32px)",
-                    display: "flex",
-                    flexDirection: "column",
-                    overflow: "hidden",
-                    borderRadius: "18px",
-                    background: "#fff",
-                }}
+                className="close-register-shift-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="close-register-shift-dialog-title"
             >
-                <div
-                    style={{
-                        padding:
-                            "26px 26px 14px",
-                        flex: "0 0 auto",
-                    }}
-                >
-                    <h2
-                        style={{
-                            marginTop: 0,
-                        }}
-                    >
-                        סגירת קופה
-                    </h2>
-
+                <header className="close-register-shift-dialog__header">
                     <div>
-                        קופה{" "}
-                        {
-                            shift.registerCode
-                        }
-                    </div>
-                </div>
+                        <div className="close-register-shift-dialog__eyebrow">
+                            LUMORA Z REPORT
+                        </div>
 
-                <div
-                    style={{
-                        minHeight: 0,
-                        overflowY: "auto",
-                        padding:
-                            "0 26px 20px",
-                    }}
-                >
-                    <div
-                        style={{
-                            marginTop:
-                                "18px",
-                        }}
+                        <h2 id="close-register-shift-dialog-title">
+                            סגירת קופה
+                        </h2>
+
+                        <p>
+                            ספירת מזומן וסגירת משמרת קופה {shift.registerCode}.
+                        </p>
+                    </div>
+
+                    <button
+                        className="close-register-shift-dialog__close"
+                        type="button"
+                        onClick={
+                            onClose
+                        }
+                        disabled={
+                            isSubmitting
+                        }
+                        aria-label="סגירת החלון"
                     >
-                        <strong>
-                            הצהרת מזומן סוף יום
-                        </strong>
+                        ×
+                    </button>
+                </header>
+
+                <div className="close-register-shift-dialog__body">
+                    <section className="close-register-shift-dialog__declaration-card">
+                        <div className="close-register-shift-dialog__section-heading">
+                            <div>
+                                <h3>
+                                    הצהרת מזומן סוף יום
+                                </h3>
+
+                                <p>
+                                    יש להזין את הכמות שנספרה מכל עריך.
+                                </p>
+                            </div>
+
+                            <span>
+                                קופה {shift.registerCode}
+                            </span>
+                        </div>
 
                         <CashDeclarationTable
                             onChange={(declaration) => {
@@ -190,78 +183,61 @@ function CloseRegisterShiftDialog({
                                 );
                             }}
                         />
-                    </div>
+                    </section>
 
                     {present.length > 0 && (
-                        <div
-                            style={{
-                                marginTop:
-                                    "18px",
-                                padding:
-                                    "12px",
-                                border:
-                                    "1px solid #f59e0b",
-                                borderRadius:
-                                    "10px",
-                            }}
+                        <aside
+                            className="close-register-shift-dialog__attendance-warning"
+                            role="status"
                         >
-                            <strong>
-                                קיימים עובדים בנוכחות
-                            </strong>
-
-                            <div
-                                style={{
-                                    marginTop:
-                                        "6px",
-                                }}
+                            <span
+                                className="close-register-shift-dialog__warning-icon"
+                                aria-hidden="true"
                             >
-                                סגירת הקופה תוציא אותם מנוכחות:
-                            </div>
+                                !
+                            </span>
 
-                            <ul>
-                                {present.map(
-                                    (entry) => (
-                                        <li
-                                            key={
-                                                entry.id
-                                            }
-                                        >
-                                            {
-                                                entry.employeeName
-                                            }
-                                        </li>
-                                    ),
-                                )}
-                            </ul>
-                        </div>
+                            <div>
+                                <strong>
+                                    קיימים עובדים בנוכחות
+                                </strong>
+
+                                <p>
+                                    סגירת הקופה תוציא אותם מנוכחות:
+                                </p>
+
+                                <ul>
+                                    {present.map(
+                                        (entry) => (
+                                            <li
+                                                key={
+                                                    entry.id
+                                                }
+                                            >
+                                                {
+                                                    entry.employeeName
+                                                }
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                            </div>
+                        </aside>
                     )}
 
                     {error && (
                         <div
-                            style={{
-                                marginTop:
-                                    "12px",
-                            }}
+                            className="close-register-shift-dialog__error"
+                            role="alert"
                         >
                             {error}
                         </div>
                     )}
                 </div>
 
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "8px",
-                        padding:
-                            "16px 26px 20px",
-                        borderTop:
-                            "1px solid #e5e7eb",
-                        background:
-                            "#fff",
-                        flex: "0 0 auto",
-                    }}
-                >
+                <footer className="close-register-shift-dialog__footer">
                     <button
+                        className="close-register-shift-dialog__confirm"
                         type="button"
                         onClick={
                             submit
@@ -278,6 +254,7 @@ function CloseRegisterShiftDialog({
                     </button>
 
                     <button
+                        className="close-register-shift-dialog__cancel"
                         type="button"
                         onClick={
                             onClose
@@ -288,7 +265,7 @@ function CloseRegisterShiftDialog({
                     >
                         ביטול
                     </button>
-                </div>
+                </footer>
             </section>
         </div>
     );

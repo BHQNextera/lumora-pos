@@ -5,6 +5,9 @@ import type {
 import type {
     PrinterPaperFormat,
 } from "./RegisterPrinterConfig";
+import type {
+    PaymentMethodConfiguration,
+} from "../models/PaymentMethod";
 
 export type OperatingModel =
     | "calculator"
@@ -123,6 +126,36 @@ export type RegisterOperatingProfile = {
     };
 };
 
+export type StoreCreditPolicy = {
+    /**
+     * When true, a manager must enter a reason
+     * before approving a credit-limit override.
+     */
+    requireManagerApprovalReason: boolean;
+
+    /**
+     * When true, customer account balance may cross below zero,
+     * meaning the customer has credit with the business.
+     *
+     * Missing / undefined defaults to true.
+     */
+    allowCustomerCreditBalance?: boolean;
+};
+export type PostTransactionPolicy = {
+    autoPrintAccountingDocument?: boolean;
+
+    /**
+     * 0 disables automatic return to the Sale workspace.
+     * Missing defaults to 20 seconds.
+     */
+    timeoutSeconds?: number;
+
+    exchangeSlipEnabled?: boolean;
+    exchangeSlipDefaultCopies?: number;
+    exchangeSlipMaxCopies?: number;
+
+    sendDocumentEnabled?: boolean;
+};
 export type DeliveryCapabilities = {
     print: boolean;
     sms: boolean;
@@ -160,7 +193,20 @@ export type BusinessOperatingProfile = {
     delivery:
         DeliveryCapabilities;
 
-    registers:
+
+    /**
+     * Per-business payment visibility/order overrides.
+     * Core method behavior stays defined in PaymentMethod.ts.
+     */
+    paymentMethods?:
+        PaymentMethodConfiguration[];
+
+    storeCreditPolicy?:
+        StoreCreditPolicy;
+
+    postTransactionPolicy?:
+        PostTransactionPolicy;
+ registers:
         RegisterOperatingProfile[];
 };
 

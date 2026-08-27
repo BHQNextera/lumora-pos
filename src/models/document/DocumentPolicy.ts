@@ -1,6 +1,9 @@
 import {
     getActiveBusinessConfiguration,
 } from "../../config/ActiveBusinessConfiguration";
+import {
+    getDocumentSettings,
+} from "../../config/DocumentSettings";
 import type {
     DocumentType,
 } from "./Document";
@@ -20,6 +23,8 @@ export type DocumentRuleContext = {
 
     hasPositiveLines: boolean;
     hasNegativeLines: boolean;
+
+    isStoreCreditOnly: boolean;
 };
 
 export type DocumentRule = {
@@ -96,6 +101,25 @@ export const documentPolicy:
     rules: [
         {
             id:
+                "store-credit-sale",
+
+            documentTypes: [
+                "tax_invoice",
+            ],
+
+            matches: (
+                context,
+            ) =>
+                context.transactionType ===
+                "sale" &&
+                context.isStoreCreditOnly &&
+                isPositive(
+                    context.total,
+                ),
+        },
+
+        {
+            id:
                 "current-sale",
 
             documentTypes: [
@@ -107,6 +131,7 @@ export const documentPolicy:
             ) =>
                 context.transactionType ===
                 "sale" &&
+                !context.isStoreCreditOnly &&
                 isPositive(
                     context.total,
                 ),
@@ -174,9 +199,7 @@ export const documentPolicy:
             id:
                 "current-exchange-zero",
 
-            documentTypes: [
-                "tax_invoice",
-            ],
+            documentTypes: [],
 
             matches: (
                 context,
@@ -254,12 +277,15 @@ export function resolveDocumentTypes(
     context:
         DocumentRuleContext,
 
-    policy:
-        DocumentPolicy =
-        documentPolicy,
+    policy?:
+        DocumentPolicy,
 ): DocumentType[] {
+    const activePolicy =
+        policy ??
+        documentPolicy;
+
     const resolved =
-        policy.rules.flatMap(
+        activePolicy.rules.flatMap(
             (rule) =>
                 rule.matches(
                     context,
@@ -267,6 +293,22 @@ export function resolveDocumentTypes(
                     ? rule.documentTypes
                     : [],
         );
+
+    if (
+        !policy &&
+        context.transactionType ===
+            "exchange" &&
+        context.hasPositiveLines &&
+        context.hasNegativeLines &&
+        isZero(
+            context.total,
+        )
+    ) {
+        resolved.push(
+            getDocumentSettings()
+                .zeroBalanceExchangeDocument,
+        );
+    }
 
     return Array.from(
         new Set(

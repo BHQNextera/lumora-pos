@@ -1,65 +1,43 @@
-import { useState } from "react";
-
-type CardMethodProps = {
-    remainingAmount: number;
-    onApprove: (
-        amount: number,
-        providerReference: string,
-    ) => void;
-};
-
-function CardMethod({
-    remainingAmount,
-    onApprove,
-}: CardMethodProps) {
-    const [isProcessing, setIsProcessing] =
-        useState(false);
-
-    const approve = () => {
-        if (
-            isProcessing ||
-            remainingAmount <= 0
-        ) {
-            return;
-        }
-
-        setIsProcessing(true);
-
-        const providerReference =
-            `TERMINAL-${Date.now()}`;
-
-        onApprove(
-            remainingAmount,
-            providerReference,
-        );
-    };
-
+function CardMethod() {
     return (
-        <div className="payment-page__method-state">
-            <span className="payment-page__method-state-icon">
-                ▤
-            </span>
+        <div className="card-payment-v2">
+            <div className="card-payment-v2__header">
+                <div>
+                    <span>
+                        אשראי משולב
+                    </span>
 
-            <strong>
-                אשראי במסופון
-            </strong>
+                    <strong>
+                        חיבור ישיר למסופון
+                    </strong>
+                </div>
 
-            <p>
-                סכום לחיוב: ₪
-                {remainingAmount.toFixed(2)}
-            </p>
+                <span className="card-payment-v2__status">
+                    לא מחובר
+                </span>
+            </div>
+
+            <div className="card-payment-v2__hint">
+                <span
+                    aria-hidden="true"
+                    className="card-payment-v2__terminal-icon"
+                >
+                    ▤
+                </span>
+
+                <p>
+                    לא הוגדר Adapter של ספק סליקה לעמדה זו.
+                    לפיילוט יש להשתמש ב״אשראי חיצוני״ ולתעד
+                    את האסמכתה שהתקבלה מהמסוף.
+                </p>
+            </div>
 
             <button
                 type="button"
-                disabled={
-                    isProcessing ||
-                    remainingAmount <= 0
-                }
-                onClick={approve}
+                disabled
+                className="payment-page__confirm card-payment-v2__confirm"
             >
-                {isProcessing
-                    ? "מעבד..."
-                    : "אשר תשלום"}
+                חיבור למסופון אינו זמין
             </button>
         </div>
     );

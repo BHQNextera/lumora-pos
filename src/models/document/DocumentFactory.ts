@@ -20,6 +20,19 @@ function buildRuleContext(
     sale: Sale,
 ) {
     return {
+        isStoreCreditOnly:
+            sale.payments.length > 0 &&
+            sale.payments
+                .filter(
+                    (payment) =>
+                        payment.status ===
+                        "approved",
+                )
+                .every(
+                    (payment) =>
+                        payment.method ===
+                        "store_credit",
+                ),
         transactionType:
             sale.transactionType,
         total:

@@ -1,27 +1,23 @@
+import { formatMoney } from "../../utils/MoneyFormatter";
+
 import type {
     AccountingDocumentData,
 } from "../../models/document/AccountingDocumentData";
+import {
+    getDocumentFooterSettings,
+} from "../../config/DocumentFooterSettings";
 
 type AccountingDocumentStandardRendererProps = {
     data: AccountingDocumentData;
 };
 
-function formatMoney(
-    value: number,
-) {
-    const sign =
-        value < 0
-            ? "−"
-            : "";
-
-    return `${sign}₪${Math.abs(
-        value,
-    ).toFixed(2)}`;
-}
 
 function AccountingDocumentStandardRenderer({
     data,
 }: AccountingDocumentStandardRendererProps) {
+    const footer =
+        getDocumentFooterSettings();
+
     return (
         <article className="receipt">
             <header className="receipt__business">
@@ -319,10 +315,9 @@ function AccountingDocumentStandardRenderer({
                                 הנחות
                             </span>
 
-                            <strong>
-                                −₪
-                                {data.totals.discount.toFixed(
-                                    2,
+                            <strong className="lumora-money-value">
+                                {formatMoney(
+                                    -data.totals.discount,
                                 )}
                             </strong>
                         </div>
@@ -366,7 +361,66 @@ function AccountingDocumentStandardRenderer({
                 </div>
             </section>
 
-            <section className="receipt__payments">
+                        {data.storeCreditObligo && (
+                <section className="receipt__payments">
+                    <div className="receipt__section-heading">
+                        <span>
+                            חשבון לקוח
+                        </span>
+                    </div>
+
+                    <div className="receipt__payment">
+                        <span>
+                            {data.storeCreditObligo.beforeBalance <
+                            -0.001
+                                ? "יתרת זכות קודמת"
+                                : "חוב קודם"}
+                        </span>
+
+                        <strong>
+                            {formatMoney(
+                                Math.abs(
+                                    data.storeCreditObligo.beforeBalance,
+                                ),
+                            )}
+                        </strong>
+                    </div>
+
+                    <div className="receipt__payment">
+                        <span>
+                            {data.storeCreditObligo.afterBalance <
+                            -0.001
+                                ? "יתרת זכות נוכחית"
+                                : "חוב נוכחי"}
+                        </span>
+
+                        <strong>
+                            {formatMoney(
+                                Math.abs(
+                                    data.storeCreditObligo.afterBalance,
+                                ),
+                            )}
+                        </strong>
+                    </div>
+
+                    <div className="receipt__payment">
+                        <span>
+                            יתרה זמינה להקפה
+                        </span>
+
+                        <strong>
+                            {formatMoney(
+                                Math.max(
+                                    0,
+                                    data.storeCreditObligo.creditLimit -
+                                        data.storeCreditObligo.afterBalance,
+                                ),
+                            )}
+                        </strong>
+                    </div>
+                </section>
+            )}
+<section className="receipt__payments">
                 <div className="receipt__section-heading">
                     <span>
                         תשלומים / החזרים
@@ -479,6 +533,54 @@ function AccountingDocumentStandardRenderer({
                         )}
                     </section>
                 )}
+
+            {footer.enabled && (
+                <footer className="receipt__custom-footer">
+                    {footer.thankYouText && (
+                        <strong>
+                            {footer.thankYouText}
+                        </strong>
+                    )}
+
+                    {footer.returnPolicyText && (
+                        <p>
+                            {footer.returnPolicyText}
+                        </p>
+                    )}
+
+                    <div className="receipt__custom-footer-contact">
+                        {footer.businessPhone && (
+                            <span dir="ltr">
+                                {footer.businessPhone}
+                            </span>
+                        )}
+
+                        {footer.website && (
+                            <span dir="ltr">
+                                {footer.website}
+                            </span>
+                        )}
+
+                        {footer.instagram && (
+                            <span dir="ltr">
+                                Instagram · {footer.instagram}
+                            </span>
+                        )}
+
+                        {footer.facebook && (
+                            <span dir="ltr">
+                                Facebook · {footer.facebook}
+                            </span>
+                        )}
+                    </div>
+
+                    {footer.customText && (
+                        <p className="receipt__custom-footer-note">
+                            {footer.customText}
+                        </p>
+                    )}
+                </footer>
+            )}
         </article>
     );
 }

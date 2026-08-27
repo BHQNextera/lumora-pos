@@ -13,6 +13,7 @@ export type ReportFilters = {
 
     registerCode?: string;
     sellerId?: string;
+    employeeId?: string;
 
     paymentMethod?:
         PaymentMethodCode;

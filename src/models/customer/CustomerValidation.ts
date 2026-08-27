@@ -193,6 +193,65 @@ export function isValidBirthDate(
     );
 }
 
+const customerValidationMessages:
+Record<string, string> = {
+    CUSTOMER_NAME_REQUIRED:
+        "יש להזין שם לקוח.",
+
+    CUSTOMER_INVALID_PHONE:
+        "יש להזין מספר טלפון נייד ישראלי תקין.",
+
+    CUSTOMER_ACTIVE_DUPLICATE_PHONE:
+        "כבר קיים לקוח פעיל עם מספר טלפון זה.",
+
+    CUSTOMER_ID_REQUIRED:
+        "יש להזין ת״ז.",
+
+    CUSTOMER_INVALID_ISRAELI_ID:
+        "יש להזין ת״ז ישראלית תקינה.",
+
+    CUSTOMER_ACTIVE_DUPLICATE_ID:
+        "כבר קיים לקוח פעיל עם ת״ז זו.",
+
+    CUSTOMER_BIRTH_DATE_REQUIRED:
+        "יש להזין תאריך לידה.",
+
+    CUSTOMER_INVALID_BIRTH_DATE:
+        "יש להזין תאריך לידה תקין.",
+
+    CUSTOMER_CREDIT_LIMIT_REQUIRED:
+        "יש להזין אובליגו מאושר גדול מאפס.",
+};
+
+export function getCustomerValidationMessage(
+    error:
+        unknown,
+): string {
+    const code =
+        error instanceof Error
+            ? error.message
+            : "";
+
+    if (
+        customerValidationMessages[code]
+    ) {
+        return customerValidationMessages[code];
+    }
+
+    if (
+        code.startsWith(
+            "CUSTOMER_",
+        )
+    ) {
+        return "לא ניתן לשמור את הלקוח. יש לבדוק את הפרטים ולנסות שוב.";
+    }
+
+    return (
+        code ||
+        "לא ניתן לשמור את הלקוח."
+    );
+}
+
 export function validateCustomerForSave(
     customer: Customer,
     existingCustomers:
@@ -212,6 +271,14 @@ export function validateCustomerForSave(
     const policy =
         getActiveBusinessOperatingProfile()
             .customerPolicy;
+
+    if (
+        !customer.name.trim()
+    ) {
+        throw new Error(
+            "CUSTOMER_NAME_REQUIRED",
+        );
+    }
 
     // PHONE
     if (
@@ -331,6 +398,23 @@ export function validateCustomerForSave(
     ) {
         throw new Error(
             "CUSTOMER_INVALID_BIRTH_DATE",
+        );
+    }
+
+    if (
+        customer.storeCreditEnabled &&
+        (
+            customer.creditLimit ===
+                undefined ||
+            !Number.isFinite(
+                customer.creditLimit,
+            ) ||
+            customer.creditLimit <=
+                0
+        )
+    ) {
+        throw new Error(
+            "CUSTOMER_CREDIT_LIMIT_REQUIRED",
         );
     }
 }

@@ -25,6 +25,36 @@ import {
   clockOutEmployee,
   getPresentAttendance,
 } from "../models/attendance/AttendanceRepository";
+import {
+  hydrateEmployees,
+} from "../models/employee/EmployeeRepository";
+import {
+  hydrateRegisterPrinterConfig,
+} from "../config/RegisterPrinterConfig";
+import {
+  hydrateDocumentSettings,
+} from "../config/DocumentSettings";
+import {
+  hydrateDocumentFooterSettings,
+} from "../config/DocumentFooterSettings";
+import {
+  hydratePaymentMethodConfiguration,
+} from "../models/PaymentMethod";
+import {
+  hydrateTaxPolicy,
+} from "../models/tax/TaxPolicy";
+import {
+  hydrateReturnPolicy,
+} from "../config/ReturnPolicy";
+import {
+  hydrateCustomerCreditPolicy,
+} from "../config/CustomerCreditPolicy";
+import {
+  hydrateBusinessIdentitySettings,
+} from "../config/BusinessIdentitySettings";
+import {
+  hydrateRegisterLocalSettings,
+} from "../config/RegisterLocalSettings";
 
 import {
   createShiftZReport,
@@ -56,13 +86,14 @@ import type {
   Sale,
 } from "../models/sale/Sale";
 import CustomerManagementPage from "../pages/customers/CustomerManagementPage";
-import ProductManagementPage from "../pages/products/ProductManagementPage";
+import InventoryWorkspacePage from "../pages/inventory/InventoryWorkspacePage";
 import PromotionManagementPage from "../pages/promotions/PromotionManagementPage";
 import SalePage from "../pages/sale/SalePage";
 import ReportsPage from "../pages/reports/ReportsPage";
 import GiftCardManagementPage from "../pages/stored-value/GiftCardManagementPage";
 import StoredValueManagementPage from "../pages/stored-value/StoredValueManagementPage";
 import TransactionsPage from "../pages/transactions/TransactionsPage";
+import SettingsPage from "../pages/settings/SettingsPage";
 
 export type AppView =
   | "sale"
@@ -72,7 +103,8 @@ export type AppView =
   | "promotions"
   | "credits"
   | "gift-cards"
-  | "reports";
+  | "reports"
+  | "settings";
 
 type ScannedTransaction = {
   sale: Sale;
@@ -80,6 +112,41 @@ type ScannedTransaction = {
 };
 
 function AppShell() {
+  const [
+    employeesHydrated,
+    setEmployeesHydrated,
+  ] =
+    useState(false);
+
+  useEffect(() => {
+    let isMounted =
+      true;
+
+    void Promise.all([
+      hydrateEmployees(),
+      hydrateRegisterPrinterConfig(),
+      hydrateDocumentSettings(),
+      hydrateDocumentFooterSettings(),
+      hydratePaymentMethodConfiguration(),
+      hydrateTaxPolicy(),
+      hydrateReturnPolicy(),
+      hydrateCustomerCreditPolicy(),
+      hydrateBusinessIdentitySettings(),
+      hydrateRegisterLocalSettings(),
+    ]).finally(() => {
+      if (isMounted) {
+        setEmployeesHydrated(
+          true,
+        );
+      }
+    });
+
+    return () => {
+      isMounted =
+        false;
+    };
+  }, []);
+
   const [
     activeShift,
     setActiveShift,
@@ -102,7 +169,18 @@ function AppShell() {
     useState<AppView>(
       "sale",
     );
+
+  /* LUMORA CUSTOMER DRILLDOWN V1.2 */
   const [
+    customerTransactionFilter,
+    setCustomerTransactionFilter,
+  ] =
+    useState<{
+      id: string;
+      name: string;
+    } | null>(null);
+
+const [
     showIdleWelcome,
     setShowIdleWelcome,
   ] =
@@ -447,6 +525,12 @@ function AppShell() {
             : undefined
         }
         onNavigate={(view) => {
+          if (view !== "transactions") {
+            setCustomerTransactionFilter(
+              null,
+            );
+          }
+
           setActiveView(view);
           setShowNavigation(false);
         }}
@@ -520,17 +604,40 @@ function AppShell() {
                 scannedTransaction
                   ?.scanId
               }
-            />
+
+              customerFilter={
+                customerTransactionFilter
+              }
+              onClearCustomerFilter={() =>
+                setCustomerTransactionFilter(
+                  null,
+                )
+              }
+/>
           )}
 
           {activeView ===
             "customers" && (
-            <CustomerManagementPage />
+            <CustomerManagementPage
+              onOpenTransactions={(
+                customerId,
+                customerName,
+              ) => {
+                setActiveView(
+                  "transactions",
+                );
+
+                setCustomerTransactionFilter({
+                  id: customerId,
+                  name: customerName,
+                });
+              }}
+            />
           )}
 
           {activeView ===
             "products" && (
-            <ProductManagementPage />
+            <InventoryWorkspacePage />
           )}
 
           {activeView ===
@@ -549,6 +656,9 @@ function AppShell() {
           )}
           {activeView === "reports" && (
             <ReportsPage />
+          )}
+          {activeView === "settings" && (
+            <SettingsPage />
           )}
         </main>
 
@@ -692,7 +802,9 @@ function AppShell() {
         />
       )}
 
-      {showOpenShiftDialog && !completedZReport && (
+      {employeesHydrated &&
+        showOpenShiftDialog &&
+        !completedZReport && (
         <OpenRegisterShiftDialog
           onEnter={(shift) => {
             setActiveShift(

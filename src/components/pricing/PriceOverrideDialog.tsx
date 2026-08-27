@@ -1,4 +1,11 @@
 import { useState } from "react";
+import {
+    formatMoney,
+} from "../../utils/MoneyFormatter";
+
+import {
+    rejectBarcodeLikeNumericInput,
+} from "../../utils/numericInputSafety";
 
 import "./price-override-dialog.css";
 
@@ -59,8 +66,8 @@ function PriceOverrideDialog({
                 <div className="price-override-dialog__price-info">
                     <span>מחיר נוכחי</span>
 
-                    <strong>
-                        ₪{currentPrice.toFixed(2)}
+                    <strong className="lumora-money-value">
+                        {formatMoney(currentPrice)}
                     </strong>
 
                     {Math.abs(
@@ -68,8 +75,10 @@ function PriceOverrideDialog({
                         originalPrice,
                     ) > 0.001 && (
                             <small>
-                                מחיר מקור ₪
-                                {originalPrice.toFixed(2)}
+                                מחיר מקור{" "}
+                                <bdi className="lumora-money-value">
+                                    {formatMoney(originalPrice)}
+                                </bdi>
                             </small>
                         )}
                 </div>
@@ -81,6 +90,7 @@ function PriceOverrideDialog({
                         <span>₪</span>
 
                         <input
+                            data-lumora-numeric-safe="price-override"
                             type="number"
                             min="0"
                             step="0.01"
@@ -90,11 +100,26 @@ function PriceOverrideDialog({
                             onFocus={(event) =>
                                 event.currentTarget.select()
                             }
-                            onChange={(event) =>
+                            onChange={(event) => {
+                                /* LUMORA PRICE OVERRIDE BARCODE GUARD V1 */
+                                const nextValue =
+                                    event.target.value;
+
+                                if (
+                                    rejectBarcodeLikeNumericInput(
+                                        nextValue,
+                                        "זוהתה סריקת ברקוד בשדה שינוי המחיר. המחיר לא שונה.",
+                                    )
+                                ) {
+                                    event.currentTarget.value =
+                                        value;
+                                    return;
+                                }
+
                                 setValue(
-                                    event.target.value,
-                                )
-                            }
+                                    nextValue,
+                                );
+                            }}
                             onKeyDown={(event) => {
                                 if (
                                     event.key ===

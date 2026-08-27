@@ -1,0 +1,144 @@
+/* LUMORA REPORTS OUTPUT V1 */
+.reports-page__email-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1800;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(24, 27, 31, 0.46);
+}
+
+.reports-page__email-dialog {
+    width: min(520px, 100%);
+    overflow: hidden;
+    border: 1px solid #dedfe1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 24px 70px rgba(24, 27, 31, 0.2);
+    color: #20242a;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+.reports-page__email-header,
+.reports-page__email-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+}
+
+.reports-page__email-header {
+    border-bottom: 1px solid #eceeef;
+}
+
+.reports-page__email-header strong {
+    font-size: 17px;
+}
+
+.reports-page__email-close {
+    min-width: 34px;
+    min-height: 34px;
+    border: 1px solid #dedfe1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #20242a;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.reports-page__email-body {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+}
+
+.reports-page__email-body label {
+    display: grid;
+    gap: 7px;
+    color: #8b9198;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.reports-page__email-body input,
+.reports-page__email-body textarea {
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    border: 1px solid #dedfe1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #20242a;
+    font: inherit;
+    font-size: 15px;
+    outline: none;
+    padding: 9px 11px;
+}
+
+.reports-page__email-body textarea {
+    min-height: 94px;
+    resize: vertical;
+}
+
+.reports-page__email-body input:focus,
+.reports-page__email-body textarea:focus {
+    border-color: #c9942f;
+    box-shadow: 0 0 0 3px rgba(201, 148, 47, 0.12);
+}
+
+.reports-page__email-attachment {
+    padding: 10px 12px;
+    border: 1px solid #e5d2aa;
+    border-radius: 10px;
+    background: #faf3e4;
+    color: #5f4a25;
+    font-size: 13px;
+}
+
+.reports-page__email-error {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff5f5;
+    color: #9d2b2b;
+    font-size: 13px;
+}
+
+.reports-page__email-footer {
+    justify-content: flex-start;
+    border-top: 1px solid #eceeef;
+}
+
+.reports-page__email-footer button {
+    min-height: 38px;
+    padding: 0 15px;
+    border-radius: 9px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
+.reports-page__email-send {
+    border: 1px solid #b47d1e;
+    background: #c9942f;
+    color: #ffffff;
+}
+
+.reports-page__email-cancel {
+    border: 1px solid #dedfe1;
+    background: #ffffff;
+    color: #20242a;
+}
+
+.reports-page__email-footer button:disabled,
+.reports-page__header-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 760px) {
+    .reports-page__email-backdrop {
+        padding: 12px;
+    }
+}

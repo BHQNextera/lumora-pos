@@ -1,4 +1,11 @@
+import { formatMoney as money } from "../../utils/MoneyFormatter";
+
+// LUMORA SHIFT X REPORT DIALOG V2.2
+
 import {
+    useEffect,
+    useMemo,
+    useRef,
     useState,
 } from "react";
 
@@ -15,7 +22,7 @@ import {
 } from "../../models/shift/ShiftReportService";
 
 import {
-    openThermalPrintPreview,
+    renderThermalDocumentHtml,
 } from "../../models/printing/ThermalReportRenderer";
 
 import {
@@ -23,39 +30,170 @@ import {
 } from "../../models/printing/ThermalPrintProfile";
 
 import type {
-    ThermalPaperProfileId,
-} from "../../models/printing/ThermalPrintProfile";
-
-import type {
     ThermalPrintDocument,
 } from "../../models/printing/ThermalPrintDocument";
+
+import {
+    getRegisterPrinterConfig,
+} from "../../config/RegisterPrinterConfig";
+
+import {
+    getActiveBusinessOperatingProfile,
+} from "../../config/ActiveBusinessConfiguration";
+
+import {
+    getBusinessIdentitySettings,
+} from "../../config/BusinessIdentitySettings";
+
+import {
+    useLocale,
+} from "../../i18n/useLocale";
+
+import "./shift-x-report-dialog.css";
 
 type ShiftXReportDialogProps = {
     shift: RegisterShift;
     onClose: () => void;
 };
 
-function money(
-    value: number,
-) {
-    return `₪${value.toFixed(2)}`;
-}
 
 function ShiftXReportDialog({
     shift,
     onClose,
 }: ShiftXReportDialogProps) {
+    const {
+        direction,
+        locale,
+    } = useLocale();
+
     const report =
-        generateShiftXReport(
-            shift,
+        useMemo(
+            () =>
+                generateShiftXReport(
+                    shift,
+                ),
+            [shift],
         );
 
     const [
-        printProfileId,
-        setPrintProfileId,
-    ] =
-        useState<ThermalPaperProfileId>(
-            "thermal-80",
+        printPreviewHtml,
+        setPrintPreviewHtml,
+    ] = useState<string | null>(
+        null,
+    );
+
+    const previewFrameRef =
+        useRef<HTMLIFrameElement>(
+            null,
+        );
+
+    const printerConfig =
+        useMemo(
+            () =>
+                getRegisterPrinterConfig(
+                    shift.storeCode,
+                    shift.registerCode,
+                ),
+            [
+                shift.registerCode,
+                shift.storeCode,
+            ],
+        );
+
+    const printProfileId =
+        printerConfig.paperFormat ===
+            "thermal57"
+            ? "thermal-58"
+            : "thermal-80";
+
+    const printProfile =
+        thermalPrintProfiles[
+            printProfileId
+        ];
+
+    const businessProfile =
+        useMemo(
+            () =>
+                getActiveBusinessOperatingProfile(),
+            [],
+        );
+
+    const businessIdentity =
+        useMemo(
+            () =>
+                getBusinessIdentitySettings(
+                    businessProfile,
+                    shift.storeCode,
+                ),
+            [
+                businessProfile,
+                shift.storeCode,
+            ],
+        );
+
+    const reportBusinessName =
+        businessIdentity.tradingName ||
+        businessIdentity.businessName ||
+        "Lumora";
+
+    const reportBranchName =
+        businessIdentity.branchName ||
+        `סניף ${shift.storeCode}`;
+
+    useEffect(
+        () => {
+            const handleKeyDown = (
+                event: KeyboardEvent,
+            ) => {
+                if (
+                    event.key ===
+                    "Escape"
+                ) {
+                    if (
+                        printPreviewHtml !==
+                        null
+                    ) {
+                        setPrintPreviewHtml(
+                            null,
+                        );
+                    }
+                    else {
+                        onClose();
+                    }
+                }
+            };
+
+            window.addEventListener(
+                "keydown",
+                handleKeyDown,
+            );
+
+            return () => {
+                window.removeEventListener(
+                    "keydown",
+                    handleKeyDown,
+                );
+            };
+        },
+        [
+            onClose,
+            printPreviewHtml,
+        ],
+    );
+
+    const dateTimeFormatter =
+        useMemo(
+            () =>
+                new Intl.DateTimeFormat(
+                    locale,
+                    {
+                        dateStyle:
+                            "short",
+                        timeStyle:
+                            "short",
+                    },
+                ),
+            [locale],
         );
 
     const paymentName = (
@@ -67,47 +205,133 @@ function ShiftXReportDialog({
         )?.name ?? method;
 
     const createPrintDocument =
-        (): ThermalPrintDocument => ({
-            id:
-                `x-${report.shiftId}-${report.generatedAt}`,
+        (): ThermalPrintDocument => {
+            const blocks:
+                ThermalPrintDocument[
+                    "blocks"
+                ] = [
+                    {
+                        type: "text",
+                        value:
+                            reportBusinessName,
+                        bold: true,
+                        alignment:
+                            "center",
+                    },
+                ];
 
-            documentType:
-                "shift-x",
-
-            title:
-                `דוח X קופה ${report.registerCode}`,
-
-            direction:
-                "rtl",
-
-            blocks: [
-                {
+            if (
+                businessIdentity.businessName &&
+                businessIdentity.businessName !==
+                    reportBusinessName
+            ) {
+                blocks.push({
                     type: "text",
-                    value: "LUMORA",
-                    bold: true,
-                    alignment: "center",
+                    value:
+                        businessIdentity.businessName,
+                    alignment:
+                        "center",
+                });
+            }
+
+            if (
+                businessIdentity.vatNumber
+            ) {
+                blocks.push({
+                    type: "text",
+                    value:
+                        `ע.מ. ${businessIdentity.vatNumber}`,
+                    alignment:
+                        "center",
+                });
+            }
+
+            if (
+                businessIdentity.businessNumber &&
+                businessIdentity.businessNumber !==
+                    businessIdentity.vatNumber
+            ) {
+                blocks.push({
+                    type: "text",
+                    value:
+                        `מספר עסק ${businessIdentity.businessNumber}`,
+                    alignment:
+                        "center",
+                });
+            }
+
+            blocks.push({
+                type: "text",
+                value:
+                    reportBranchName,
+                alignment:
+                    "center",
+            });
+
+            const branchContact = [
+                businessIdentity.branchAddress ||
+                    businessIdentity.address,
+                businessIdentity.branchPhone ||
+                    businessIdentity.phone,
+            ]
+                .filter(Boolean)
+                .join(" · ");
+
+            if (branchContact) {
+                blocks.push({
+                    type: "text",
+                    value:
+                        branchContact,
+                    alignment:
+                        "center",
+                });
+            }
+
+            blocks.push(
+                {
+                    type: "separator",
                 },
                 {
                     type: "text",
                     value: "דוח X",
                     bold: true,
-                    alignment: "center",
+                    alignment:
+                        "center",
                 },
                 {
                     type: "text",
                     value:
-                        new Date(
-                            report.generatedAt,
-                        ).toLocaleString(
-                            "he-IL",
-                        ),
-                    alignment: "center",
+                        "דוח ביניים — אינו סוגר משמרת",
+                    alignment:
+                        "center",
                 },
-
+                {
+                    type: "row",
+                    label: "הופק",
+                    value:
+                        dateTimeFormatter.format(
+                            new Date(
+                                report.generatedAt,
+                            ),
+                        ),
+                },
                 {
                     type: "separator",
                 },
-
+                {
+                    type: "text",
+                    value:
+                        "פרטי משמרת",
+                    bold: true,
+                },
+                {
+                    type: "row",
+                    label: "סניף",
+                    value:
+                        businessIdentity.branchName
+                            ? `${businessIdentity.branchName} · ${shift.storeCode}`
+                            : shift.storeCode,
+                },
                 {
                     type: "row",
                     label: "קופה",
@@ -118,10 +342,10 @@ function ShiftXReportDialog({
                     type: "row",
                     label: "נפתחה",
                     value:
-                        new Date(
-                            report.openedAt,
-                        ).toLocaleString(
-                            "he-IL",
+                        dateTimeFormatter.format(
+                            new Date(
+                                report.openedAt,
+                            ),
                         ),
                 },
                 {
@@ -130,11 +354,15 @@ function ShiftXReportDialog({
                     value:
                         report.openedBy.employeeName,
                 },
-
                 {
                     type: "separator",
                 },
-
+                {
+                    type: "text",
+                    value:
+                        "ספירת עסקאות",
+                    bold: true,
+                },
                 {
                     type: "row",
                     label: "עסקאות",
@@ -145,7 +373,7 @@ function ShiftXReportDialog({
                 },
                 {
                     type: "row",
-                    label: "מספר מכירות",
+                    label: "מכירות",
                     value:
                         String(
                             report.saleCount,
@@ -167,11 +395,15 @@ function ShiftXReportDialog({
                             report.exchangeCount,
                         ),
                 },
-
                 {
                     type: "separator",
                 },
-
+                {
+                    type: "text",
+                    value:
+                        "סיכום מכירות",
+                    bold: true,
+                },
                 {
                     type: "row",
                     label: "סה״כ מכירות",
@@ -182,8 +414,7 @@ function ShiftXReportDialog({
                 },
                 {
                     type: "row",
-                    label:
-                        "החזרות / זיכויים",
+                    label: "החזרות / זיכויים",
                     value:
                         money(
                             report.returnsTotal,
@@ -206,42 +437,18 @@ function ShiftXReportDialog({
                             report.discountTotal,
                         ),
                 },
-
                 {
                     type: "separator",
                 },
-
-                ...report.paymentTotals.flatMap(
-                    (payment) => [
-                        {
-                            type:
-                                "row" as const,
-                            label:
-                                paymentName(
-                                    payment.method,
-                                ),
-                            value:
-                                money(
-                                    payment.amount,
-                                ),
-                        },
-                        {
-                            type:
-                                "text" as const,
-                            value:
-                                `מספר עסקאות: ${payment.paymentCount}`,
-                        },
-                    ],
-                ),
-
                 {
-                    type: "separator",
+                    type: "text",
+                    value:
+                        "מזומן בקופה",
+                    bold: true,
                 },
-
                 {
                     type: "row",
-                    label:
-                        "יתרת פתיחה",
+                    label: "יתרת פתיחה",
                     value:
                         money(
                             report.openingCash,
@@ -249,8 +456,7 @@ function ShiftXReportDialog({
                 },
                 {
                     type: "row",
-                    label:
-                        "תקבולי מזומן",
+                    label: "תקבולי מזומן",
                     value:
                         money(
                             report.cashPayments,
@@ -258,8 +464,7 @@ function ShiftXReportDialog({
                 },
                 {
                     type: "row",
-                    label:
-                        "הפקדות לקופה",
+                    label: "הפקדות לקופה",
                     value:
                         money(
                             report.cashIn,
@@ -267,17 +472,17 @@ function ShiftXReportDialog({
                 },
                 {
                     type: "row",
-                    label:
-                        "משיכות מהקופה",
+                    label: "משיכות מהקופה",
                     value:
                         money(
-                            report.cashOut,
+                            -Math.abs(
+                                report.cashOut,
+                            ),
                         ),
                 },
                 {
                     type: "row",
-                    label:
-                        "תנועת מזומן נטו",
+                    label: "תנועת מזומן נטו",
                     value:
                         money(
                             report.netCashMovement,
@@ -285,476 +490,486 @@ function ShiftXReportDialog({
                 },
                 {
                     type: "row",
-                    label:
-                        "מזומן צפוי בקופה",
+                    label: "מזומן צפוי בקופה",
                     value:
                         money(
                             report.expectedCash,
                         ),
                     bold: true,
                 },
-
                 {
                     type: "separator",
                 },
-
                 {
                     type: "text",
                     value:
-                        "סוף דוח X",
+                        "אמצעי תשלום",
+                    bold: true,
+                },
+            );
+
+            for (
+                const payment
+                of report.paymentTotals
+            ) {
+                blocks.push({
+                    type: "row",
+                    label:
+                        `${paymentName(
+                            payment.method,
+                        )} (${payment.paymentCount})`,
+                    value:
+                        money(
+                            payment.amount,
+                        ),
+                });
+            }
+
+            blocks.push(
+                {
+                    type: "separator",
+                },
+                {
+                    type: "text",
+                    value:
+                        "דוח X אינו סוגר את המשמרת",
+                    bold: true,
                     alignment:
                         "center",
                 },
-            ],
-        });
-
-    const openPrintPreview =
-        () => {
-            openThermalPrintPreview(
-                createPrintDocument(),
-                thermalPrintProfiles[
-                    printProfileId
-                ],
+                {
+                    type: "text",
+                    value:
+                        "הופק באמצעות Lumora",
+                    alignment:
+                        "center",
+                },
             );
+
+            return {
+                id:
+                    `x-${report.shiftId}-${report.generatedAt}`,
+
+                documentType:
+                    "shift-x",
+
+                title:
+                    `דוח X — ${reportBusinessName}`,
+
+                direction:
+                    "rtl",
+
+                blocks,
+            };
         };
+
+    const openPrintPreview = () => {
+        setPrintPreviewHtml(
+            renderThermalDocumentHtml(
+                createPrintDocument(),
+                printProfile,
+            ),
+        );
+    };
+
+    const summaryRows = [
+        {
+            label: "סה״כ מכירות",
+            value: report.grossSales,
+        },
+        {
+            label: "החזרות / זיכויים",
+            value: report.returnsTotal,
+        },
+        {
+            label: "מחזור נטו",
+            value: report.netSales,
+            strong: true,
+        },
+        {
+            label: "הנחות",
+            value: report.discountTotal,
+        },
+    ];
+
+    const cashRows = [
+        {
+            label: "יתרת פתיחה",
+            value: report.openingCash,
+        },
+        {
+            label: "תקבולי מזומן",
+            value: report.cashPayments,
+        },
+        {
+            label: "הפקדות לקופה",
+            value: report.cashIn,
+        },
+        {
+            label: "משיכות מהקופה",
+            value: -Math.abs(
+                report.cashOut,
+            ),
+        },
+        {
+            label: "תנועת מזומן נטו",
+            value: report.netCashMovement,
+        },
+    ];
 
     return (
         <div
-            dir="rtl"
-            style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 14000,
-                display: "grid",
-                placeItems: "center",
-                padding: "24px",
-                background:
-                    "rgba(15,23,42,.42)",
+            className="shift-x-report__backdrop"
+            dir={direction}
+            onMouseDown={(event) => {
+                if (
+                    event.target ===
+                    event.currentTarget
+                ) {
+                    onClose();
+                }
             }}
         >
             <section
-                style={{
-                    width:
-                        "min(720px, 95vw)",
-                    maxHeight:
-                        "88vh",
-                    overflow:
-                        "auto",
-                    padding:
-                        "26px",
-                    borderRadius:
-                        "18px",
-                    background:
-                        "#fff",
-                }}
+                aria-labelledby="shift-x-report-title"
+                aria-modal="true"
+                className="shift-x-report"
+                role="dialog"
             >
-                <header
-                    style={{
-                        display: "flex",
-                        justifyContent:
-                            "space-between",
-                        gap: "20px",
-                        marginBottom:
-                            "22px",
-                    }}
-                >
+                <header className="shift-x-report__header">
                     <div>
-                        <div
-                            style={{
-                                fontSize:
-                                    "12px",
-                                fontWeight:
-                                    800,
-                            }}
-                        >
-                            X REPORT
+                        <div className="shift-x-report__eyebrow">
+                            LUMORA X REPORT
                         </div>
 
-                        <h2
-                            style={{
-                                margin:
-                                    "4px 0",
-                            }}
-                        >
+                        <h2 id="shift-x-report-title">
                             דוח X
                         </h2>
 
-                        <div>
-                            קופה{" "}
-                            {
-                                report.registerCode
-                            }
+                        <p>
+                            {reportBusinessName}
                             {" · "}
-                            נפתחה{" "}
-                            {
+                            {reportBranchName}
+                            {" · "}
+                            קופה {report.registerCode}
+                            {" · "}
+                            נפתחה {dateTimeFormatter.format(
                                 new Date(
                                     report.openedAt,
-                                ).toLocaleString(
-                                    "he-IL",
-                                )
-                            }
-                        </div>
+                                ),
+                            )}
+                        </p>
                     </div>
 
                     <button
+                        aria-label="סגירת דוח X"
+                        className="shift-x-report__close"
+                        onClick={onClose}
                         type="button"
-                        onClick={
-                            onClose
-                        }
                     >
-                        ✕
+                        ×
                     </button>
                 </header>
 
-                <table
-                    style={{
-                        width:
-                            "100%",
-                        borderCollapse:
-                            "collapse",
-                    }}
-                >
-                    <tbody>
-                        <tr>
-                            <td>
-                                עסקאות
-                            </td>
-                            <td>
-                                {
-                                    report.transactionCount
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                מספר מכירות
-                            </td>
-                            <td>
-                                {
-                                    report.saleCount
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                החזרות
-                            </td>
-                            <td>
-                                {
-                                    report.returnCount
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                החלפות
-                            </td>
-                            <td>
-                                {
-                                    report.exchangeCount
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                סה״כ מכירות
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.grossSales,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                החזרות / זיכויים
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.returnsTotal,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                מחזור נטו
-                            </td>
-                            <td>
-                                <strong>
-                                    {
-                                        money(
-                                            report.netSales,
-                                        )
-                                    }
-                                </strong>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                הנחות
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.discountTotal,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                יתרת פתיחה
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.openingCash,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                תקבולי מזומן
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.cashPayments,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                הפקדות לקופה
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.cashIn,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                משיכות מהקופה
-                            </td>
-                            <td>
-                                {
-                                    money(
-                                        report.cashOut,
-                                    )
-                                }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                תנועת מזומן נטו
-                            </td>
-                            <td>
-                                <strong>
-                                    {
-                                        money(
-                                            report.netCashMovement,
-                                        )
-                                    }
-                                </strong>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                מזומן צפוי בקופה
-                            </td>
-                            <td>
-                                <strong>
-                                    {
-                                        money(
-                                            report.expectedCash,
-                                        )
-                                    }
-                                </strong>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3
-                    style={{
-                        marginTop:
-                            "26px",
-                    }}
-                >
-                    אמצעי תשלום
-                </h3>
-
-                <table
-                    style={{
-                        width:
-                            "100%",
-                        borderCollapse:
-                            "collapse",
-                    }}
-                >
-                    <thead>
-                        <tr>
-                            <th>
-                                אמצעי תשלום
-                            </th>
-                            <th>
-                                מספר עסקאות
-                            </th>
-                            <th>
-                                סכום
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {report.paymentTotals.map(
-                            (payment) => (
-                                <tr
-                                    key={
-                                        payment.method
-                                    }
-                                >
-                                    <td>
-                                        {
-                                            paymentName(
-                                                payment.method,
-                                            )
-                                        }
-                                    </td>
-
-                                    <td>
-                                        {
-                                            payment.paymentCount
-                                        }
-                                    </td>
-
-                                    <td>
-                                        {
-                                            money(
-                                                payment.amount,
-                                            )
-                                        }
-                                    </td>
-                                </tr>
-                            ),
-                        )}
-                    </tbody>
-                </table>
-
-                <div
-                    style={{
-                        marginTop:
-                            "24px",
-                        padding:
-                            "14px",
-                        border:
-                            "1px solid #dfe4e2",
-                        borderRadius:
-                            "10px",
-                    }}
-                >
-                    <strong>
-                        תצורת הדפסה
-                    </strong>
-
-                    <div
-                        style={{
-                            display:
-                                "flex",
-                            alignItems:
-                                "center",
-                            gap:
-                                "10px",
-                            marginTop:
-                                "10px",
-                        }}
+                <div className="shift-x-report__body">
+                    <section
+                        aria-label="ספירת עסקאות"
+                        className="shift-x-report__stats"
                     >
-                        <label
-                            htmlFor="x-paper-profile"
-                        >
-                            רוחב נייר
-                        </label>
+                        <div>
+                            <span>
+                                עסקאות
+                            </span>
+                            <strong>
+                                {report.transactionCount}
+                            </strong>
+                        </div>
 
-                        <select
-                            id="x-paper-profile"
-                            value={
-                                printProfileId
-                            }
-                            onChange={(
-                                event,
-                            ) =>
-                                setPrintProfileId(
-                                    event.target
-                                        .value as ThermalPaperProfileId,
-                                )
-                            }
-                        >
-                            <option
-                                value="thermal-58"
-                            >
-                                57 / 58 מ״מ
-                            </option>
+                        <div>
+                            <span>
+                                מכירות
+                            </span>
+                            <strong>
+                                {report.saleCount}
+                            </strong>
+                        </div>
 
-                            <option
-                                value="thermal-80"
-                            >
-                                80 / 88 מ״מ
-                            </option>
-                        </select>
+                        <div>
+                            <span>
+                                החזרות
+                            </span>
+                            <strong>
+                                {report.returnCount}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>
+                                החלפות
+                            </span>
+                            <strong>
+                                {report.exchangeCount}
+                            </strong>
+                        </div>
+                    </section>
+
+                    <div className="shift-x-report__columns">
+                        <section className="shift-x-report__card">
+                            <h3>
+                                סיכום מכירות
+                            </h3>
+
+                            <div className="shift-x-report__rows">
+                                {summaryRows.map(
+                                    (row) => (
+                                        <div
+                                            className={
+                                                row.strong
+                                                    ? "shift-x-report__row shift-x-report__row--strong"
+                                                    : "shift-x-report__row"
+                                            }
+                                            key={row.label}
+                                        >
+                                            <span>
+                                                {row.label}
+                                            </span>
+
+                                            <strong
+                                                className={
+                                                    row.value < 0
+                                                        ? "shift-x-report__money shift-x-report__money--negative"
+                                                        : "shift-x-report__money"
+                                                }
+                                                dir="ltr"
+                                            >
+                                                {money(
+                                                    row.value,
+                                                )}
+                                            </strong>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                        </section>
+
+                        <section className="shift-x-report__card">
+                            <h3>
+                                מזומן בקופה
+                            </h3>
+
+                            <div className="shift-x-report__rows">
+                                {cashRows.map(
+                                    (row) => (
+                                        <div
+                                            className="shift-x-report__row"
+                                            key={row.label}
+                                        >
+                                            <span>
+                                                {row.label}
+                                            </span>
+
+                                            <strong
+                                                className={
+                                                    row.value < 0
+                                                        ? "shift-x-report__money shift-x-report__money--negative"
+                                                        : "shift-x-report__money"
+                                                }
+                                                dir="ltr"
+                                            >
+                                                {money(
+                                                    row.value,
+                                                )}
+                                            </strong>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+
+                            <div className="shift-x-report__expected">
+                                <span>
+                                    מזומן צפוי בקופה
+                                </span>
+
+                                <strong
+                                    className="shift-x-report__money"
+                                    dir="ltr"
+                                >
+                                    {money(
+                                        report.expectedCash,
+                                    )}
+                                </strong>
+                            </div>
+                        </section>
                     </div>
+
+                    <section className="shift-x-report__card">
+                        <h3>
+                            אמצעי תשלום
+                        </h3>
+
+                        <div className="shift-x-report__table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            אמצעי תשלום
+                                        </th>
+                                        <th>
+                                            מספר עסקאות
+                                        </th>
+                                        <th>
+                                            סכום
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {report.paymentTotals.length === 0 ? (
+                                        <tr>
+                                            <td
+                                                className="shift-x-report__empty"
+                                                colSpan={3}
+                                            >
+                                                אין תשלומים במשמרת
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        report.paymentTotals.map(
+                                            (payment) => (
+                                                <tr
+                                                    key={payment.method}
+                                                >
+                                                    <td>
+                                                        {paymentName(
+                                                            payment.method,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {payment.paymentCount}
+                                                    </td>
+                                                    <td
+                                                        className={
+                                                            payment.amount < 0
+                                                                ? "shift-x-report__money shift-x-report__money--negative"
+                                                                : "shift-x-report__money"
+                                                        }
+                                                        dir="ltr"
+                                                    >
+                                                        {money(
+                                                            payment.amount,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ),
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
                 </div>
 
-                <div
-                    style={{
-                        display:
-                            "flex",
-                        gap:
-                            "8px",
-                        marginTop:
-                            "24px",
-                    }}
-                >
+                <footer className="shift-x-report__footer">
                     <button
+                        className="shift-x-report__secondary"
+                        onClick={onClose}
                         type="button"
-                        onClick={
-                            openPrintPreview
-                        }
-                    >
-                        תצוגה מקדימה להדפסה
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={
-                            onClose
-                        }
                     >
                         סגור
                     </button>
-                </div>
+
+                    <button
+                        className="shift-x-report__print"
+                        onClick={openPrintPreview}
+                        type="button"
+                    >
+                        תצוגה מקדימה להדפסה
+                    </button>
+                </footer>
             </section>
+
+            {printPreviewHtml !== null && (
+                <div
+                    className="shift-x-report__preview-backdrop"
+                    onMouseDown={(event) => {
+                        if (
+                            event.target ===
+                            event.currentTarget
+                        ) {
+                            setPrintPreviewHtml(
+                                null,
+                            );
+                        }
+                    }}
+                >
+                    <section
+                        aria-labelledby="shift-x-report-preview-title"
+                        aria-modal="true"
+                        className="shift-x-report__preview"
+                        role="dialog"
+                    >
+                        <header className="shift-x-report__preview-header">
+                            <div>
+                                <h3 id="shift-x-report-preview-title">
+                                    תצוגה מקדימה להדפסה
+                                </h3>
+
+                                <p>
+                                    מדפסת הקופה · {printProfile.label}
+                                </p>
+                            </div>
+
+                            <button
+                                aria-label="סגירת תצוגה מקדימה"
+                                className="shift-x-report__close"
+                                onClick={() =>
+                                    setPrintPreviewHtml(
+                                        null,
+                                    )
+                                }
+                                type="button"
+                            >
+                                ×
+                            </button>
+                        </header>
+
+                        <div className="shift-x-report__preview-body">
+                            <iframe
+                                ref={previewFrameRef}
+                                srcDoc={printPreviewHtml}
+                                title="תצוגה מקדימה של דוח X"
+                            />
+                        </div>
+
+                        <footer className="shift-x-report__preview-footer">
+                            <button
+                                className="shift-x-report__secondary"
+                                onClick={() =>
+                                    setPrintPreviewHtml(
+                                        null,
+                                    )
+                                }
+                                type="button"
+                            >
+                                סגור
+                            </button>
+
+                            <button
+                                className="shift-x-report__print"
+                                onClick={() =>
+                                    previewFrameRef.current
+                                        ?.contentWindow
+                                        ?.print()
+                                }
+                                type="button"
+                            >
+                                הדפס
+                            </button>
+                        </footer>
+                    </section>
+                </div>
+            )}
         </div>
     );
 }

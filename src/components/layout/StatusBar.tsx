@@ -1,19 +1,43 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  getActiveRegisterProfile,
+} from "../../config/ActiveBusinessConfiguration";
+
+import {
+  getRegisterLocalSettings,
+  subscribeRegisterLocalSettings,
+} from "../../config/RegisterLocalSettings";
+
+import {
+  getRegisterPrinterConfig,
+  subscribeRegisterPrinterConfig,
+} from "../../config/RegisterPrinterConfig";
+
+import {
+  isRuntimeInitialized,
+} from "../../runtime/RuntimeBootstrap";
+
 import type {
   RegisterShift,
 } from "../../models/shift/RegisterShift";
-type ConnectionStatus = {
+
+type SystemStatusTone =
+  | "ready"
+  | "warning"
+  | "unavailable";
+
+type SystemStatus = {
   id: string;
   label: string;
+  detail: string;
   icon: string;
-  connected: boolean;
+  tone: SystemStatusTone;
+  title: string;
 };
-
-const statuses: ConnectionStatus[] = [
-  { id: "network", label: "מחובר", icon: "◉", connected: true },
-  { id: "printer", label: "מדפסת", icon: "▣", connected: true },
-  { id: "terminal", label: "מסופון", icon: "▤", connected: true },
-  { id: "drawer", label: "מגירה", icon: "▱", connected: true },
-];
 
 type StatusBarProps = {
   activeShift?: RegisterShift;
@@ -22,23 +46,195 @@ type StatusBarProps = {
 function StatusBar({
   activeShift,
 }: StatusBarProps) {
+  const [
+    isOnline,
+    setIsOnline,
+  ] = useState(
+    typeof navigator === "undefined"
+      ? true
+      : navigator.onLine,
+  );
+
+  const [
+    configurationRevision,
+    setConfigurationRevision,
+  ] = useState(0);
+
+  useEffect(() => {
+    const updateOnlineStatus = () => {
+      setIsOnline(
+        navigator.onLine,
+      );
+    };
+
+    window.addEventListener(
+      "online",
+      updateOnlineStatus,
+    );
+
+    window.addEventListener(
+      "offline",
+      updateOnlineStatus,
+    );
+
+    const unsubscribePrinter =
+      subscribeRegisterPrinterConfig(
+        () => {
+          setConfigurationRevision(
+            (current) =>
+              current + 1,
+          );
+        },
+      );
+
+    const unsubscribeLocal =
+      subscribeRegisterLocalSettings(
+        () => {
+          setConfigurationRevision(
+            (current) =>
+              current + 1,
+          );
+        },
+      );
+
+    return () => {
+      window.removeEventListener(
+        "online",
+        updateOnlineStatus,
+      );
+
+      window.removeEventListener(
+        "offline",
+        updateOnlineStatus,
+      );
+
+      unsubscribePrinter();
+      unsubscribeLocal();
+    };
+  }, []);
+
+  void configurationRevision;
+
+  const offlineReady =
+    isRuntimeInitialized();
+
+  const printerConfig =
+    getRegisterPrinterConfig();
+
+  const registerSettings =
+    getRegisterLocalSettings(
+      getActiveRegisterProfile(),
+    );
+
+  const printerPaperLabel =
+    printerConfig.paperFormat ===
+      "thermal57"
+      ? "57 מ״מ"
+      : "80 מ״מ";
+
+  const statuses:
+    SystemStatus[] = [
+    {
+      id: "network",
+      label: "אינטרנט",
+      detail:
+        isOnline
+          ? "מחובר"
+          : "מנותק",
+      icon: "◉",
+      tone:
+        isOnline
+          ? "ready"
+          : "warning",
+      title:
+        isOnline
+          ? "חיבור האינטרנט זמין."
+          : "אין חיבור לאינטרנט; הקופה ממשיכה לעבוד מקומית.",
+    },
+    {
+      id: "offline",
+      label: "Offline",
+      detail:
+        offlineReady
+          ? "מוכן"
+          : "לא מוכן",
+      icon: "◆",
+      tone:
+        offlineReady
+          ? "ready"
+          : "unavailable",
+      title:
+        offlineReady
+          ? "נתוני הקופה המקומיים נטענו והקופה מוכנה לעבודה ללא אינטרנט."
+          : "טעינת נתוני הקופה המקומיים טרם הושלמה.",
+    },
+    {
+      id: "printer",
+      label: "מדפסת",
+      detail:
+        printerPaperLabel,
+      icon: "▣",
+      tone: "ready",
+      title:
+        `הוגדרה מדפסת ${printerPaperLabel}; החיווי מציג תצורה ולא בדיקת תקשורת פיזית.`,
+    },
+    {
+      id: "terminal",
+      label: "מסופון",
+      detail:
+        registerSettings
+          .paymentTerminalEnabled
+          ? "פעיל"
+          : "כבוי",
+      icon: "▤",
+      tone:
+        registerSettings
+          .paymentTerminalEnabled
+          ? "ready"
+          : "warning",
+      title:
+        registerSettings
+          .paymentTerminalEnabled
+          ? "המסופון הוגדר כפעיל; החיווי אינו בדיקת תקשורת פיזית."
+          : "המסופון אינו פעיל בהגדרות הקופה.",
+    },
+    {
+      id: "drawer",
+      label: "מגירה",
+      detail: "הדמיה",
+      icon: "▱",
+      tone: "warning",
+      title:
+        "המגירה פועלת כרגע דרך מתאם הדמיה, ללא חיבור לחומרה.",
+    },
+  ];
+
   return (
-    <footer className="pos-status-bar" aria-label="מצב מערכת">
+    <footer
+      className="pos-status-bar"
+      aria-label="מצב מערכת"
+    >
       <div className="pos-status-bar__operations">
         <div className="pos-status-bar__operation">
           <span>קופה</span>
+
           <strong>
             {
-              activeShift?.registerCode ??
+              activeShift
+                ?.registerCode ??
               "—"
             }
           </strong>
         </div>
 
-        <span className="pos-status-bar__separator" aria-hidden="true" />
+        <span
+          className="pos-status-bar__separator"
+          aria-hidden="true"
+        />
 
         <div className="pos-status-bar__operation">
           <span>משמרת</span>
+
           <strong>
             {
               activeShift
@@ -48,10 +244,14 @@ function StatusBar({
           </strong>
         </div>
 
-        <span className="pos-status-bar__separator" aria-hidden="true" />
+        <span
+          className="pos-status-bar__separator"
+          aria-hidden="true"
+        />
 
         <div className="pos-status-bar__operation">
           <span>קופאי</span>
+
           <strong>
             {
               activeShift
@@ -64,14 +264,19 @@ function StatusBar({
 
         {activeShift && (
           <>
-            <span className="pos-status-bar__separator" aria-hidden="true" />
+            <span
+              className="pos-status-bar__separator"
+              aria-hidden="true"
+            />
 
             <div className="pos-status-bar__operation">
               <span>נפתחה</span>
+
               <strong>
                 {
                   new Date(
-                    activeShift.openedAt,
+                    activeShift
+                      .openedAt,
                   ).toLocaleTimeString(
                     "he-IL",
                     {
@@ -90,16 +295,37 @@ function StatusBar({
 
       <div className="pos-status-bar__right">
         <div className="pos-status-bar__items">
-          {statuses.map((status) => (
-            <div className="pos-status-bar__item" key={status.id}>
-              <span className={`pos-status-bar__indicator ${status.connected ? "pos-status-bar__indicator--connected" : "pos-status-bar__indicator--disconnected"}`} />
-              <span className="pos-status-bar__icon" aria-hidden="true">{status.icon}</span>
-              <span>{status.label}</span>
-            </div>
-          ))}
-        </div>
+          {statuses.map(
+            (status) => (
+              <div
+                className="pos-status-bar__item"
+                key={status.id}
+                title={status.title}
+                data-tone={status.tone}
+              >
+                <span
+                  className={`pos-status-bar__indicator pos-status-bar__indicator--${status.tone}`}
+                  aria-hidden="true"
+                />
 
-        <button type="button" className="pos-status-bar__lock">נעילת קופה</button>
+                <span
+                  className="pos-status-bar__icon"
+                  aria-hidden="true"
+                >
+                  {status.icon}
+                </span>
+
+                <span>
+                  {status.label}
+                </span>
+
+                <strong className="pos-status-bar__detail">
+                  {status.detail}
+                </strong>
+              </div>
+            ),
+          )}
+        </div>
       </div>
     </footer>
   );

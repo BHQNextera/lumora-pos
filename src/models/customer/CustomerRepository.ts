@@ -1,4 +1,4 @@
-﻿import {
+import {
     isTauri,
 } from "@tauri-apps/api/core";
 
@@ -27,8 +27,76 @@ import {
 const STORAGE_KEY =
     "lumora.customers.v1";
 
+/**
+ * STORE CREDIT TEST ENABLEMENT V1
+ *
+ * Non-destructive local/demo backfill for the existing vip-test
+ * customer. Existing persisted credit values always win.
+ * Remove when customer credit administration is available.
+ */
+function applyStoreCreditTestDefaults(
+    source: Customer[],
+): Customer[] {
+    return source.map(
+        (customer) => {
+            if (
+                customer.id !==
+                "vip-test"
+            ) {
+                return customer;
+            }
+
+            return {
+                ...customer,
+
+                storeCreditEnabled:
+                    customer.storeCreditEnabled ??
+                    true,
+
+                creditLimit:
+                    customer.creditLimit ??
+                    5000,
+
+                accountBalance:
+                    customer.accountBalance ??
+                    1200,
+            };
+        },
+    );
+}
+
 let customers:
     Customer[] = [];
+
+type CustomerListener =
+    () => void;
+
+const customerListeners =
+    new Set<CustomerListener>();
+
+function notifyCustomers() {
+    for (
+        const listener
+        of customerListeners
+    ) {
+        listener();
+    }
+}
+
+export function subscribeCustomers(
+    listener:
+        CustomerListener,
+): () => void {
+    customerListeners.add(
+        listener,
+    );
+
+    return () => {
+        customerListeners.delete(
+            listener,
+        );
+    };
+}
 
 /*
  * Customer platform persistence:
@@ -73,9 +141,11 @@ function parseCustomers(
     raw: string | null,
 ): Customer[] {
     if (!raw) {
-        return [
-            ...testCustomers,
-        ];
+        return applyStoreCreditTestDefaults(
+            [
+                ...testCustomers,
+            ],
+        );
     }
 
     try {
@@ -83,15 +153,21 @@ function parseCustomers(
             JSON.parse(raw);
 
         return Array.isArray(parsed)
-            ? parsed as Customer[]
-            : [
-                  ...testCustomers,
-              ];
+            ? applyStoreCreditTestDefaults(
+                  parsed as Customer[],
+              )
+            : applyStoreCreditTestDefaults(
+                  [
+                      ...testCustomers,
+                  ],
+              );
     }
     catch {
-        return [
-            ...testCustomers,
-        ];
+        return applyStoreCreditTestDefaults(
+            [
+                ...testCustomers,
+            ],
+        );
     }
 }
 
@@ -109,6 +185,8 @@ Promise<void> {
         parseCustomers(
             raw,
         );
+
+    notifyCustomers();
 }
 
 function enqueuePersistence(
@@ -240,6 +318,8 @@ export function saveCustomer(
                   normalizedCustomer,
               ];
 
+    notifyCustomers();
+
     persistCustomers(
         customers,
     );
@@ -256,6 +336,8 @@ export function removeCustomer(
                 customer.id !==
                 customerId,
         );
+
+    notifyCustomers();
 
     persistCustomers(
         customers,

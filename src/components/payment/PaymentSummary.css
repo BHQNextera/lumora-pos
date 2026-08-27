@@ -83,3 +83,147 @@
     cursor: pointer;
     font-size: 10px;
 }
+/* PAYMENT SUMMARY VISUAL V2 */
+
+.payment-summary {
+    gap: 12px;
+}
+
+.payment-summary__metrics {
+    display: grid;
+    gap: 0;
+
+    overflow: hidden;
+
+    border: 1px solid #e4e5e7;
+    border-radius: 12px;
+
+    background: #fff;
+}
+
+.payment-summary__metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    min-height: 48px;
+    padding: 10px 12px;
+
+    border-bottom: 1px solid #eceeef;
+}
+
+.payment-summary__metric:last-child {
+    border-bottom: 0;
+}
+
+.payment-summary__metric span {
+    color: #8b9198;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.payment-summary__metric strong {
+    color: #20242a;
+    font-size: 17px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+}
+
+.payment-summary__metric--paid strong {
+    font-size: 15px;
+}
+
+.payment-summary__metric--remaining {
+    min-height: 58px;
+    background: #faf3e4;
+}
+
+.payment-summary__metric--remaining span {
+    color: #8a641d;
+    font-weight: 750;
+}
+
+.payment-summary__metric--remaining strong {
+    color: #b47d1e;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+}
+
+.payment-summary__payments {
+    gap: 7px;
+    margin-top: 2px;
+}
+
+.payment-summary__payments-label {
+    color: #8b9198;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.payment-summary__row {
+    padding: 8px 10px;
+
+    border: 1px solid #e4e5e7;
+    border-radius: 10px;
+
+    background: #fbfbfb;
+}
+
+.payment-summary__row strong {
+    color: #20242a;
+    font-size: 10px;
+}
+
+.payment-summary__row span {
+    color: #59616a;
+    font-size: 10px;
+}
+
+.payment-summary__row button {
+    color: #8b9198;
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.payment-summary__row button:hover {
+    color: #20242a;
+}
+/* PAYMENT SUMMARY V2.2 VERTICAL COMPACT */
+
+.payment-summary {
+    gap: 8px;
+}
+
+.payment-summary__metric {
+    min-height: 38px;
+    padding: 7px 10px;
+}
+
+.payment-summary__metric span {
+    font-size: 9px;
+}
+
+.payment-summary__metric strong {
+    font-size: 14px;
+}
+
+.payment-summary__metric--paid strong {
+    font-size: 13px;
+}
+
+.payment-summary__metric--remaining {
+    min-height: 44px;
+}
+
+.payment-summary__metric--remaining strong {
+    font-size: 20px;
+}
+
+.payment-summary__payments {
+    gap: 5px;
+}
+
+.payment-summary__row {
+    padding: 6px 9px;
+}

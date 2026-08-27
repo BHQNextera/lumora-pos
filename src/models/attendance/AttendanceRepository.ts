@@ -15,8 +15,13 @@ import type {
 } from "../../runtime/storage/RuntimeStorage";
 
 import type {
+    AttendanceCorrection,
+    AttendanceManualEntry,
     EmployeeAttendance,
 } from "./EmployeeAttendance";
+import {
+    getAttendanceCorrectionAvailability,
+} from "./AttendanceManagerApprovalService";
 
 const STORAGE_KEY =
     "lumora.employee-attendance";
@@ -317,6 +322,312 @@ export function clockOutEmployee(
         notifyAttendanceListeners();
         persistAttendance();
     }
+
+    return changed;
+}
+
+
+export type AddManualAttendanceEntryInput = {
+    employeeId: string;
+    employeeName: string;
+    clockedInAt: string;
+    clockedOutAt: string;
+    reason: string;
+};
+
+export function addManualAttendanceEntry(
+    input: AddManualAttendanceEntryInput,
+) {
+    const configuration =
+        getActiveBusinessConfiguration();
+
+    const approval =
+        getAttendanceCorrectionAvailability(
+            input.employeeId,
+        );
+
+    if (!approval.canCorrect) {
+        throw new Error(
+            `ATTENDANCE_MANUAL_ENTRY_NOT_ALLOWED:${approval.reason}`,
+        );
+    }
+
+    const reason =
+        input.reason.trim();
+
+    if (!reason) {
+        throw new Error(
+            "ATTENDANCE_MANUAL_ENTRY_REASON_REQUIRED",
+        );
+    }
+
+    const clockedInAt =
+        new Date(
+            input.clockedInAt,
+        );
+
+    const clockedOutAt =
+        new Date(
+            input.clockedOutAt,
+        );
+
+    if (
+        !Number.isFinite(
+            clockedInAt.getTime(),
+        )
+    ) {
+        throw new Error(
+            "ATTENDANCE_MANUAL_ENTRY_INVALID_CLOCK_IN",
+        );
+    }
+
+    if (
+        !Number.isFinite(
+            clockedOutAt.getTime(),
+        )
+    ) {
+        throw new Error(
+            "ATTENDANCE_MANUAL_ENTRY_INVALID_CLOCK_OUT",
+        );
+    }
+
+    if (
+        clockedOutAt <=
+        clockedInAt
+    ) {
+        throw new Error(
+            "ATTENDANCE_MANUAL_ENTRY_CLOCK_OUT_BEFORE_CLOCK_IN",
+        );
+    }
+
+    const manualEntry:
+        AttendanceManualEntry = {
+        id:
+            crypto.randomUUID(),
+
+        createdAt:
+            new Date()
+                .toISOString(),
+
+        createdBy: {
+            employeeId:
+                approval.managerEmployeeId,
+            employeeName:
+                approval.managerEmployeeName,
+        },
+
+        reason,
+    };
+
+    const entry:
+        EmployeeAttendance = {
+        id:
+            crypto.randomUUID(),
+
+        tenantId:
+            configuration.tenantId,
+
+        storeCode:
+            configuration.storeCode,
+
+        employeeId:
+            input.employeeId,
+
+        employeeName:
+            input.employeeName,
+
+        status:
+            "clocked_out",
+
+        clockedInAt:
+            clockedInAt
+                .toISOString(),
+
+        clockedOutAt:
+            clockedOutAt
+                .toISOString(),
+
+        manualEntry,
+    };
+
+    attendance = [
+        entry,
+        ...attendance,
+    ];
+
+    notifyAttendanceListeners();
+    persistAttendance();
+
+    return entry;
+}
+
+export type CorrectAttendanceEntryInput = {
+    entryId: string;
+    correctedClockedInAt: string;
+    correctedClockedOutAt?: string;
+    reason: string;
+};
+
+export function correctAttendanceEntry(
+    input: CorrectAttendanceEntryInput,
+) {
+    const configuration =
+        getActiveBusinessConfiguration();
+
+    const target =
+        attendance.find(
+            (entry) =>
+                entry.id ===
+                    input.entryId &&
+                entry.tenantId ===
+                    configuration.tenantId &&
+                entry.storeCode ===
+                    configuration.storeCode,
+        );
+
+    if (!target) {
+        throw new Error(
+            "ATTENDANCE_ENTRY_NOT_FOUND",
+        );
+    }
+
+    const approval =
+        getAttendanceCorrectionAvailability(
+            target.employeeId,
+        );
+
+    if (!approval.canCorrect) {
+        throw new Error(
+            `ATTENDANCE_CORRECTION_NOT_ALLOWED:${approval.reason}`,
+        );
+    }
+
+    const reason =
+        input.reason.trim();
+
+    if (!reason) {
+        throw new Error(
+            "ATTENDANCE_CORRECTION_REASON_REQUIRED",
+        );
+    }
+
+    const correctedClockedInAt =
+        new Date(
+            input.correctedClockedInAt,
+        );
+
+    if (
+        !Number.isFinite(
+            correctedClockedInAt.getTime(),
+        )
+    ) {
+        throw new Error(
+            "ATTENDANCE_CORRECTION_INVALID_CLOCK_IN",
+        );
+    }
+
+    let correctedClockedOutAt:
+        Date | undefined;
+
+    if (input.correctedClockedOutAt) {
+        correctedClockedOutAt =
+            new Date(
+                input.correctedClockedOutAt,
+            );
+
+        if (
+            !Number.isFinite(
+                correctedClockedOutAt.getTime(),
+            )
+        ) {
+            throw new Error(
+                "ATTENDANCE_CORRECTION_INVALID_CLOCK_OUT",
+            );
+        }
+
+        if (
+            correctedClockedOutAt <=
+            correctedClockedInAt
+        ) {
+            throw new Error(
+                "ATTENDANCE_CORRECTION_CLOCK_OUT_BEFORE_CLOCK_IN",
+            );
+        }
+    }
+
+    const correctedAt =
+        new Date()
+            .toISOString();
+
+    let changed:
+        EmployeeAttendance |
+        undefined;
+
+    attendance =
+        attendance.map(
+            (entry) => {
+                if (
+                    entry.id !==
+                    target.id
+                ) {
+                    return entry;
+                }
+
+                const correction:
+                    AttendanceCorrection = {
+                    id:
+                        crypto.randomUUID(),
+                    correctedAt,
+                    correctedBy: {
+                        employeeId:
+                            approval.managerEmployeeId,
+                        employeeName:
+                            approval.managerEmployeeName,
+                    },
+                    reason,
+                    originalClockedInAt:
+                        entry.clockedInAt,
+                    originalClockedOutAt:
+                        entry.clockedOutAt,
+                    correctedClockedInAt:
+                        correctedClockedInAt
+                            .toISOString(),
+                    correctedClockedOutAt:
+                        correctedClockedOutAt
+                            ?.toISOString(),
+                };
+
+                changed = {
+                    ...entry,
+                    clockedInAt:
+                        correction
+                            .correctedClockedInAt,
+                    clockedOutAt:
+                        correction
+                            .correctedClockedOutAt,
+                    status:
+                        correction
+                            .correctedClockedOutAt
+                            ? "clocked_out"
+                            : "present",
+                    corrections: [
+                        ...(entry.corrections ?? []),
+                        correction,
+                    ],
+                };
+
+                return changed;
+            },
+        );
+
+    if (!changed) {
+        throw new Error(
+            "ATTENDANCE_CORRECTION_FAILED",
+        );
+    }
+
+    notifyAttendanceListeners();
+    persistAttendance();
 
     return changed;
 }

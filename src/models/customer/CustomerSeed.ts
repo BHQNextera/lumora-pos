@@ -31,6 +31,9 @@ export const testCustomers: Customer[] = [
             "vip",
         ],
         isClubMember: true,
+        storeCreditEnabled: true,
+        creditLimit: 5000,
+        accountBalance: 1200,
         isActive: true,
     },
 ];

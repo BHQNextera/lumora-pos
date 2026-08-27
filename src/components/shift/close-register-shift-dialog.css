@@ -1,0 +1,525 @@
+.close-register-shift-dialog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 15000;
+    display: grid;
+    padding: 24px;
+    place-items: center;
+    background: rgb(32 36 42 / 46%);
+}
+
+.close-register-shift-dialog {
+    display: flex;
+    width: min(700px, 100%);
+    max-height: calc(100dvh - 48px);
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e5d2aa;
+    border-radius: 16px;
+    color: #20242a;
+    background: #fff;
+    box-shadow: 0 24px 64px rgb(32 36 42 / 28%);
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+}
+
+.close-register-shift-dialog__header {
+    display: flex;
+    padding: 20px 22px;
+    flex: 0 0 auto;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    border-bottom: 1px solid #dedfe1;
+}
+
+.close-register-shift-dialog__eyebrow {
+    margin-bottom: 4px;
+    color: #b47d1e;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .08em;
+}
+
+.close-register-shift-dialog__header h2 {
+    margin: 0;
+    color: #20242a;
+    font-size: 26px;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.close-register-shift-dialog__header p {
+    margin: 5px 0 0;
+    color: #8b9198;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.close-register-shift-dialog__close {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid #dedfe1;
+    border-radius: 12px;
+    color: #20242a;
+    background: #fff;
+    font: inherit;
+    font-size: 26px;
+    font-weight: 450;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.close-register-shift-dialog__close:hover {
+    border-color: #e5d2aa;
+    background: #faf3e4;
+}
+
+.close-register-shift-dialog__close:focus-visible,
+.close-register-shift-dialog__confirm:focus-visible,
+.close-register-shift-dialog__cancel:focus-visible,
+.close-register-shift-dialog__cash-table input:focus-visible {
+    outline: 3px solid #e5d2aa;
+    outline-offset: 2px;
+}
+
+.close-register-shift-dialog__body {
+    display: grid;
+    min-height: 0;
+    padding: 18px 22px;
+    flex: 1 1 auto;
+    gap: 14px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.close-register-shift-dialog__declaration-card {
+    overflow: hidden;
+    border: 1px solid #dedfe1;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.close-register-shift-dialog__section-heading {
+    display: flex;
+    min-height: 64px;
+    padding: 12px 16px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #eceeef;
+    background: #fbfbfb;
+}
+
+.close-register-shift-dialog__section-heading h3 {
+    margin: 0;
+    color: #20242a;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.close-register-shift-dialog__section-heading p {
+    margin: 3px 0 0;
+    color: #8b9198;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.close-register-shift-dialog__section-heading > span {
+    display: inline-flex;
+    min-height: 30px;
+    padding: 0 11px;
+    flex: 0 0 auto;
+    align-items: center;
+    border: 1px solid #e5d2aa;
+    border-radius: 999px;
+    color: #7f6228;
+    background: #faf3e4;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.close-register-shift-dialog__cash-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.close-register-shift-dialog__cash-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.close-register-shift-dialog__cash-table th {
+    height: 34px;
+    padding: 0 12px;
+    color: #777f87;
+    background: #f7f7f7;
+    font-size: 11px;
+    font-weight: 750;
+    text-align: right;
+}
+
+.close-register-shift-dialog__cash-table th:nth-child(1) {
+    width: 17%;
+}
+
+.close-register-shift-dialog__cash-table th:nth-child(2) {
+    width: 23%;
+}
+
+.close-register-shift-dialog__cash-table th:nth-child(3) {
+    width: 25%;
+}
+
+.close-register-shift-dialog__cash-table th:nth-child(4) {
+    width: 35%;
+}
+
+.close-register-shift-dialog__cash-table td {
+    height: 42px;
+    padding: 4px 12px;
+    border-top: 1px solid #eceeef;
+    color: #30353a;
+    font-size: 13px;
+    font-weight: 650;
+    vertical-align: middle;
+}
+
+.close-register-shift-dialog__cash-table tbody tr:hover {
+    background: #fffdf8;
+}
+
+.close-register-shift-dialog__cash-table input {
+    width: 100%;
+    max-width: 110px;
+    height: 32px;
+    box-sizing: border-box;
+    padding: 0 9px;
+    border: 1px solid #dce0e5;
+    border-radius: 8px;
+    color: #20242a;
+    background: #fcfcfc;
+    direction: ltr;
+    font: inherit;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    text-align: right;
+}
+
+.close-register-shift-dialog__cash-table input:focus {
+    border-color: #b47d1e;
+    background: #fff;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgb(229 210 170 / 70%);
+}
+
+.close-register-shift-dialog__money-cell {
+    text-align: right;
+}
+
+.close-register-shift-dialog__money-cell bdi {
+    display: block;
+    width: 100%;
+    color: #20242a;
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.close-register-shift-dialog__money-cell--total bdi {
+    font-weight: 750;
+}
+
+.close-register-shift-dialog__cash-table tfoot td {
+    height: 48px;
+    border-top: 1px solid #e5d2aa;
+    color: #20242a;
+    background: #faf3e4;
+    font-size: 14px;
+}
+
+.close-register-shift-dialog__money-cell--grand-total bdi {
+    color: #20242a;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.close-register-shift-dialog__attendance-warning {
+    display: grid;
+    padding: 13px 15px;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    border: 1px solid #e5d2aa;
+    border-radius: 12px;
+    background: #faf3e4;
+}
+
+.close-register-shift-dialog__warning-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid #e5d2aa;
+    border-radius: 10px;
+    color: #b47d1e;
+    background: #fffaf0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.close-register-shift-dialog__attendance-warning strong {
+    color: #20242a;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.close-register-shift-dialog__attendance-warning p {
+    margin: 3px 0 0;
+    color: #777168;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.close-register-shift-dialog__attendance-warning ul {
+    display: flex;
+    margin: 8px 0 0;
+    padding: 0;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+}
+
+.close-register-shift-dialog__attendance-warning li {
+    padding: 4px 9px;
+    border: 1px solid #e5d2aa;
+    border-radius: 999px;
+    color: #684d1a;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.close-register-shift-dialog__error {
+    padding: 10px 12px;
+    border: 1px solid #e5d2aa;
+    border-radius: 12px;
+    color: #20242a;
+    background: #faf3e4;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.close-register-shift-dialog__footer {
+    display: flex;
+    padding: 12px 22px 16px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    border-top: 1px solid #dedfe1;
+    background: #fff;
+}
+
+.close-register-shift-dialog__confirm,
+.close-register-shift-dialog__cancel {
+    min-height: 42px;
+    padding: 0 20px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.close-register-shift-dialog__confirm {
+    min-width: 190px;
+    border: 1px solid #b47d1e;
+    color: #20242a;
+    background: #c9942f;
+}
+
+.close-register-shift-dialog__confirm:hover {
+    background: #b47d1e;
+}
+
+.close-register-shift-dialog__cancel {
+    min-width: 100px;
+    border: 1px solid #dedfe1;
+    color: #20242a;
+    background: #fff;
+}
+
+.close-register-shift-dialog__cancel:hover {
+    border-color: #e5d2aa;
+    background: #faf3e4;
+}
+
+.close-register-shift-dialog__confirm:disabled,
+.close-register-shift-dialog__cancel:disabled,
+.close-register-shift-dialog__close:disabled {
+    border-color: #dedfe1;
+    color: #8b9198;
+    background: #f3f3f3;
+    cursor: not-allowed;
+}
+
+@media (max-height: 760px) and (min-width: 561px) {
+    .close-register-shift-dialog__backdrop {
+        padding: 12px;
+    }
+
+    .close-register-shift-dialog {
+        max-height: calc(100dvh - 24px);
+    }
+
+    .close-register-shift-dialog__header {
+        padding-block: 14px;
+    }
+
+    .close-register-shift-dialog__header h2 {
+        font-size: 23px;
+    }
+
+    .close-register-shift-dialog__body {
+        padding-block: 12px;
+    }
+
+    .close-register-shift-dialog__section-heading {
+        min-height: 54px;
+        padding-block: 9px;
+    }
+
+    .close-register-shift-dialog__cash-table td {
+        height: 36px;
+    }
+
+    .close-register-shift-dialog__cash-table input {
+        height: 28px;
+    }
+
+    .close-register-shift-dialog__cash-table tfoot td {
+        height: 42px;
+    }
+
+    .close-register-shift-dialog__attendance-warning {
+        padding-block: 10px;
+    }
+
+    .close-register-shift-dialog__footer {
+        padding-block: 10px;
+    }
+}
+
+@media (max-width: 560px) {
+    .close-register-shift-dialog__backdrop {
+        padding: 10px;
+    }
+
+    .close-register-shift-dialog {
+        max-height: calc(100dvh - 20px);
+    }
+
+    .close-register-shift-dialog__header,
+    .close-register-shift-dialog__body,
+    .close-register-shift-dialog__footer {
+        padding-inline: 14px;
+    }
+
+    .close-register-shift-dialog__header {
+        padding-block: 15px;
+    }
+
+    .close-register-shift-dialog__header h2 {
+        font-size: 22px;
+    }
+
+    .close-register-shift-dialog__header p {
+        font-size: 12px;
+    }
+
+    .close-register-shift-dialog__close {
+        width: 38px;
+        height: 38px;
+    }
+
+    .close-register-shift-dialog__body {
+        padding-block: 12px;
+    }
+
+    .close-register-shift-dialog__section-heading {
+        min-height: 54px;
+        padding: 10px 12px;
+    }
+
+    .close-register-shift-dialog__section-heading > span {
+        display: none;
+    }
+
+    .close-register-shift-dialog__cash-table th,
+    .close-register-shift-dialog__cash-table td {
+        padding-inline: 8px;
+    }
+
+    .close-register-shift-dialog__cash-table th:first-child,
+    .close-register-shift-dialog__cash-table tbody td:first-child {
+        display: none;
+    }
+
+    .close-register-shift-dialog__cash-table th:nth-child(2) {
+        width: 29%;
+    }
+
+    .close-register-shift-dialog__cash-table th:nth-child(3) {
+        width: 28%;
+    }
+
+    .close-register-shift-dialog__cash-table th:nth-child(4) {
+        width: 43%;
+    }
+
+    .close-register-shift-dialog__cash-table tfoot td:first-child {
+        display: table-cell;
+    }
+
+    .close-register-shift-dialog__cash-table td {
+        height: 39px;
+        font-size: 12px;
+    }
+
+    .close-register-shift-dialog__cash-table input {
+        height: 30px;
+        font-size: 13px;
+    }
+
+    .close-register-shift-dialog__money-cell--grand-total bdi {
+        font-size: 16px;
+    }
+
+    .close-register-shift-dialog__footer {
+        display: grid;
+        padding-block: 10px 12px;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .close-register-shift-dialog__confirm {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .close-register-shift-dialog__cancel {
+        min-width: 88px;
+    }
+}

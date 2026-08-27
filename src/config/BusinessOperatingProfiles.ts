@@ -463,6 +463,43 @@ function createProfile(
                     email:
                         false,
                 },
+/**
+
+                 * STORE CREDIT TEST ENABLEMENT V1
+
+                 * Temporary local/demo configuration until the
+
+                 * payment-method administration UI is available.
+
+                 */
+
+                paymentMethods: [
+
+                    { code: "cash", isActive: true, sortOrder: 10 },
+
+                    { code: "card_terminal", isActive: true, sortOrder: 20 },
+
+                    { code: "echo", isActive: true, sortOrder: 30 },
+
+                    { code: "credit_voucher", isActive: true, sortOrder: 40 },
+
+                    { code: "gift_card", isActive: true, sortOrder: 50 },
+
+                    { code: "store_credit", isActive: true, sortOrder: 60 },
+
+                    { code: "bit", isActive: false, sortOrder: 70 },
+
+                    { code: "paybox", isActive: false, sortOrder: 80 },
+
+                    { code: "bank_transfer", isActive: false, sortOrder: 90 },
+
+                    { code: "cheque", isActive: false, sortOrder: 100 },
+
+                    { code: "external_credit", isActive: false, sortOrder: 110 },
+
+                    { code: "custom", isActive: false, sortOrder: 120 },
+
+                ],
 
                 registers: [
                     {

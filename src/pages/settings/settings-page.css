@@ -1,0 +1,2462 @@
+.settings-page {
+  min-height: 100%;
+  padding: 24px 26px 32px;
+  color: #20242a;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-size: 15px;
+  background:
+    linear-gradient(
+      180deg,
+      #fbfbfa 0%,
+      #f6f6f4 100%
+    );
+}
+
+.settings-page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1360px;
+  margin: 0 auto 18px;
+}
+
+.settings-page__header h1,
+.settings-page__section-heading h2 {
+  margin: 0;
+  color: #20242a;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+
+.settings-page__header h1 {
+  margin-top: 4px;
+  font-size: 28px;
+}
+
+.settings-page__header p,
+.settings-page__section-heading p {
+  margin: 6px 0 0;
+  color: #8b9198;
+  line-height: 1.55;
+}
+
+.settings-page__eyebrow {
+  display: inline-flex;
+  color: #b47d1e;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.settings-page__independence,
+.settings-page__section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e5d2aa;
+  border-radius: 9px;
+  color: #7b5819;
+  background: #faf3e4;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.settings-page__independence > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #c9942f;
+  box-shadow: 0 0 0 4px rgb(201 148 47 / 12%);
+}
+
+.settings-page__workspace {
+  display: grid;
+  grid-template-columns: 286px minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1360px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.settings-page__nav,
+.settings-page__content-card {
+  border: 1px solid #e4e5e7;
+  background: #fff;
+  box-shadow: 0 12px 34px rgb(20 23 27 / 5%);
+}
+
+.settings-page__nav {
+  grid-column: 1;
+  position: sticky;
+  top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 16px;
+}
+
+.settings-page__content {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.settings-page__nav-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #555b62;
+  background: transparent;
+  text-align: right;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.settings-page__nav-item:hover {
+  background: #f8f8f7;
+  color: #20242a;
+}
+
+.settings-page__nav-item--active {
+  border-color: #e5d2aa;
+  color: #20242a;
+  background: #faf3e4;
+}
+
+.settings-page__nav-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e4e5e7;
+  border-radius: 9px;
+  color: #70767d;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.settings-page__nav-item--active
+.settings-page__nav-icon {
+  border-color: #d9bd83;
+  color: #9d6d18;
+}
+
+.settings-page__nav-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-page__nav-copy strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settings-page__nav-copy small {
+  overflow: hidden;
+  color: #9aa0a6;
+  font-size: 9.5px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-page__content-card {
+  min-height: 590px;
+  padding: 24px;
+  border-radius: 16px;
+  animation: settings-page-enter 130ms ease-out;
+}
+
+@keyframes settings-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-page__section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eceeef;
+}
+
+.settings-page__section-heading h2 {
+  margin-top: 4px;
+  font-size: 20px;
+}
+
+.settings-page__section-heading p {
+  max-width: 660px;
+  font-size: 12px;
+}
+
+.settings-page__panel {
+  overflow: hidden;
+  margin-top: 18px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-height: 62px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #eceeef;
+}
+
+.settings-page__setting-row:last-child {
+  border-bottom: 0;
+}
+
+.settings-page__setting-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__setting-copy strong {
+  color: #30353a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.settings-page__setting-copy span {
+  color: #9aa0a6;
+  font-size: 10px;
+}
+
+.settings-page__setting-value {
+  color: #20242a;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: left;
+}
+
+.settings-page__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #8b9198;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.settings-page__state > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #c9ccd0;
+}
+
+.settings-page__state--active {
+  color: #6e511d;
+}
+
+.settings-page__state--active > span {
+  background: #c9942f;
+}
+
+.settings-page__employee-list,
+.settings-page__payment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.settings-page__employee-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 10px 12px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__employee-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e5d2aa;
+  border-radius: 11px;
+  color: #8a611c;
+  background: #faf3e4;
+  font-weight: 750;
+}
+
+.settings-page__employee-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__employee-main > strong {
+  font-size: 12px;
+}
+
+.settings-page__employee-main > span {
+  color: #9aa0a6;
+  font-size: 10px;
+}
+
+.settings-page__role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.settings-page__role-list span {
+  padding: 2px 7px;
+  border: 1px solid #eceeef;
+  border-radius: 999px;
+  color: #6f757c;
+  background: #fafafa;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.settings-page__choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.settings-page__choice {
+  min-height: 104px;
+  padding: 16px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  color: #40454b;
+  background: #fff;
+  text-align: right;
+  cursor: default;
+}
+
+.settings-page__choice strong,
+.settings-page__choice span {
+  display: block;
+}
+
+.settings-page__choice strong {
+  font-size: 20px;
+}
+
+.settings-page__choice span {
+  margin-top: 6px;
+  color: #8b9198;
+  font-size: 10px;
+}
+
+.settings-page__choice--selected {
+  border-color: #d8b977;
+  background: #faf3e4;
+  box-shadow: inset 0 0 0 1px rgb(201 148 47 / 10%);
+}
+
+.settings-page__note {
+  margin: 10px 2px 0;
+  color: #8b9198;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.settings-page__footer-preview {
+  margin-top: 18px;
+  padding: 26px;
+  border: 1px dashed #d9bd83;
+  border-radius: 12px;
+  color: #686e74;
+  background: #fffdf9;
+  text-align: center;
+}
+
+.settings-page__footer-preview span,
+.settings-page__footer-preview strong {
+  display: block;
+}
+
+.settings-page__footer-preview span {
+  color: #9a7a3a;
+  font-size: 10px;
+}
+
+.settings-page__footer-preview strong {
+  margin-top: 5px;
+  color: #20242a;
+  font-size: 17px;
+}
+
+.settings-page__footer-preview p {
+  max-width: 520px;
+  margin: 10px auto 0;
+  color: #8b9198;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.settings-page__payment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.settings-page__payment-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-page__payment-row strong {
+  font-size: 11px;
+}
+
+.settings-page__payment-row span {
+  color: #9aa0a6;
+  font-size: 9px;
+}
+
+@media (max-width: 980px) {
+  .settings-page {
+    padding: 18px;
+  }
+
+  .settings-page__workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__nav,
+  .settings-page__content {
+    grid-column: 1;
+  }
+
+  .settings-page__nav {
+    grid-row: 1;
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-page__content {
+    grid-row: 2;
+  }
+
+  .settings-page__nav-copy small {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-page__header,
+  .settings-page__section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .settings-page__nav {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__content-card {
+    padding: 18px;
+  }
+
+  .settings-page__setting-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
+
+
+/* LUMORA SETTINGS · EMPLOYEE MANAGEMENT V1 */
+.settings-page__employee-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 0 2px;
+}
+
+.settings-page__employee-toolbar > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-page__employee-toolbar strong {
+  color: #30353a;
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.settings-page__employee-toolbar span {
+  color: #8b9198;
+  font-size: 10px;
+}
+
+.settings-page__primary-action,
+.settings-page__secondary-action,
+.settings-page__small-action {
+  min-height: 34px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-page__primary-action {
+  padding: 0 14px;
+  border: 1px solid #d8b977;
+  color: #7b5819;
+  background: #faf3e4;
+}
+
+.settings-page__primary-action:hover {
+  border-color: #c9942f;
+  background: #f8eed8;
+}
+
+.settings-page__secondary-action {
+  padding: 0 14px;
+  border: 1px solid #dedfe1;
+  color: #555b62;
+  background: #fff;
+}
+
+.settings-page__employee-card {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+}
+
+.settings-page__employee-card--inactive {
+  background: #fafafa;
+}
+
+.settings-page__employee-card--inactive
+.settings-page__employee-avatar {
+  border-color: #e4e5e7;
+  color: #8b9198;
+  background: #f5f5f4;
+}
+
+.settings-page__employee-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.settings-page__small-action {
+  min-width: 58px;
+  padding: 0 10px;
+  border: 1px solid #e5d2aa;
+  color: #8a611c;
+  background: #fffaf0;
+}
+
+.settings-page__small-action--muted {
+  border-color: #dedfe1;
+  color: #6f757c;
+  background: #fff;
+}
+
+.settings-page__empty-state {
+  padding: 34px 18px;
+  border: 1px dashed #dedfe1;
+  border-radius: 12px;
+  color: #8b9198;
+  background: #fff;
+  text-align: center;
+  font-size: 11px;
+}
+
+.settings-page__modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(20 23 27 / 32%);
+  backdrop-filter: blur(2px);
+}
+
+.settings-page__employee-dialog {
+  width: min(520px, 100%);
+  overflow: hidden;
+  border: 1px solid #dedfe1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(15 18 21 / 22%);
+}
+
+.settings-page__dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 15px;
+  border-bottom: 1px solid #eceeef;
+}
+
+.settings-page__dialog-header h3 {
+  margin: 4px 0 0;
+  color: #20242a;
+  font-size: 17px;
+  font-weight: 720;
+}
+
+.settings-page__dialog-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  color: #555b62;
+  background: #fff;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-page__dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 18px;
+}
+
+.settings-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-page__field > span,
+.settings-page__roles-fieldset legend {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settings-page__field input {
+  width: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 0 11px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  outline: none;
+  color: #20242a;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+}
+
+.settings-page__field input:focus {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__field small {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__roles-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.settings-page__role-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.settings-page__role-choice {
+  min-height: 38px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  color: #6f757c;
+  background: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-page__role-choice--selected {
+  border-color: #d8b977;
+  color: #7b5819;
+  background: #faf3e4;
+}
+
+.settings-page__active-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.settings-page__active-switch > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__active-switch strong {
+  color: #30353a;
+  font-size: 11px;
+}
+
+.settings-page__active-switch span {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__active-switch input {
+  width: 18px;
+  height: 18px;
+  accent-color: #b47d1e;
+}
+
+.settings-page__dialog-error {
+  padding: 9px 11px;
+  border: 1px solid #e5d2aa;
+  border-radius: 9px;
+  color: #7b5819;
+  background: #faf3e4;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.settings-page__dialog-footer {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 13px 18px 16px;
+  border-top: 1px solid #eceeef;
+}
+
+@media (max-width: 700px) {
+  .settings-page__employee-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .settings-page__employee-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .settings-page__role-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LUMORA SETTINGS · EMPLOYEE NUMBER V1 */
+.settings-page__employee-identifiers {
+  display: inline-flex !important;
+  align-items: center;
+  flex-direction: row !important;
+  gap: 6px !important;
+  color: #8b9198 !important;
+  font-size: 10px !important;
+}
+
+.settings-page__employee-identifiers b {
+  color: #6d737a;
+  font-weight: 720;
+}
+
+.settings-page__employee-identifiers i {
+  color: #c7c9cc;
+  font-style: normal;
+}
+
+.settings-page__employee-identifiers span {
+  color: #9aa0a6;
+}
+
+.settings-page__employee-number-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid #e5d2aa;
+  border-radius: 10px;
+  background: #faf3e4;
+}
+
+.settings-page__employee-number-field > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__employee-number-field span {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settings-page__employee-number-field small {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__employee-number-field strong {
+  color: #7b5819;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+
+/* LUMORA SETTINGS · PRINTER V1 */
+.settings-page__printer-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.settings-page__printer-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 64px;
+  padding: 11px 13px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.settings-page__printer-summary span {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__printer-summary strong {
+  color: #30353a;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__choice {
+  position: relative;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.settings-page__choice:hover {
+  border-color: #d8b977;
+  transform: translateY(-1px);
+}
+
+.settings-page__choice--selected {
+  border-color: #c9942f;
+  background: #faf3e4;
+  box-shadow:
+    inset 0 0 0 1px rgb(201 148 47 / 10%),
+    0 8px 24px rgb(20 23 27 / 5%);
+}
+
+.settings-page__choice em {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 27px;
+  margin-top: 14px;
+  padding: 0 9px;
+  border: 1px solid #dedfe1;
+  border-radius: 8px;
+  color: #6f757c;
+  background: #fff;
+  font-size: 9.5px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.settings-page__choice--selected em {
+  border-color: #d8b977;
+  color: #7b5819;
+  background: #fffaf0;
+}
+
+.settings-page__printer-roll {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 34px;
+  margin-bottom: 12px;
+}
+
+.settings-page__printer-roll i {
+  position: absolute;
+  inset: 0 7px 7px 0;
+  border: 1px solid #bfc3c7;
+  border-radius: 7px 7px 4px 4px;
+  background: #fff;
+}
+
+.settings-page__printer-roll b {
+  position: absolute;
+  right: 5px;
+  bottom: 0;
+  width: 34px;
+  height: 13px;
+  border: 1px solid #d8b977;
+  border-radius: 2px 2px 5px 5px;
+  background: #fffaf0;
+}
+
+.settings-page__printer-roll--narrow b {
+  right: 10px;
+  width: 24px;
+}
+
+.settings-page__save-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: #7a8087;
+  font-size: 10px;
+}
+
+.settings-page__save-note > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #c9942f;
+  box-shadow: 0 0 0 4px rgb(201 148 47 / 10%);
+}
+
+@media (max-width: 640px) {
+  .settings-page__printer-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LUMORA SETTINGS · DOCUMENTS V1 */
+.settings-page__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 76px;
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  color: #8b9198;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-page__toggle > span {
+  position: relative;
+  width: 27px;
+  height: 15px;
+  border-radius: 999px;
+  background: #d5d7da;
+  transition: background 120ms ease;
+}
+
+.settings-page__toggle > span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(20 23 27 / 18%);
+  transition: transform 120ms ease;
+}
+
+.settings-page__toggle b {
+  min-width: 24px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.settings-page__toggle--on {
+  border-color: #e5d2aa;
+  color: #7b5819;
+  background: #faf3e4;
+}
+
+.settings-page__toggle--on > span {
+  background: #c9942f;
+}
+
+.settings-page__toggle--on > span::after {
+  transform: translateX(-12px);
+}
+
+.settings-page__document-block {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__document-block-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+
+.settings-page__document-block-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-page__document-block-heading strong {
+  color: #30353a;
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.settings-page__document-block-heading span {
+  color: #8b9198;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.settings-page__document-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.settings-page__document-choice {
+  min-height: 88px;
+  padding: 13px;
+  border: 1px solid #dedfe1;
+  border-radius: 10px;
+  color: #40454b;
+  background: #fff;
+  text-align: right;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-page__document-choice:hover {
+  border-color: #d8b977;
+}
+
+.settings-page__document-choice strong,
+.settings-page__document-choice span {
+  display: block;
+}
+
+.settings-page__document-choice strong {
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__document-choice span {
+  margin-top: 5px;
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__document-choice--selected {
+  border-color: #c9942f;
+  color: #7b5819;
+  background: #faf3e4;
+  box-shadow: inset 0 0 0 1px rgb(201 148 47 / 8%);
+}
+
+.settings-page__documents-panel {
+  margin-top: 10px;
+}
+
+.settings-page__stepper {
+  display: inline-grid;
+  grid-template-columns: 34px 40px 34px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.settings-page__stepper button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  color: #6f757c;
+  background: #fafafa;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.settings-page__stepper button:disabled {
+  color: #c5c8cb;
+  cursor: not-allowed;
+}
+
+.settings-page__stepper strong {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  border-inline: 1px solid #eceeef;
+  color: #30353a;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__document-capabilities {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__document-capabilities b {
+  padding: 3px 8px;
+  border: 1px solid #eceeef;
+  border-radius: 999px;
+  color: #6f757c;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .settings-page__document-choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LUMORA SETTINGS · POST-TRANSACTION TIMEOUT V1.1 */
+.settings-page__timeout-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  background: #fafafa;
+}
+
+.settings-page__timeout-option {
+  min-width: 48px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #6f757c;
+  background: transparent;
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-page__timeout-option:hover {
+  color: #30353a;
+  background: #fff;
+}
+
+.settings-page__timeout-option--selected {
+  border-color: #d8b977;
+  color: #7b5819;
+  background: #faf3e4;
+  box-shadow: 0 1px 3px rgb(20 23 27 / 5%);
+}
+
+@media (max-width: 640px) {
+  .settings-page__timeout-options {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* LUMORA SETTINGS · DOCUMENT FOOTER V1 */
+.settings-page__footer-settings-panel {
+  margin-top: 18px;
+}
+
+.settings-page__footer-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+  gap: 14px;
+  margin-top: 12px;
+  align-items: start;
+}
+
+.settings-page__footer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__field textarea {
+  width: 100%;
+  min-height: 76px;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 10px 11px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  outline: none;
+  color: #20242a;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.settings-page__field textarea:focus {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__footer-preview-wrap {
+  position: sticky;
+  top: 18px;
+}
+
+.settings-page__footer-preview-label {
+  display: block;
+  margin: 0 2px 7px;
+  color: #8b9198;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.settings-page__footer-preview {
+  margin-top: 0;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 24px 20px;
+  border: 1px dashed #d9bd83;
+  border-radius: 12px;
+  color: #686e74;
+  background:
+    linear-gradient(
+      180deg,
+      #fffdf9 0%,
+      #fffaf0 100%
+    );
+  text-align: center;
+}
+
+.settings-page__footer-preview::before {
+  content: "";
+  width: 58%;
+  border-top: 1px dashed #d8dadd;
+  margin-bottom: 8px;
+}
+
+.settings-page__footer-preview-business {
+  color: #9a7a3a;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.settings-page__footer-preview strong {
+  color: #20242a;
+  font-size: 15px;
+  font-weight: 720;
+}
+
+.settings-page__footer-preview p {
+  margin: 0;
+  max-width: 310px;
+  color: #737980;
+  font-size: 9.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.settings-page__footer-preview-custom {
+  margin-top: 4px !important;
+  padding-top: 7px;
+  border-top: 1px solid #eceeef;
+  color: #555b62 !important;
+}
+
+.settings-page__footer-preview--disabled {
+  filter: grayscale(1);
+  opacity: 0.58;
+}
+
+@media (max-width: 860px) {
+  .settings-page__footer-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__footer-preview-wrap {
+    position: static;
+  }
+}
+
+
+/* LUMORA SETTINGS · SCROLL + FOOTER CONTACTS V1.1 */
+.settings-page {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-bottom: 72px;
+}
+
+.settings-page__workspace {
+  padding-bottom: 18px;
+}
+
+.settings-page__footer-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.settings-page__footer-contact-grid input[dir="ltr"] {
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  .settings-page__footer-contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LUMORA SETTINGS · PAYMENT METHODS V1 */
+.settings-page__payment-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid #e5d2aa;
+  border-radius: 12px;
+  background: #faf3e4;
+}
+
+.settings-page__payment-callout > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__payment-callout strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__payment-callout span {
+  color: #7c7468;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__payment-callout-badge {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid #d8b977;
+  border-radius: 999px;
+  color: #7b5819 !important;
+  background: #fffaf0;
+  font-size: 8.5px !important;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.settings-page__payment-error {
+  margin-top: 10px;
+}
+
+.settings-page__payment-list--editable {
+  gap: 7px;
+}
+
+.settings-page__payment-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 78px;
+  padding: 10px 12px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+  transition:
+    opacity 120ms ease,
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.settings-page__payment-card--inactive {
+  background: #fafafa;
+}
+
+.settings-page__payment-card--inactive
+.settings-page__payment-card-main {
+  opacity: 0.62;
+}
+
+.settings-page__payment-order {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-page__payment-order > strong {
+  min-width: 25px;
+  color: #9a7a3a;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__payment-order > div {
+  display: flex;
+  gap: 4px;
+}
+
+.settings-page__payment-order button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #dedfe1;
+  border-radius: 7px;
+  color: #6f757c;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.settings-page__payment-order button:hover:not(:disabled) {
+  border-color: #d8b977;
+  color: #7b5819;
+  background: #fffaf0;
+}
+
+.settings-page__payment-order button:disabled {
+  color: #c7c9cc;
+  background: #fafafa;
+  cursor: not-allowed;
+}
+
+.settings-page__payment-card-main {
+  min-width: 0;
+}
+
+.settings-page__payment-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.settings-page__payment-title-row > strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__payment-title-row > span {
+  padding: 2px 7px;
+  border: 1px solid #eceeef;
+  border-radius: 999px;
+  color: #7a8087;
+  background: #fafafa;
+  font-size: 8.5px;
+  font-weight: 650;
+}
+
+.settings-page__payment-card-main p {
+  margin: 4px 0 0;
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.settings-page__payment-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.settings-page__payment-capabilities span {
+  color: #7a8087;
+  font-size: 8.5px;
+}
+
+.settings-page__payment-capabilities span + span::before {
+  content: "·";
+  margin-inline-end: 5px;
+  color: #c7c9cc;
+}
+
+@media (max-width: 700px) {
+  .settings-page__payment-card {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+
+  .settings-page__payment-card
+  > .settings-page__toggle {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+
+/* LUMORA SETTINGS · TAX POLICY V1 */
+.settings-page__tax-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.settings-page__tax-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 64px;
+  padding: 11px 13px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.settings-page__tax-summary span {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__tax-summary strong {
+  color: #30353a;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__tax-panel {
+  margin-top: 10px;
+}
+
+.settings-page__tax-rate-field {
+  display: inline-grid;
+  grid-template-columns: 78px 30px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.settings-page__tax-rate-field:focus-within {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__tax-rate-field input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  box-sizing: border-box;
+  padding: 0 9px;
+  border: 0;
+  outline: 0;
+  color: #20242a;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__tax-rate-field > span {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  border-inline-start: 1px solid #eceeef;
+  color: #7b5819;
+  background: #faf3e4;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.settings-page__tax-error {
+  margin-top: 10px;
+}
+
+.settings-page__tax-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #e5d2aa;
+  border-radius: 10px;
+  background: #fffaf0;
+}
+
+.settings-page__tax-notice strong {
+  flex: 0 0 auto;
+  color: #7b5819;
+  font-size: 9.5px;
+}
+
+.settings-page__tax-notice span {
+  color: #777168;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .settings-page__tax-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LUMORA SETTINGS · TAX V2 */
+.settings-page__tax-summary small {
+  margin-top: 1px;
+  color: #a0a5aa;
+  font-size: 8.5px;
+  font-weight: 650;
+}
+
+.settings-page__tax-profile-block {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__tax-profile-heading {
+  padding-bottom: 11px;
+}
+
+.settings-page__tax-profile-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-page__tax-profile-heading strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__tax-profile-heading span {
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__tax-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.settings-page__tax-profile-card {
+  min-height: 84px;
+  padding: 12px;
+  border: 1px solid #dedfe1;
+  border-radius: 10px;
+  color: #40454b;
+  background: #fff;
+  text-align: right;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-page__tax-profile-card:hover {
+  border-color: #d8b977;
+}
+
+.settings-page__tax-profile-card strong,
+.settings-page__tax-profile-card span {
+  display: block;
+}
+
+.settings-page__tax-profile-card strong {
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__tax-profile-card span {
+  margin-top: 5px;
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__tax-profile-card--selected {
+  border-color: #c9942f;
+  color: #7b5819;
+  background: #faf3e4;
+  box-shadow: inset 0 0 0 1px rgb(201 148 47 / 8%);
+}
+
+.settings-page__tax-class-guide {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.settings-page__tax-class-guide > div {
+  min-height: 62px;
+  padding: 9px 10px;
+  border: 1px solid #eceeef;
+  border-radius: 9px;
+  background: #fafafa;
+}
+
+.settings-page__tax-class-guide strong,
+.settings-page__tax-class-guide span {
+  display: block;
+}
+
+.settings-page__tax-class-guide strong {
+  color: #4a5057;
+  font-size: 9.5px;
+}
+
+.settings-page__tax-class-guide span {
+  margin-top: 4px;
+  color: #8b9198;
+  font-size: 8.5px;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .settings-page__tax-profile-grid,
+  .settings-page__tax-class-guide {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LUMORA SETTINGS · RETURNS POLICY V1 */
+.settings-page__returns-panel {
+  margin-top: 18px;
+}
+
+.settings-page__policy-select {
+  min-width: 138px;
+  height: 34px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  outline: 0;
+  color: #30353a;
+  background: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.settings-page__policy-select--wide {
+  min-width: 210px;
+}
+
+.settings-page__policy-select:focus {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__policy-select:disabled {
+  color: #a6aaae;
+  background: #f7f7f7;
+  cursor: not-allowed;
+}
+
+.settings-page__returns-fee-card {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__returns-fee-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eceeef;
+}
+
+.settings-page__returns-fee-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__returns-fee-heading strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__returns-fee-heading > div > span {
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__returns-fee-heading > span {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid #e5d2aa;
+  border-radius: 999px;
+  color: #7b5819;
+  background: #faf3e4;
+  font-size: 9px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__returns-fee-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.settings-page__number-suffix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  overflow: hidden;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.settings-page__number-suffix:focus-within {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__number-suffix input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  box-sizing: border-box;
+  padding: 0 9px;
+  border: 0;
+  outline: 0;
+  color: #20242a;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__number-suffix b {
+  display: grid;
+  place-items: center;
+  border-inline-start: 1px solid #eceeef;
+  color: #7b5819;
+  background: #faf3e4;
+  font-size: 10px;
+}
+
+.settings-page__returns-error {
+  margin-top: 10px;
+}
+
+.settings-page__returns-rule {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #e5d2aa;
+  border-radius: 10px;
+  background: #fffaf0;
+}
+
+.settings-page__returns-rule strong {
+  flex: 0 0 auto;
+  color: #7b5819;
+  font-size: 9.5px;
+}
+
+.settings-page__returns-rule span {
+  color: #777168;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .settings-page__returns-fee-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__policy-select--wide {
+    min-width: 150px;
+  }
+}
+
+
+/* LUMORA SETTINGS · CUSTOMERS + STORE CREDIT V1 */
+.settings-page__customer-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.settings-page__customer-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 62px;
+  padding: 11px 13px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.settings-page__customer-summary span {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__customer-summary strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__customer-policy-panel {
+  margin-top: 10px;
+}
+
+.settings-page__customer-credit-card {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__customer-credit-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 14px;
+  border-bottom: 1px solid #eceeef;
+  background: #fafafa;
+}
+
+.settings-page__customer-credit-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__customer-credit-heading strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__customer-credit-heading span {
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__customer-credit-rules {
+  padding: 0 14px;
+}
+
+.settings-page__customer-policy-error {
+  margin-top: 10px;
+}
+
+.settings-page__customer-policy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #e5d2aa;
+  border-radius: 10px;
+  background: #fffaf0;
+}
+
+.settings-page__customer-policy-note strong {
+  flex: 0 0 auto;
+  color: #7b5819;
+  font-size: 9.5px;
+}
+
+.settings-page__customer-policy-note span {
+  color: #777168;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .settings-page__customer-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__customer-credit-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* LUMORA SETTINGS · BUSINESS + BRANCH V1 */
+.settings-page__business-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.settings-page__business-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 62px;
+  padding: 11px 13px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.settings-page__business-summary span {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__business-summary strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__business-card {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__business-card--branch {
+  border-color: #e5d2aa;
+}
+
+.settings-page__business-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eceeef;
+  background: #fafafa;
+}
+
+.settings-page__business-card--branch
+.settings-page__business-card-heading {
+  background: #fffaf0;
+}
+
+.settings-page__business-card-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__business-card-heading strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__business-card-heading span {
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__business-branch-code {
+  flex: 0 0 auto;
+  min-width: 30px;
+  padding: 4px 8px;
+  border: 1px solid #e5d2aa;
+  border-radius: 999px;
+  color: #7b5819 !important;
+  background: #fff;
+  text-align: center;
+  font-size: 9px !important;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__business-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.settings-page__business-field--wide {
+  grid-column: 1 / -1;
+}
+
+.settings-page__business-grid input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  outline: 0;
+  color: #20242a;
+  background: #fff;
+  font: inherit;
+  font-size: 10px;
+}
+
+.settings-page__business-grid input[dir="ltr"] {
+  text-align: left;
+}
+
+.settings-page__business-grid input:focus {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__business-grid input::placeholder {
+  color: #a5a9ae;
+}
+
+.settings-page__business-tax-link {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #e5d2aa;
+  border-radius: 10px;
+  background: #fffaf0;
+}
+
+.settings-page__business-tax-link > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.settings-page__business-tax-link strong {
+  flex: 0 0 auto;
+  color: #7b5819;
+  font-size: 9.5px;
+}
+
+.settings-page__business-tax-link span {
+  color: #777168;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .settings-page__business-summary,
+  .settings-page__business-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__business-field--wide {
+    grid-column: auto;
+  }
+}
+
+
+/* LUMORA SETTINGS · REGISTER IDENTITY V1 */
+.settings-page__register-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.settings-page__register-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 62px;
+  padding: 11px 13px;
+  border: 1px solid #e4e5e7;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.settings-page__register-summary span {
+  color: #8b9198;
+  font-size: 9.5px;
+}
+
+.settings-page__register-summary strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__register-card {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #e4e5e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.settings-page__register-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eceeef;
+  background: #fafafa;
+}
+
+.settings-page__register-card-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-page__register-card-heading strong {
+  color: #30353a;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.settings-page__register-card-heading span {
+  color: #8b9198;
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+.settings-page__register-source-badge {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid #e5d2aa;
+  border-radius: 999px;
+  color: #7b5819 !important;
+  background: #faf3e4;
+  font-size: 9px !important;
+  font-weight: 750;
+}
+
+.settings-page__register-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.settings-page__register-name-field {
+  grid-column: 1 / -1;
+}
+
+.settings-page__register-grid input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dedfe1;
+  border-radius: 9px;
+  outline: 0;
+  color: #20242a;
+  background: #fff;
+  font: inherit;
+  font-size: 10px;
+}
+
+.settings-page__register-grid input[dir="ltr"] {
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-page__register-grid input:focus {
+  border-color: #c9942f;
+  box-shadow: 0 0 0 3px rgb(201 148 47 / 10%);
+}
+
+.settings-page__register-grid input:disabled {
+  color: #8b9198;
+  background: #f4f5f6;
+  cursor: not-allowed;
+}
+
+.settings-page__register-grid input::placeholder {
+  color: #a5a9ae;
+}
+
+.settings-page__register-error {
+  margin: 0 14px 14px;
+}
+
+.settings-page__register-hardware {
+  padding: 0 14px;
+}
+
+.settings-page__register-architecture-note,
+.settings-page__register-numbering-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+}
+
+.settings-page__register-architecture-note {
+  border: 1px solid #e4e5e7;
+  background: #fafafa;
+}
+
+.settings-page__register-numbering-note {
+  border: 1px solid #e5d2aa;
+  background: #fffaf0;
+}
+
+.settings-page__register-architecture-note strong,
+.settings-page__register-numbering-note strong {
+  flex: 0 0 auto;
+  font-size: 9.5px;
+}
+
+.settings-page__register-architecture-note strong {
+  color: #30353a;
+}
+
+.settings-page__register-numbering-note strong {
+  color: #7b5819;
+}
+
+.settings-page__register-architecture-note span,
+.settings-page__register-numbering-note span {
+  color: #777168;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .settings-page__register-summary,
+  .settings-page__register-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-page__register-name-field {
+    grid-column: auto;
+  }
+}

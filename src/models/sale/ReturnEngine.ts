@@ -1,4 +1,8 @@
 import {
+    getReturnPolicy,
+    isWithinReturnWindow,
+} from "../../config/ReturnPolicy";
+import {
     calculateIncludedTax,
 } from "../tax/TaxPolicy";
 
@@ -17,6 +21,29 @@ export function validateReturn(
 ): string[] {
     const errors:
         string[] = [];
+
+    const policy =
+        getReturnPolicy();
+
+    if (
+        !policy.returnsEnabled
+    ) {
+        errors.push(
+            "RETURN_DISABLED",
+        );
+    }
+
+    if (
+        !isWithinReturnWindow(
+            sale.completedAt,
+            sale.createdAt,
+            policy,
+        )
+    ) {
+        errors.push(
+            "RETURN_WINDOW_EXPIRED",
+        );
+    }
 
     for (
         const line
@@ -81,6 +108,80 @@ export function validateReturn(
     return errors;
 }
 
+function calculateReturnTax(
+    sale:
+        Sale,
+    lines:
+        ReturnLine[],
+) {
+    return lines.reduce(
+        (
+            sum,
+            line,
+        ) => {
+            const original =
+                sale.lines.find(
+                    (item) =>
+                        item.id ===
+                        line.saleLineId,
+                );
+
+            if (
+                !original
+            ) {
+                return sum;
+            }
+
+            if (
+                original
+                    .taxSnapshot
+            ) {
+                const originalNet =
+                    Math.abs(
+                        original
+                            .taxSnapshot
+                            .taxableAmount,
+                    );
+
+                if (
+                    originalNet >
+                    0.001
+                ) {
+                    const ratio =
+                        Math.min(
+                            1,
+                            Math.max(
+                                0,
+                                line.netAmount /
+                                    originalNet,
+                            ),
+                        );
+
+                    return (
+                        sum +
+                        Math.abs(
+                            original
+                                .taxSnapshot
+                                .taxAmount,
+                        ) *
+                            ratio
+                    );
+                }
+
+                return sum;
+            }
+
+            return (
+                sum +
+                calculateIncludedTax(
+                    line.netAmount,
+                )
+            );
+        },
+        0,
+    );
+}
+
 export function createReturn(
     sale: Sale,
     lines: ReturnLine[],
@@ -136,9 +237,16 @@ export function createReturn(
         discount,
 
         tax:
-            calculateIncludedTax(
-                total,
-            ),
+            Math.round(
+                (
+                    calculateReturnTax(
+                        sale,
+                        lines,
+                    ) +
+                    Number.EPSILON
+                ) *
+                    100,
+            ) / 100,
 
         total,
 

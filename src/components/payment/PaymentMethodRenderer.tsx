@@ -1,10 +1,14 @@
 import type {
     PaymentMethodCode,
 } from "../../models/PaymentMethod";
+import type {
+    StoreCreditManagerApproval,
+} from "../../models/store-credit/StoreCreditService";
 import CardMethod from "./methods/CardMethod";
 import CashMethod from "./methods/CashMethod";
 import CreditVoucherMethod from "./methods/CreditVoucherMethod";
 import EchoMethod from "./methods/EchoMethod";
+import ExternalCreditMethod from "./methods/ExternalCreditMethod";
 import GiftCardMethod from "./methods/GiftCardMethod";
 import StoreCreditMethod from "./methods/StoreCreditMethod";
 
@@ -21,16 +25,25 @@ type PaymentMethodRendererProps = {
 
     remainingAmount: number;
 
+    pendingStoreCreditAmount: number;
+
     onAddCashPayment: (
         payment: CashPaymentInput,
     ) => void;
 
-    onApproveElectronicPayment: (
+    onApproveReferencedPayment: (
         method:
-            | "card_terminal"
-            | "echo",
+            | "echo"
+            | "external_credit",
         amount: number,
-        providerReference: string,
+        reference: string,
+    ) => void;
+
+    onAddStoreCreditPayment: (
+        amount: number,
+        customerId: string,
+        managerApproval?:
+            StoreCreditManagerApproval,
     ) => void;
 
     onRedeemStoredValue: (
@@ -45,8 +58,10 @@ type PaymentMethodRendererProps = {
 function PaymentMethodRenderer({
     selectedMethod,
     remainingAmount,
+    pendingStoreCreditAmount,
     onAddCashPayment,
-    onApproveElectronicPayment,
+    onApproveReferencedPayment,
+    onAddStoreCreditPayment,
     onRedeemStoredValue,
 }: PaymentMethodRendererProps) {
     if (selectedMethod === null) {
@@ -71,21 +86,7 @@ function PaymentMethodRenderer({
         "card_terminal"
     ) {
         return (
-            <CardMethod
-                remainingAmount={
-                    remainingAmount
-                }
-                onApprove={(
-                    amount: number,
-                    providerReference: string,
-                ) =>
-                    onApproveElectronicPayment(
-                        "card_terminal",
-                        amount,
-                        providerReference,
-                    )
-                }
-            />
+            <CardMethod />
         );
     }
 
@@ -99,7 +100,7 @@ function PaymentMethodRenderer({
                     amount: number,
                     providerReference: string,
                 ) =>
-                    onApproveElectronicPayment(
+                    onApproveReferencedPayment(
                         "echo",
                         amount,
                         providerReference,
@@ -164,6 +165,35 @@ function PaymentMethodRenderer({
                 remainingAmount={
                     remainingAmount
                 }
+                pendingStoreCreditAmount={
+                    pendingStoreCreditAmount
+                }
+                onAddPayment={
+                    onAddStoreCreditPayment
+                }
+            />
+        );
+    }
+
+    if (
+        selectedMethod ===
+        "external_credit"
+    ) {
+        return (
+            <ExternalCreditMethod
+                remainingAmount={
+                    remainingAmount
+                }
+                onApprove={(
+                    amount: number,
+                    externalReference: string,
+                ) =>
+                    onApproveReferencedPayment(
+                        "external_credit",
+                        amount,
+                        externalReference,
+                    )
+                }
             />
         );
     }
@@ -189,11 +219,6 @@ function PaymentMethodRenderer({
             title: "המחאה",
         },
 
-        external_credit: {
-            icon: "▤",
-            title: "אשראי חיצוני",
-        },
-
         custom: {
             icon: "+",
             title: "אמצעי תשלום נוסף",
@@ -207,6 +232,7 @@ function PaymentMethodRenderer({
             | "credit_voucher"
             | "gift_card"
             | "store_credit"
+            | "external_credit"
         >,
         {
             icon: string;

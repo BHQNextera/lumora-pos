@@ -20,6 +20,18 @@ export type SaleCustomer = {
     isClubMember?: boolean;
 };
 
+export type StoreCreditObligoSnapshot = {
+    beforeBalance: number;
+    creditLimit: number;
+
+    /**
+     * Positive = new store-credit charge.
+     * Negative = debt reduction on return/refund.
+     */
+    movementAmount: number;
+
+    afterBalance: number;
+};
 export type AppliedSaleCoupon = {
     couponId: string;
     code: string;
@@ -41,7 +53,7 @@ export type Sale = {
     status: SaleStatus;
     transactionType: TransactionType;
 
-    
+
     shiftId?: string;
 customer: SaleCustomer;
 
@@ -74,6 +86,14 @@ customer: SaleCustomer;
     total: number;
 
     payments: Payment[];
+
+    /**
+     * Historical customer-account snapshot for this
+     * transaction. Never recalculated from the customer's
+     * later balance.
+     */
+    storeCreditObligo?:
+        StoreCreditObligoSnapshot;
 
     createdAt: string;
     completedAt?: string;

@@ -70,7 +70,7 @@ function getPaymentLabel(
             return "Gift Card";
 
         case "store_credit":
-            return "זיכוי לקוח";
+            return "הקפה";
 
         case "bank_transfer":
             return "העברה בנקאית";
@@ -384,7 +384,14 @@ export function createAccountingDocumentData(
                 }),
             ),
 
-        barcode: {
+
+        storeCreditObligo:
+            sale.storeCreditObligo
+                ? {
+                      ...sale.storeCreditObligo,
+                  }
+                : undefined,
+ barcode: {
             value:
                 document?.id ??
                 sale.id,

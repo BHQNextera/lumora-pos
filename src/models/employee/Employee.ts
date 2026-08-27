@@ -8,6 +8,13 @@ export type Employee = {
 
     name: string;
 
+    /**
+     * Stable, auto-assigned Lumora employee number.
+     * Kept optional at type level for backward compatibility with
+     * older persisted/directly-constructed employee records.
+     */
+    employeeNumber?: number;
+
     code?: string;
 
     roles:

@@ -11,7 +11,20 @@ import type {
 import type {
     Coupon,
 } from "../../models/coupon/Coupon";
+import {
+    formatMoney,
+} from "../../utils/MoneyFormatter";
+import {
+    assessQuantityText,
+    isBarcodeLikeQuantityText,
+} from "../../utils/quantitySafety";
+import {
+    useQuantityScannerGuard,
+} from "../../utils/useQuantityScannerGuard";
+
 import "./cart-panel.css";
+
+/* LUMORA QUANTITY SAFETY V1.2 */
 
 type CartSellerOption = {
     id: string;
@@ -128,6 +141,137 @@ function CartPanel({
         couponDialogOpen,
         setCouponDialogOpen,
     ] = useState(false);
+
+    const [
+        quantityDrafts,
+        setQuantityDrafts,
+    ] = useState<Record<string, string>>({});
+
+    const [
+        quantitySafetyNotice,
+        setQuantitySafetyNotice,
+    ] =
+        useState<string | null>(null);
+
+    const [
+        pendingQuantityApproval,
+        setPendingQuantityApproval,
+    ] =
+        useState<{
+            lineId: string;
+            quantity: number;
+            message: string;
+        } | null>(null);
+
+    const quantityScannerGuard =
+        useQuantityScannerGuard();
+
+    const clearQuantityDraft = (
+        lineId: string,
+    ) => {
+        setQuantityDrafts(
+            (current) => {
+                const next = {
+                    ...current,
+                };
+                delete next[lineId];
+                return next;
+            },
+        );
+    };
+
+    const rejectBarcodeQuantity = (
+        line: PricedCartLine,
+    ) => {
+        clearQuantityDraft(
+            line.id,
+        );
+        setPendingQuantityApproval(
+            null,
+        );
+        setQuantitySafetyNotice(
+            "זוהתה סריקת ברקוד בשדה הכמות. הכמות לא שונתה.",
+        );
+    };
+
+    const commitQuantity = (
+        line: PricedCartLine,
+    ) => {
+        const raw =
+            quantityDrafts[line.id] ??
+            String(line.quantity);
+
+        if (
+            raw !== "" &&
+            isBarcodeLikeQuantityText(
+                raw,
+            )
+        ) {
+            rejectBarcodeQuantity(
+                line,
+            );
+            return;
+        }
+
+        const assessment =
+            assessQuantityText({
+                raw,
+                context: "cart",
+                min: 1,
+                current: line.quantity,
+            });
+
+        if (!assessment.ok) {
+            setPendingQuantityApproval(
+                null,
+            );
+            setQuantitySafetyNotice(
+                assessment.message ??
+                    "הכמות לא עודכנה.",
+            );
+            clearQuantityDraft(
+                line.id,
+            );
+            return;
+        }
+
+        const nextQuantity =
+            assessment.quantity ??
+            line.quantity;
+
+        if (
+            assessment.requiresConfirmation
+        ) {
+            setPendingQuantityApproval({
+                lineId: line.id,
+                quantity:
+                    nextQuantity,
+                message:
+                    assessment.message ??
+                    "זוהתה כמות חריגה.",
+            });
+            setQuantitySafetyNotice(
+                assessment.message ??
+                    "זוהתה כמות חריגה.",
+            );
+            return;
+        }
+
+        onSetQuantity(
+            line.id,
+            nextQuantity,
+        );
+
+        clearQuantityDraft(
+            line.id,
+        );
+        setPendingQuantityApproval(
+            null,
+        );
+        setQuantitySafetyNotice(
+            null,
+        );
+    };
 
     const totalQuantity = lines.reduce(
         (sum, line) => sum + line.quantity,
@@ -475,8 +619,10 @@ function CartPanel({
                                                 ? "החזרה · "
                                                 : ""}
 
-                                            {line.quantity} × ₪
-                                            {line.unitPrice.toFixed(2)}
+                                            {line.quantity} ×{" "}
+                                            <bdi className="lumora-money-value">
+                                                {formatMoney(line.unitPrice)}
+                                            </bdi>
                                         </span>
 
                                         {priceOverridden && (
@@ -487,10 +633,13 @@ function CartPanel({
                                                     marginTop: "2px",
                                                 }}
                                             >
-                                                מחיר מקור: ₪
-                                                {line.originalUnitPrice?.toFixed(
-                                                    2,
-                                                )}
+                                                מחיר מקור:{" "}
+                                                <bdi className="lumora-money-value">
+                                                    {formatMoney(
+                                                        line.originalUnitPrice ??
+                                                            line.unitPrice,
+                                                    )}
+                                                </bdi>
                                             </span>
                                         )}
 
@@ -514,10 +663,9 @@ function CartPanel({
 
                                                     {promotion.discountAmount >
                                                         0 && (
-                                                            <strong>
-                                                                ‎-₪
-                                                                {promotion.discountAmount.toFixed(
-                                                                    2,
+                                                            <strong className="lumora-money-value">
+                                                                {formatMoney(
+                                                                    -promotion.discountAmount,
                                                                 )}
                                                             </strong>
                                                         )}
@@ -533,10 +681,9 @@ function CartPanel({
                                                         הנחה
                                                     </span>
 
-                                                    <strong>
-                                                        ‎-₪
-                                                        {totalLineDiscount.toFixed(
-                                                            2,
+                                                    <strong className="lumora-money-value">
+                                                        {formatMoney(
+                                                            -totalLineDiscount,
                                                         )}
                                                     </strong>
                                                 </div>
@@ -548,10 +695,9 @@ function CartPanel({
                                                     הנחת עסקה
                                                 </span>
 
-                                                <strong>
-                                                    ‎-₪
-                                                    {transactionDiscount.toFixed(
-                                                        2,
+                                                <strong className="lumora-money-value">
+                                                    {formatMoney(
+                                                        -transactionDiscount,
                                                     )}
                                                 </strong>
                                             </div>
@@ -575,11 +721,13 @@ function CartPanel({
 
                                             <input
                                                 className="lumora-cart-line__quantity-input"
-                                                type="number"
+                                                type="text"
                                                 inputMode="numeric"
-                                                min={1}
-                                                step={1}
-                                                value={line.quantity}
+                                                pattern="[0-9]*"
+                                                value={
+                                                    quantityDrafts[line.id] ??
+                                                    String(line.quantity)
+                                                }
                                                 aria-label="כמות"
                                                 onClick={(event) => {
                                                     event.stopPropagation();
@@ -589,29 +737,91 @@ function CartPanel({
                                                     event.stopPropagation()
                                                 }
                                                 onChange={(event) => {
-                                                    const nextValue =
-                                                        Number(
-                                                            event.target.value,
-                                                        );
+                                                    const raw =
+                                                        event.target.value
+                                                            .replaceAll(",", "")
+                                                            .trim();
 
                                                     if (
-                                                        Number.isFinite(
-                                                            nextValue,
-                                                        ) &&
-                                                        nextValue >= 1
+                                                        raw !== "" &&
+                                                        isBarcodeLikeQuantityText(
+                                                            raw,
+                                                        )
                                                     ) {
-                                                        onSetQuantity(
-                                                            line.id,
-                                                            nextValue,
+                                                        rejectBarcodeQuantity(
+                                                            line,
                                                         );
+                                                        quantityScannerGuard.reset();
+                                                        return;
                                                     }
+
+                                                    if (
+                                                        raw !== "" &&
+                                                        !/^\d+$/.test(raw)
+                                                    ) {
+                                                        return;
+                                                    }
+
+                                                    setPendingQuantityApproval(
+                                                        null,
+                                                    );
+                                                    setQuantitySafetyNotice(
+                                                        null,
+                                                    );
+                                                    setQuantityDrafts(
+                                                        (current) => ({
+                                                            ...current,
+                                                            [line.id]:
+                                                                raw,
+                                                        }),
+                                                    );
                                                 }}
+                                                onBlur={() =>
+                                                    commitQuantity(
+                                                        line,
+                                                    )
+                                                }
                                                 onKeyDown={(event) => {
                                                     event.stopPropagation();
 
+                                                    const blocked =
+                                                        quantityScannerGuard.handleKeyDown({
+                                                            fieldKey:
+                                                                line.id,
+                                                            key:
+                                                                event.key,
+                                                            onDetected:
+                                                                () =>
+                                                                    rejectBarcodeQuantity(
+                                                                        line,
+                                                                    ),
+                                                        });
+
+                                                    if (blocked) {
+                                                        event.preventDefault();
+                                                        return;
+                                                    }
+
                                                     if (
-                                                        event.key === "Enter"
+                                                        event.key ===
+                                                        "Enter"
                                                     ) {
+                                                        event.currentTarget.blur();
+                                                    }
+
+                                                    if (
+                                                        event.key ===
+                                                        "Escape"
+                                                    ) {
+                                                        clearQuantityDraft(
+                                                            line.id,
+                                                        );
+                                                        setPendingQuantityApproval(
+                                                            null,
+                                                        );
+                                                        setQuantitySafetyNotice(
+                                                            null,
+                                                        );
                                                         event.currentTarget.blur();
                                                     }
                                                 }}
@@ -632,23 +842,73 @@ function CartPanel({
                                         </div>
 
                                         <strong
-                                            className={`lumora-cart-line__total ${line.calculatedNetAmount < 0
+                                            className={`lumora-cart-line__total lumora-money-value ${line.calculatedNetAmount < 0
                                                 ? "lumora-cart-line__total--return"
                                                 : ""
                                                 }`}
                                         >
-                                            {line.calculatedNetAmount < 0
-                                                ? "‎-"
-                                                : ""}
-                                            ₪
-                                            {Math.abs(
+                                            {formatMoney(
                                                 line.calculatedNetAmount,
-                                            ).toFixed(2)}
+                                            )}
                                         </strong>
                                     </div>
                                 </article>
                             );
                         })}
+                    </div>
+                )}
+
+                {quantitySafetyNotice && (
+                    <div
+                        className="lumora-cart__quantity-notice"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <span>
+                            {quantitySafetyNotice}
+                        </span>
+
+                        {pendingQuantityApproval && (
+                            <div className="lumora-cart__quantity-notice-actions">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onSetQuantity(
+                                            pendingQuantityApproval.lineId,
+                                            pendingQuantityApproval.quantity,
+                                        );
+                                        clearQuantityDraft(
+                                            pendingQuantityApproval.lineId,
+                                        );
+                                        setPendingQuantityApproval(
+                                            null,
+                                        );
+                                        setQuantitySafetyNotice(
+                                            null,
+                                        );
+                                    }}
+                                >
+                                    אישור
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        clearQuantityDraft(
+                                            pendingQuantityApproval.lineId,
+                                        );
+                                        setPendingQuantityApproval(
+                                            null,
+                                        );
+                                        setQuantitySafetyNotice(
+                                            null,
+                                        );
+                                    }}
+                                >
+                                    ביטול
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -663,10 +923,9 @@ function CartPanel({
                             </span>
 
                             {couponDiscountAmount > 0 && (
-                                <strong>
-                                    -₪
-                                    {couponDiscountAmount.toFixed(
-                                        2,
+                                <strong className="lumora-money-value">
+                                    {formatMoney(
+                                        -couponDiscountAmount,
                                     )}
                                 </strong>
                             )}
@@ -844,42 +1103,26 @@ function CartPanel({
                         <div>
                             <span>סה״כ לפני הנחות</span>
 
-                            <strong>
-                                {totalBeforeDiscounts < 0
-                                    ? "‎-"
-                                    : ""}
-                                ₪
-                                {Math.abs(
-                                    totalBeforeDiscounts,
-                                ).toFixed(2)}
+                            <strong className="lumora-money-value">
+                                {formatMoney(totalBeforeDiscounts)}
                             </strong>
                         </div>
 
                         <div className="lumora-cart__summary-discount">
                             <span>הנחה</span>
 
-                            <strong>
-                                {totalDiscountAmount > 0
-                                    ? "‎-"
-                                    : ""}
-                                ₪
-                                {Math.abs(
-                                    totalDiscountAmount,
-                                ).toFixed(2)}
+                            <strong className="lumora-money-value">
+                                {formatMoney(
+                                    -Math.abs(totalDiscountAmount),
+                                )}
                             </strong>
                         </div>
 
                         <div className="lumora-cart__total">
                             <span>סה״כ לתשלום</span>
 
-                            <strong>
-                                {totalAfterCoupon < 0
-                                    ? "‎-"
-                                    : ""}
-                                ₪
-                                {Math.abs(
-                                    totalAfterCoupon,
-                                ).toFixed(2)}
+                            <strong className="lumora-money-value">
+                                {formatMoney(totalAfterCoupon)}
                             </strong>
                         </div>
                     </div>
@@ -932,14 +1175,8 @@ function CartPanel({
                     </span>
 
                     {lines.length > 0 && (
-                        <strong className="lumora-cart__checkout-amount">
-                            {totalAfterCoupon < 0
-                                ? "\u200E-"
-                                : ""}
-                            {"\u20AA"}
-                            {Math.abs(
-                                totalAfterCoupon,
-                            ).toFixed(2)}
+                        <strong className="lumora-cart__checkout-amount lumora-money-value">
+                            {formatMoney(totalAfterCoupon)}
                         </strong>
                     )}
 </button>

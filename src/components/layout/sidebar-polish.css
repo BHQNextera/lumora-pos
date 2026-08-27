@@ -1,0 +1,42 @@
+.pos-sidebar__navigation {
+    min-height: 0;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+}
+
+.pos-sidebar__navigation::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.pos-sidebar__footer {
+    flex: 0 0 auto;
+}
+/* LUMORA SIDEBAR BOUNDARY FIX V1 */
+
+/*
+ * The grid column width and the sidebar width are the same, but the
+ * sidebar also has horizontal padding. With content-box sizing that
+ * padding is added outside the declared width and the rail spills into
+ * the workspace. Keep the full rail inside its grid column.
+ */
+.pos-sidebar {
+    box-sizing: border-box !important;
+    max-width: 100%;
+}
+
+.pos-sidebar__navigation,
+.pos-sidebar__footer,
+.pos-sidebar__item {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.pos-sidebar__navigation {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.pos-sidebar__item {
+    width: 100%;
+}

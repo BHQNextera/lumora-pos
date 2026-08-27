@@ -1,4 +1,5 @@
 import lumoraMark from "../../assets/lumora-mark.svg";
+import "./sidebar-polish.css";
 
 import {
   getActiveBusinessOperatingProfile,
@@ -87,7 +88,7 @@ function Sidebar({
       id: "payments",
       label: "תשלומים",
       icon: "▣",
-      isVisible: true,
+      isVisible: false,
     },
     {
       id: "transactions",
@@ -136,12 +137,19 @@ function Sidebar({
       view: "reports",
     },
     {
-      id: "settings",
-      label: "הגדרות",
-      icon: "⚙",
+      id: "promotions",
+      label: "מבצעים",
+      icon: "%",
       view: "promotions",
       isVisible:
         profile.features.promotions,
+    },
+    {
+      id: "settings",
+      label: "הגדרות",
+      icon: "⚙",
+      view: "settings",
+      isVisible: true,
     },
   ];
 
@@ -336,14 +344,7 @@ function Sidebar({
           פתיחת מגירה
         </button>
 
-        {activeShift ? (
-          <div className="pos-sidebar__shift-status">
-            <span aria-hidden="true" />
-            משמרת פתוחה · {
-              activeShift.openedBy.employeeName
-            }
-          </div>
-        ) : (
+        {!activeShift && (
           <button
             type="button"
             className="pos-sidebar__shift-status"

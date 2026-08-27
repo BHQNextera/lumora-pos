@@ -1,10 +1,15 @@
 import {
+    useEffect,
+    useMemo,
     useState,
 } from "react";
 
 import {
     validateMonetaryValueForPayment,
 } from "../../../models/monetary-value/MonetaryValueService";
+import {
+    formatMoney,
+} from "../../../utils/MoneyFormatter";
 
 type CreditVoucherMethodProps = {
     remainingAmount: number;
@@ -15,23 +20,94 @@ type CreditVoucherMethodProps = {
     ) => void;
 };
 
+function roundCurrency(
+    value: number,
+) {
+    return (
+        Math.round(
+            (value + Number.EPSILON) *
+                100,
+        ) / 100
+    );
+}
+
 function CreditVoucherMethod({
     remainingAmount,
     onRedeem,
 }: CreditVoucherMethodProps) {
-    const [number, setNumber] =
-        useState("");
+    const [
+        number,
+        setNumber,
+    ] = useState("");
 
-    const [balance, setBalance] =
-        useState<number | null>(
-            null,
-        );
+    const [
+        balance,
+        setBalance,
+    ] = useState<number | null>(
+        null,
+    );
 
-    const [error, setError] =
-        useState("");
+    const [
+        redeemAmountInput,
+        setRedeemAmountInput,
+    ] = useState("");
+
+    const [
+        error,
+        setError,
+    ] = useState("");
 
     const normalizedNumber =
         number.trim();
+
+    useEffect(() => {
+        if (balance === null) {
+            setRedeemAmountInput("");
+            return;
+        }
+
+        setRedeemAmountInput(
+            Math.min(
+                balance,
+                remainingAmount,
+            ).toFixed(2),
+        );
+    }, [
+        balance,
+        remainingAmount,
+    ]);
+
+    const redeemAmount =
+        useMemo(() => {
+            const value =
+                Number(
+                    redeemAmountInput,
+                );
+
+            if (
+                !Number.isFinite(value)
+            ) {
+                return 0;
+            }
+
+            return roundCurrency(
+                value,
+            );
+        }, [redeemAmountInput]);
+
+    const maxRedeemAmount =
+        balance === null
+            ? 0
+            : Math.min(
+                balance,
+                remainingAmount,
+            );
+
+    const isValidRedeemAmount =
+        balance !== null &&
+        redeemAmount > 0 &&
+        redeemAmount <=
+            maxRedeemAmount;
 
     const checkVoucher = () => {
         setError("");
@@ -74,125 +150,194 @@ function CreditVoucherMethod({
 
     const redeem = () => {
         if (
-            balance === null ||
-            balance <= 0 ||
-            remainingAmount <= 0
+            !isValidRedeemAmount
         ) {
             return;
         }
 
         onRedeem(
             normalizedNumber,
-            Math.min(
-                balance,
-                remainingAmount,
-            ),
+            redeemAmount,
         );
     };
 
     return (
-        <div className="cash-payment">
-            <label className="cash-payment__custom">
+        <div className="credit-voucher-v2">
+            <div className="credit-voucher-v2__header">
+                <div>
+                    <span>
+                        שובר זיכוי
+                    </span>
+
+                    <strong>
+                        מימוש שובר
+                    </strong>
+                </div>
+
+                {balance !== null && (
+                    <span className="credit-voucher-v2__status">
+                        נמצא
+                    </span>
+                )}
+            </div>
+
+            <label className="credit-voucher-v2__field">
                 <span>
-                    מספר שובר זיכוי
+                    מספר שובר
                 </span>
 
-                <input
-                    type="text"
-                    value={number}
-                    autoFocus
-                    onChange={(event) => {
-                        setNumber(
-                            event.target.value,
-                        );
-                        setBalance(null);
-                        setError("");
-                    }}
-                    onKeyDown={(event) => {
-                        if (
-                            event.key ===
-                            "Enter"
-                        ) {
-                            checkVoucher();
+                <div className="credit-voucher-v2__voucher-input">
+                    <input
+                        type="text"
+                        value={number}
+                        autoFocus
+                        onChange={(
+                            event,
+                        ) => {
+                            setNumber(
+                                event
+                                    .target
+                                    .value,
+                            );
+                            setBalance(
+                                null,
+                            );
+                            setError("");
+                        }}
+                        onKeyDown={(
+                            event,
+                        ) => {
+                            if (
+                                event.key ===
+                                "Enter"
+                            ) {
+                                checkVoucher();
+                            }
+                        }}
+                    />
+
+                    <button
+                        type="button"
+                        disabled={
+                            !normalizedNumber
                         }
-                    }}
-                />
+                        onClick={
+                            checkVoucher
+                        }
+                    >
+                        בדיקה
+                    </button>
+                </div>
             </label>
 
-            <button
-                type="button"
-                className="payment-page__confirm"
-                disabled={
-                    !normalizedNumber
-                }
-                onClick={checkVoucher}
-            >
-                בדוק שובר
-            </button>
-
             {error && (
-                <div className="payment-page__method-state">
-                    <p>{error}</p>
+                <div
+                    className="credit-voucher-v2__error"
+                    role="alert"
+                >
+                    {error}
                 </div>
             )}
 
             {balance !== null && (
                 <>
-                    <div className="cash-payment__calculation">
+                    <div className="credit-voucher-v2__balance">
                         <div>
                             <span>
                                 יתרת שובר
                             </span>
-                            <strong>
-                                ₪
-                                {balance.toFixed(
-                                    2,
-                                )}
+
+                            <strong className="lumora-money-value">
+                                {formatMoney(balance)}
                             </strong>
                         </div>
 
                         <div>
                             <span>
-                                ימומש כעת
+                                נותר בעסקה
                             </span>
-                            <strong>
-                                ₪
-                                {Math.min(
-                                    balance,
-                                    remainingAmount,
-                                ).toFixed(2)}
-                            </strong>
-                        </div>
 
-                        <div>
-                            <span>
-                                יתרה לאחר מימוש
-                            </span>
-                            <strong>
-                                ₪
-                                {Math.max(
-                                    0,
-                                    balance -
-                                    Math.min(
-                                        balance,
-                                        remainingAmount,
-                                    ),
-                                ).toFixed(2)}
+                            <strong className="lumora-money-value">
+                                {formatMoney(remainingAmount)}
                             </strong>
                         </div>
                     </div>
 
+                    <label className="credit-voucher-v2__amount">
+                        <div>
+                            <span>
+                                סכום למימוש
+                            </span>
+
+                            <small>
+                                עד{" "}
+                                <bdi className="lumora-money-value">
+                                    {formatMoney(maxRedeemAmount)}
+                                </bdi>
+                            </small>
+                        </div>
+
+                        <div className="credit-voucher-v2__amount-input">
+                            <span aria-hidden="true">
+                                ₪
+                            </span>
+
+                            <input
+                                type="number"
+                                min="0.01"
+                                max={
+                                    maxRedeemAmount
+                                }
+                                step="0.01"
+                                inputMode="decimal"
+                                value={
+                                    redeemAmountInput
+                                }
+                                onChange={(
+                                    event,
+                                ) =>
+                                    setRedeemAmountInput(
+                                        event
+                                            .target
+                                            .value,
+                                    )
+                                }
+                                onFocus={(
+                                    event,
+                                ) =>
+                                    event.currentTarget.select()
+                                }
+                                aria-label="סכום למימוש משובר זיכוי"
+                            />
+                        </div>
+                    </label>
+
+                    {!isValidRedeemAmount &&
+                        redeemAmountInput !==
+                            "" && (
+                        <div className="credit-voucher-v2__error">
+                            יש להזין סכום גדול מ־0 ועד{" "}
+                            <bdi className="lumora-money-value">
+                                {formatMoney(maxRedeemAmount)}
+                            </bdi>
+                        </div>
+                    )}
+
                     <button
                         type="button"
-                        className="payment-page__confirm"
+                        className="payment-page__confirm credit-voucher-v2__confirm"
                         disabled={
-                            balance <= 0 ||
-                            remainingAmount <=
-                            0
+                            !isValidRedeemAmount
                         }
-                        onClick={redeem}
+                        onClick={
+                            redeem
+                        }
                     >
-                        ממש שובר
+                        {isValidRedeemAmount
+                            ? `ממש שובר · ${formatMoney(
+                                  redeemAmount,
+                              )}`
+                            : "הזן סכום למימוש"}
                     </button>
                 </>
             )}

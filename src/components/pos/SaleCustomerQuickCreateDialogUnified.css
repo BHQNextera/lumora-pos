@@ -1,0 +1,42 @@
+/* LUMORA UNIFIED CUSTOMER FORM V1 */
+.sale-customer-create--unified {
+    width: min(860px, calc(100vw - 32px));
+    max-width: 860px;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sale-customer-create--unified
+.sale-customer-create__header,
+.sale-customer-create--unified
+.sale-customer-create__footer {
+    flex: 0 0 auto;
+}
+
+.sale-customer-create__body--unified {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.sale-customer-create__body--unified
+.customer-management__form {
+    min-height: 0;
+    overflow: visible;
+}
+
+.sale-customer-create__body--unified
+.customer-management__credit-section {
+    margin-top: 2px;
+}
+
+@media (max-width: 720px) {
+    .sale-customer-create--unified {
+        width: calc(100vw - 20px);
+        max-height: calc(100dvh - 20px);
+    }
+}

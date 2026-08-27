@@ -1,9 +1,11 @@
+/* LUMORA NUMERIC INPUT SAFETY V1.2 FIELD GUARDS */
 import {
     useState,
 } from "react";
 
 import WelcomeScreen from "./components/welcome/WelcomeScreen";
 import AppShell from "./layouts/AppShell";
+import NumericInputShield from "./components/system/NumericInputShield";
 
 function App() {
     const [
@@ -22,7 +24,12 @@ function App() {
         );
     }
 
-    return <AppShell />;
+    return (
+    <>
+      <NumericInputShield />
+      <AppShell />
+    </>
+  );
 }
 
 export default App;

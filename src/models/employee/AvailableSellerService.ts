@@ -1,6 +1,7 @@
+// LUMORA DYNAMIC SELLER SOURCE V1
 import {
-    employeeSeed,
-} from "./EmployeeSeed";
+    getEmployees,
+} from "./EmployeeRepository";
 import {
     getPresentAttendance,
 } from "../attendance/AttendanceRepository";
@@ -18,7 +19,7 @@ export function getPresentSellers() {
                 ),
         );
 
-    return employeeSeed.filter(
+    return getEmployees().filter(
         (employee) =>
             canEmployeeSell(
                 employee,

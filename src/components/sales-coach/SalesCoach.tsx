@@ -11,6 +11,8 @@ import {
     getSalesCoachSuggestion,
 } from "../../models/sales-coach/SalesCoachEngine";
 
+import "./sales-coach.css";
+
 function SalesCoach() {
     const { products } = useCatalog();
     const {
@@ -30,7 +32,7 @@ function SalesCoach() {
                     cartLines,
                     products,
                 ),
-            [cartLines],
+            [cartLines, products],
         );
 
     const isDismissed =
@@ -107,69 +109,18 @@ function SalesCoach() {
         <aside
             dir="rtl"
             aria-live="polite"
-            style={{
-                position: "fixed",
-                right: "22px",
-                bottom: "22px",
-                zIndex: 4000,
-
-                width:
-                    "min(380px, calc(100vw - 44px))",
-
-                padding: "13px",
-
-                border:
-                    "1px solid #d8e3df",
-                borderRadius: "16px",
-
-                background:
-                    "rgba(250,252,251,.98)",
-
-                color: "#1f2933",
-
-                boxShadow:
-                    "0 14px 36px rgba(30,41,59,.14)",
-            }}
+            className="sales-coach-v2"
         >
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent:
-                        "space-between",
-                    gap: "12px",
-                }}
-            >
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "7px",
-                    }}
-                >
+            <div className="sales-coach-v2__header">
+                <div className="sales-coach-v2__identity">
                     <span
-                        style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-
-                            padding: "4px 8px",
-
-                            border:
-                                "1px solid #d5ebe1",
-                            borderRadius: "999px",
-
-                            background:
-                                "#eef8f3",
-
-                            fontSize: "10px",
-                            fontWeight: 750,
-
-                            letterSpacing:
-                                ".08em",
-
-                            color: "#4f6f62",
-                        }}
+                        className="sales-coach-v2__mark"
+                        aria-hidden="true"
                     >
+                        ✦
+                    </span>
+
+                    <span className="sales-coach-v2__label">
                         LUMORA COACH
                     </span>
                 </div>
@@ -182,122 +133,28 @@ function SalesCoach() {
                             suggestion.id,
                         )
                     }
-                    style={{
-                        width: "27px",
-                        height: "27px",
-
-                        border:
-                            "1px solid #dde3e1",
-                        borderRadius: "8px",
-
-                        background:
-                            "#ffffff",
-
-                        color: "#78827f",
-
-                        cursor: "pointer",
-
-                        fontSize: "17px",
-
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent:
-                            "center",
-                    }}
+                    className="sales-coach-v2__close"
                 >
                     ×
                 </button>
             </div>
 
-            <div
-                style={{
-                    marginTop: "8px",
-
-                    fontSize: "14px",
-                    fontWeight: 750,
-
-                    color: "#17201d",
-                }}
-            >
+            <div className="sales-coach-v2__title">
                 {suggestion.title}
             </div>
 
-            <div
-                style={{
-                    marginTop: "2px",
-
-                    fontSize: "11px",
-                    lineHeight: 1.45,
-
-                    color: "#68736f",
-                }}
-            >
+            <div className="sales-coach-v2__message">
                 {suggestion.message}
             </div>
 
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "9px",
-
-                    marginTop: "11px",
-                }}
-            >
-                <div
-                    style={{
-                        flex: 1,
-                        minWidth: 0,
-
-                        height: "45px",
-
-                        padding:
-                            "7px 11px",
-
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent:
-                            "space-between",
-
-                        gap: "12px",
-
-                        border:
-                            "1px solid #e0e7e4",
-                        borderRadius: "10px",
-
-                        background:
-                            "#f4f7f6",
-                    }}
-                >
-                    <div
-                        style={{
-                            minWidth: 0,
-                        }}
-                    >
-                        <div
-                            style={{
-                                fontSize: "9px",
-                                color: "#89938f",
-                            }}
-                        >
+            <div className="sales-coach-v2__action-row">
+                <div className="sales-coach-v2__product">
+                    <div className="sales-coach-v2__product-copy">
+                        <div className="sales-coach-v2__eyebrow">
                             מומלץ להוסיף
                         </div>
 
-                        <div
-                            style={{
-                                marginTop: "1px",
-
-                                fontSize: "12px",
-                                fontWeight: 700,
-
-                                color: "#202a27",
-
-                                overflow: "hidden",
-                                textOverflow:
-                                    "ellipsis",
-                                whiteSpace: "nowrap",
-                            }}
-                        >
+                        <div className="sales-coach-v2__product-name">
                             {
                                 suggestion.product
                                     .name
@@ -305,19 +162,7 @@ function SalesCoach() {
                         </div>
                     </div>
 
-                    <div
-                        style={{
-                            flexShrink: 0,
-
-                            fontSize: "15px",
-                            fontWeight: 750,
-
-                            color: "#17201d",
-
-                            fontVariantNumeric:
-                                "tabular-nums",
-                        }}
-                    >
+                    <div className="sales-coach-v2__price">
                         ₪
                         {suggestion.product.price.toFixed(
                             2,
@@ -330,34 +175,12 @@ function SalesCoach() {
                     onClick={
                         addSuggestedProduct
                     }
-                    style={{
-                        flexShrink: 0,
-
-                        height: "45px",
-
-                        padding:
-                            "0 18px",
-
-                        border: 0,
-                        borderRadius: "10px",
-
-                        background:
-                            "#2db978",
-
-                        color: "#ffffff",
-
-                        cursor: "pointer",
-
-                        fontSize: "11px",
-                        fontWeight: 750,
-
-                        whiteSpace: "nowrap",
-
-                        boxShadow:
-                            "0 5px 12px rgba(45,185,120,.18)",
-                    }}
+                    className="sales-coach-v2__add"
                 >
-                    + הוסף
+                    <span aria-hidden="true">
+                        +
+                    </span>
+                    הוסף
                 </button>
             </div>
         </aside>

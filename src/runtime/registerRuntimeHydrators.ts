@@ -1,10 +1,18 @@
 import {
+    hydrateAppLocaleSettings,
+} from "../i18n/AppLocaleSettings";
+
+import {
     hydrateActiveBusinessConfiguration,
 } from "../config/ActiveBusinessConfiguration";
 
 import {
     hydrateCatalog,
 } from "../models/catalog/CatalogRepository";
+
+import {
+    hydrateInventoryAdjustments,
+} from "../models/inventory/InventoryAdjustmentRepository";
 
 import {
     hydratePromotions,
@@ -73,6 +81,11 @@ void {
     registered = true;
 
     registerRuntimeHydrator(
+        "app-locale",
+        hydrateAppLocaleSettings,
+    );
+
+    registerRuntimeHydrator(
         "active-business-configuration",
         hydrateActiveBusinessConfiguration,
     );
@@ -80,6 +93,11 @@ void {
     registerRuntimeHydrator(
         "catalog",
         hydrateCatalog,
+    );
+
+    registerRuntimeHydrator(
+        "inventory-adjustments",
+        hydrateInventoryAdjustments,
     );
 
     registerRuntimeHydrator(

@@ -10,7 +10,7 @@
     width: min(520px, 100%);
     padding: 32px;
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: 16px;
     background: var(--surface);
     box-shadow: var(--shadow-md);
     text-align: center;
@@ -22,7 +22,7 @@
     height: 64px;
     margin: 0 auto 16px;
     place-items: center;
-    border-radius: 18px;
+    border-radius: 16px;
     background: var(--primary-light);
     color: var(--primary);
     font-size: 30px;
@@ -45,7 +45,7 @@
     padding: 16px;
     border: 1px solid var(--border);
     border-radius: 12px;
-    background: #fbfcfd;
+    background: #fafafa;
 }
 
 .sale-complete-card__meta span,
@@ -73,7 +73,7 @@
 .sale-complete-card__actions button {
     min-height: 48px;
     border: 1px solid var(--border);
-    border-radius: 11px;
+    border-radius: 12px;
     background: var(--surface);
     color: var(--text);
     cursor: pointer;
@@ -81,7 +81,7 @@
 }
 
 .sale-complete-card__actions button:hover {
-    background: #f8fafb;
+    background: #fafafa;
 }
 
 .sale-complete-card__actions .sale-complete-card__primary {

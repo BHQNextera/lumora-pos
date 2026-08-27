@@ -8,6 +8,8 @@ import {
 
 import App from "./App";
 
+import LocaleProvider from "./i18n/LocaleProvider";
+
 import PricingProvider from "./context/PricingProvider";
 import CatalogProvider from "./context/CatalogProvider";
 
@@ -34,11 +36,13 @@ async function bootstrap() {
     document.getElementById("root")!,
   ).render(
     <StrictMode>
-      <CatalogProvider>
-        <PricingProvider>
-          <App />
-        </PricingProvider>
-      </CatalogProvider>
+      <LocaleProvider>
+        <CatalogProvider>
+          <PricingProvider>
+            <App />
+          </PricingProvider>
+        </CatalogProvider>
+      </LocaleProvider>
     </StrictMode>,
   );
 }

@@ -1,133 +1,421 @@
 .promotion-management {
     height: 100%;
     overflow: auto;
-    padding: 26px 28px 34px;
+    box-sizing: border-box;
+    padding: 18px 22px 28px;
     background: #f6f7f8;
     color: #20242a;
 }
 
-.promotion-management__header,
-.promotion-management__toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
 .promotion-management__header {
-    align-items: flex-start;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    text-align: right;
 }
 
 .promotion-management__header p {
-    margin: 0 0 5px;
-    color: #7b848f;
-    font-size: 10px;
+    margin: 0 0 3px;
+    color: #8b9198;
+    font-size: 9px;
     font-weight: 750;
     letter-spacing: .14em;
 }
 
 .promotion-management__header h1 {
     margin: 0;
-    font-size: 26px;
+    color: #20242a;
+    font-size: 24px;
+    line-height: 1.15;
 }
 
 .promotion-management__header span {
     display: block;
-    margin-top: 7px;
-    color: #747d87;
-    font-size: 12px;
-}
-
-.promotion-management__primary {
-    min-height: 39px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 10px;
-    background: var(--primary);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
+    margin-top: 4px;
+    color: #8b9198;
+    font-size: 10px;
 }
 
 .promotion-management__toolbar {
-    margin-bottom: 14px;
-    padding: 12px;
-    border: 1px solid #e1e5e9;
-    border-radius: 14px;
-    background: #fff;
+    display: grid;
+    grid-template-columns: auto auto minmax(220px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 9px;
+    border: 1px solid #e4e5e7;
+    border-radius: 12px;
+    background: #ffffff;
 }
 
-.promotion-management__toolbar input {
-    width: min(360px, 48vw);
-    height: 38px;
-    padding: 0 12px;
-    border: 1px solid #d9dee3;
+.promotion-management__primary {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 13px;
+    border: 0;
     border-radius: 9px;
+    background: #20242a;
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 750;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
-.promotion-management__toolbar strong {
-    color: #7d8690;
+.promotion-management__primary > span {
+    margin: 0;
+    color: inherit;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.promotion-management__status-filter,
+.promotion-management__view-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid #e4e5e7;
+    border-radius: 9px;
+    background: #f7f7f6;
+}
+
+.promotion-management__segment,
+.promotion-management__view-button {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 9px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #737b84;
+    cursor: pointer;
+    font-size: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.promotion-management__segment strong {
+    font-size: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+.promotion-management__segment--active,
+.promotion-management__view-button--active {
+    background: #ffffff;
+    color: #20242a;
+    box-shadow: 0 1px 4px rgb(15 18 21 / 7%);
+}
+
+.promotion-management__segment--active {
+    color: #72521f;
+}
+
+.promotion-management__search-wrap {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    box-sizing: border-box;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    border: 1px solid #dedfe1;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.promotion-management__search-wrap > span {
+    color: #8b9198;
+    font-size: 13px;
+}
+
+.promotion-management__search-wrap input {
+    width: 100%;
+    min-width: 0;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #20242a;
+    outline: none;
+    font-size: 9px;
+}
+
+.promotion-management__list-shell {
+    overflow: hidden;
+    border: 1px solid #e4e5e7;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgb(15 18 21 / 3%);
+}
+
+.promotion-management__list-head,
+.promotion-management__list-row {
+    display: grid;
+    grid-template-columns:
+        86px minmax(180px, 1.35fr) minmax(130px, .9fr)
+        minmax(100px, .75fr) minmax(100px, .75fr)
+        minmax(110px, .8fr) 126px;
+    align-items: center;
+    gap: 8px;
+}
+
+.promotion-management__list-head {
+    min-height: 34px;
+    padding: 0 12px;
+    border-bottom: 1px solid #eceeef;
+    background: #f7f7f6;
+    color: #737b84;
+    font-size: 8px;
+    font-weight: 750;
+}
+
+.promotion-management__list-row {
+    min-height: 58px;
+    padding: 7px 12px;
+    border-bottom: 1px solid #eceeef;
+    color: #3d434a;
+    font-size: 9px;
+    transition: background 120ms ease;
+}
+
+.promotion-management__list-row:last-child {
+    border-bottom: 0;
+}
+
+.promotion-management__list-row:hover {
+    background: #fffdf9;
+}
+
+.promotion-management__list-row--active {
+    box-shadow: inset -2px 0 0 #c9942f;
+}
+
+.promotion-management__list-row > * {
+    min-width: 0;
+}
+
+.promotion-management__list-row > span,
+.promotion-management__list-name small,
+.promotion-management__benefit--list {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.promotion-management__list-name {
+    display: grid;
+    gap: 2px;
+}
+
+.promotion-management__list-name strong {
+    overflow: hidden;
+    color: #20242a;
     font-size: 10px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.promotion-management__list-name small {
+    color: #8b9198;
+    font-size: 8px;
+    font-weight: 600;
 }
 
 .promotion-management__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
 }
 
 .promotion-management__card {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 8px;
+    padding: 11px;
+    border: 1px solid #e4e5e7;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgb(15 18 21 / 3%);
+}
+
+.promotion-management__card--active {
+    border-color: #e5d2aa;
+    box-shadow: inset 0 2px 0 #c9942f, 0 8px 22px rgb(15 18 21 / 3%);
+}
+
+.promotion-management__card-topline {
     display: flex;
-    flex-direction: column;
+    min-width: 0;
+    align-items: center;
     justify-content: space-between;
-    min-height: 150px;
-    padding: 16px;
-    border: 1px solid #e0e4e8;
-    border-radius: 15px;
-    background: #fff;
+    gap: 8px;
 }
 
-.promotion-management__card h3 {
-    margin: 10px 0 4px;
-    font-size: 15px;
-}
-
-.promotion-management__card p {
-    margin: 0;
-    color: #78818b;
-    font-size: 10px;
+.promotion-management__status,
+.promotion-management__type {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 7px;
+    border-radius: 999px;
+    font-size: 8px;
+    font-weight: 750;
+    white-space: nowrap;
 }
 
 .promotion-management__status {
-    display: inline-flex;
-    padding: 3px 8px;
-    border-radius: 999px;
     background: #f0f1f2;
     color: #777f88;
-    font-size: 9px;
-    font-weight: 700;
+}
+
+.promotion-management__status i {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+    border-radius: 50%;
+    background: #9aa0a6;
 }
 
 .promotion-management__status--active {
-    background: #eaf7f0;
-    color: #277653;
+    background: #f2f7f3;
+    color: #55785c;
+}
+
+.promotion-management__status--active i {
+    background: #65966e;
+}
+
+.promotion-management__type {
+    overflow: hidden;
+    max-width: 58%;
+    background: #faf3e4;
+    color: #72521f;
+    text-overflow: ellipsis;
+}
+
+.promotion-management__card-main {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.promotion-management__card h3 {
+    overflow: hidden;
+    margin: 0;
+    color: #20242a;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.promotion-management__benefit {
+    overflow: hidden;
+    color: #b47d1e;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.promotion-management__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 9px;
+    margin: 0;
+    padding: 8px 0 0;
+    border-top: 1px solid #eceeef;
+}
+
+.promotion-management__meta > div {
+    min-width: 0;
+}
+
+.promotion-management__meta dt {
+    margin: 0 0 2px;
+    color: #8b9198;
+    font-size: 8px;
+    font-weight: 650;
+}
+
+.promotion-management__meta dd {
+    overflow: hidden;
+    margin: 0;
+    color: #3d434a;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .promotion-management__actions {
     display: flex;
-    gap: 7px;
-    margin-top: 16px;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.promotion-management__actions--list {
+    justify-content: flex-end;
 }
 
 .promotion-management__actions button {
-    min-height: 31px;
-    padding: 0 10px;
-    border: 1px solid #dce1e5;
+    min-height: 28px;
+    padding: 0 9px;
+    border: 1px solid #dedfe1;
     border-radius: 8px;
-    background: #fff;
+    background: #ffffff;
+    color: #30353b;
     cursor: pointer;
+    font-size: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.promotion-management__actions button:hover {
+    border-color: #e5d2aa;
+    background: #faf3e4;
+}
+
+.promotion-management__toggle {
+    color: #72521f !important;
+}
+
+.promotion-management__empty {
+    display: grid;
+    min-height: 120px;
+    place-content: center;
+    gap: 3px;
+    border: 1px dashed #dedfe1;
+    border-radius: 12px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.promotion-management__empty--standalone {
+    margin-top: 10px;
+}
+
+.promotion-management__empty strong {
+    color: #20242a;
+    font-size: 11px;
+}
+
+.promotion-management__empty span {
+    color: #8b9198;
+    font-size: 9px;
 }
 
 .promotion-management__overlay {
@@ -136,16 +424,18 @@
     z-index: 4700;
     display: grid;
     place-items: center;
-    background: rgb(17 24 39 / 34%);
+    background: rgb(20 23 27 / 32%);
+    backdrop-filter: blur(2px);
 }
 
 .promotion-management__dialog {
     width: min(620px, 92vw);
     max-height: 90vh;
     overflow: auto;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: 0 24px 70px rgb(15 23 42 / 18%);
+    border: 1px solid #dedfe1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 24px 70px rgb(15 18 21 / 22%);
 }
 
 .promotion-management__dialog header,
@@ -153,29 +443,29 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 18px;
-    border-bottom: 1px solid #edf0f2;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eceeef;
 }
 
 .promotion-management__dialog footer {
     justify-content: flex-start;
     gap: 8px;
-    border-top: 1px solid #edf0f2;
+    border-top: 1px solid #eceeef;
     border-bottom: 0;
 }
 
 .promotion-management__dialog header h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
 }
 
 .promotion-management__dialog header button,
 .promotion-management__dialog footer button:not(.promotion-management__primary) {
     min-height: 34px;
     padding: 0 12px;
-    border: 1px solid #dce1e5;
+    border: 1px solid #dedfe1;
     border-radius: 9px;
-    background: #fff;
+    background: #ffffff;
     cursor: pointer;
 }
 
@@ -196,9 +486,12 @@
 
 .promotion-management__form input,
 .promotion-management__form select {
+    width: 100%;
+    min-width: 0;
     height: 38px;
+    box-sizing: border-box;
     padding: 0 10px;
-    border: 1px solid #d9dee3;
+    border: 1px solid #dedfe1;
     border-radius: 9px;
 }
 
@@ -222,6 +515,65 @@
     color: #a33d3d;
     font-size: 10px;
 }
+
+@media (max-width: 1120px) {
+    .promotion-management__toolbar {
+        grid-template-columns: auto auto minmax(180px, 1fr);
+    }
+
+    .promotion-management__view-toggle {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+
+    .promotion-management__list-shell {
+        overflow-x: auto;
+    }
+
+    .promotion-management__list-head,
+    .promotion-management__list-row {
+        min-width: 1040px;
+    }
+}
+
+@media (max-width: 1050px) {
+    .promotion-management__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .promotion-management {
+        padding: 14px;
+    }
+
+    .promotion-management__toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .promotion-management__primary,
+    .promotion-management__status-filter,
+    .promotion-management__search-wrap,
+    .promotion-management__view-toggle {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .promotion-management__status-filter,
+    .promotion-management__view-toggle {
+        justify-content: stretch;
+    }
+
+    .promotion-management__segment,
+    .promotion-management__view-button {
+        flex: 1 1 0;
+    }
+
+    .promotion-management__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ============================================================
    PROMOTION BUILDER V1
    ============================================================ */
@@ -604,5 +956,816 @@
 
     .promotion-population__options {
         max-height: 180px;
+    }
+}
+
+/* ============================================================
+   PROMOTION BUILDER V2.1 — LUMORA FLOW
+   ============================================================ */
+
+.promotion-builder {
+    width: min(920px, calc(100vw - 40px));
+    max-height: min(780px, 92vh);
+    border: 1px solid #dedfe1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 24px 70px rgb(15 18 21 / 22%);
+}
+
+.promotion-builder > header {
+    min-height: 64px;
+    box-sizing: border-box;
+    padding: 12px 18px;
+    border-bottom: 1px solid #eceeef;
+}
+
+.promotion-builder > header h2 {
+    margin: 0;
+    color: #20242a;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.promotion-builder > header span {
+    margin-top: 2px;
+    color: #8b9198;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.promotion-builder > header > button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid #dedfe1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #30353b;
+    font-size: 15px;
+}
+
+.promotion-builder__steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    padding: 0 18px;
+    border-bottom: 1px solid #eceeef;
+    background: #ffffff;
+}
+
+.promotion-builder__step {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #8b9198;
+    cursor: pointer;
+}
+
+.promotion-builder__step::after {
+    position: absolute;
+    right: 12px;
+    bottom: -1px;
+    left: 12px;
+    height: 2px;
+    background: transparent;
+    content: "";
+}
+
+.promotion-builder__step > span {
+    display: grid;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    place-items: center;
+    border: 1px solid #d9dee3;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #8b9198;
+    font-size: 8px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.promotion-builder__step strong {
+    overflow: hidden;
+    font-size: 9px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.promotion-builder__step--done {
+    color: #59626c;
+}
+
+.promotion-builder__step--done > span {
+    border-color: #d2d5d8;
+    background: #f4f5f5;
+    color: #59626c;
+}
+
+.promotion-builder__step--active {
+    color: #20242a;
+}
+
+.promotion-builder__step--active::after {
+    background: #c9942f;
+}
+
+.promotion-builder__step--active > span {
+    border-color: #c9942f;
+    background: #faf3e4;
+    color: #b47d1e;
+}
+
+.promotion-builder__body {
+    min-height: 410px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 18px 20px;
+    background: #ffffff;
+}
+
+.promotion-builder__body > [hidden] {
+    display: none !important;
+}
+
+.promotion-builder__section {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.promotion-builder__section-title {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eceeef;
+}
+
+.promotion-builder__section-title > span {
+    display: none;
+}
+
+.promotion-builder__section-title > div {
+    display: grid;
+    gap: 2px;
+}
+
+.promotion-builder__section-title strong {
+    color: #20242a;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.promotion-builder__section-title small {
+    color: #8b9198;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.promotion-builder__fields {
+    gap: 10px;
+}
+
+.promotion-builder__fields label,
+.promotion-builder__advanced > label {
+    gap: 5px;
+    color: #59626c;
+    font-size: 9px;
+    font-weight: 650;
+}
+
+.promotion-builder__label-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.promotion-builder__label-text b {
+    color: #b47d1e;
+    font-size: 10px;
+}
+
+.promotion-builder__fields input,
+.promotion-builder__fields select,
+.promotion-builder__advanced input,
+.promotion-population select {
+    height: 38px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid #dedfe1;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #20242a;
+    outline: none;
+}
+
+.promotion-builder__fields input:focus,
+.promotion-builder__fields select:focus,
+.promotion-builder__advanced input:focus,
+.promotion-population__search:focus {
+    border-color: #c9942f;
+    box-shadow: 0 0 0 2px rgb(201 148 47 / 12%);
+}
+
+.promotion-population {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.promotion-population__header {
+    grid-column: 1 / -1;
+    margin: 0 0 2px;
+}
+
+.promotion-population__header strong {
+    color: #20242a;
+    font-size: 10px;
+    font-weight: 750;
+}
+
+.promotion-population__header span {
+    margin-top: 2px;
+    color: #8b9198;
+    font-size: 8px;
+}
+
+.promotion-population__group,
+.promotion-population__group--exclude {
+    min-width: 0;
+    margin: 0;
+    padding: 10px;
+    border: 1px solid #e4e5e7;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.promotion-population__group--exclude {
+    border-top: 1px solid #e4e5e7;
+}
+
+.promotion-population__group-title h4 {
+    color: #30353b;
+    font-size: 9px;
+}
+
+.promotion-population__group-title span {
+    color: #8b9198;
+    font-size: 8px;
+}
+
+.promotion-population__search {
+    height: 34px;
+    box-sizing: border-box;
+    padding: 0 9px;
+    border-color: #dedfe1;
+    font-size: 9px;
+}
+
+.promotion-population__checklist {
+    gap: 7px;
+}
+
+.promotion-population__options {
+    max-height: 170px;
+    padding: 7px;
+    border-color: #e4e5e7;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.promotion-population__options > strong {
+    top: -7px;
+    margin: -7px -7px 5px;
+    padding: 7px;
+    color: #687079;
+    font-size: 8px;
+}
+
+.promotion-population__option {
+    min-height: 28px;
+    gap: 6px;
+    padding: 3px 4px;
+    font-size: 9px;
+}
+
+.promotion-builder__checks {
+    gap: 7px 12px;
+}
+
+.promotion-builder .promotion-management__check {
+    gap: 6px;
+    color: #59626c;
+    font-size: 9px;
+}
+
+.promotion-builder__advanced {
+    gap: 9px;
+}
+
+.promotion-builder__preview {
+    margin-top: 12px;
+    padding: 12px 13px;
+    border: 1px solid #e5d2aa;
+    border-radius: 10px;
+    background: #faf3e4;
+}
+
+.promotion-builder__preview span {
+    margin-bottom: 3px;
+    color: #8b6a2e;
+    font-size: 8px;
+    font-weight: 650;
+}
+
+.promotion-builder__preview strong {
+    color: #20242a;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.promotion-builder__bundle-list {
+    display: grid;
+    gap: 10px;
+}
+
+.promotion-builder__bundle-component {
+    display: grid;
+    gap: 9px;
+    padding: 10px;
+    border: 1px solid #e4e5e7;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.promotion-builder__bundle-component-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.promotion-builder__bundle-component-head strong {
+    color: #20242a;
+    font-size: 9px;
+}
+
+.promotion-builder__bundle-component-head button {
+    min-height: 28px;
+    padding: 0 8px;
+    border: 1px solid #dedfe1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #59626c;
+    cursor: pointer;
+    font-size: 8px;
+}
+
+.promotion-builder__value-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 68px;
+    gap: 6px;
+}
+
+.promotion-builder__footer {
+    display: flex !important;
+    direction: rtl;
+    justify-content: space-between !important;
+    gap: 8px;
+    min-height: 56px;
+    box-sizing: border-box;
+    padding: 9px 16px !important;
+    border-top: 1px solid #eceeef;
+    background: #ffffff;
+}
+
+.promotion-builder__footer-primary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.promotion-builder__footer button {
+    min-height: 34px;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.promotion-builder .promotion-management__error {
+    margin-top: 9px;
+}
+
+@media (max-width: 760px) {
+    .promotion-builder {
+        width: calc(100vw - 24px);
+        max-height: 94vh;
+    }
+
+    .promotion-builder__steps {
+        overflow-x: auto;
+        grid-template-columns: repeat(5, minmax(118px, 1fr));
+        padding-inline: 10px;
+    }
+
+    .promotion-builder__body {
+        min-height: 0;
+        padding: 14px;
+    }
+
+    .promotion-population {
+        grid-template-columns: 1fr;
+    }
+
+    .promotion-population__header {
+        grid-column: auto;
+    }
+
+    .promotion-builder__footer {
+        align-items: stretch;
+    }
+}
+
+/* ============================================================
+   LUMORA PROMOTION MANAGEMENT V2.2
+   Locked list alignment + restrained gold usage
+   ============================================================ */
+
+.promotion-management__list-head,
+.promotion-management__list-row {
+    grid-template-columns:
+        82px
+        minmax(240px, 1.7fr)
+        minmax(170px, 1.12fr)
+        minmax(105px, .72fr)
+        minmax(120px, .78fr)
+        minmax(118px, .76fr)
+        118px;
+    column-gap: 10px;
+}
+
+.promotion-management__list-head {
+    min-height: 36px;
+    padding: 0 14px;
+}
+
+.promotion-management__list-row {
+    min-height: 56px;
+    padding: 7px 14px;
+}
+
+.promotion-management__list-head > span,
+.promotion-management__list-row > span,
+.promotion-management__list-row > div,
+.promotion-management__list-row > strong {
+    min-width: 0;
+    box-sizing: border-box;
+    text-align: right;
+}
+
+.promotion-management__list-head > span:first-child,
+.promotion-management__list-row > div:first-child {
+    text-align: center;
+}
+
+.promotion-management__list-head > span:last-child,
+.promotion-management__actions--list {
+    text-align: center;
+    justify-content: center;
+}
+
+.promotion-management__list-name {
+    align-content: center;
+    gap: 2px;
+    text-align: right;
+}
+
+.promotion-management__list-name strong {
+    color: #20242a;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.promotion-management__list-name small {
+    color: #8b9198;
+    font-size: 8px;
+    font-weight: 600;
+}
+
+.promotion-management__benefit--list {
+    color: #b47d1e;
+    font-size: 9px;
+    font-weight: 800;
+    text-align: right;
+}
+
+.promotion-management__list-row--active {
+    box-shadow: inset -2px 0 0 #c9942f;
+}
+
+.promotion-management__status {
+    justify-content: center;
+}
+
+.promotion-management__actions--list {
+    gap: 4px;
+}
+
+.promotion-management__actions--list button {
+    min-height: 28px;
+    padding-inline: 8px;
+}
+
+@media (max-width: 1120px) {
+    .promotion-management__list-head,
+    .promotion-management__list-row {
+        min-width: 1080px;
+    }
+}
+
+/* ============================================================
+   LUMORA PROMOTION MANAGEMENT V2.3
+   Brand gold correction
+   ============================================================ */
+
+.promotion-management__benefit,
+.promotion-management__benefit--list,
+.promotion-management__benefit--card {
+    color: #c9942f !important;
+}
+
+.promotion-management__list-row--active {
+    box-shadow: inset -2px 0 0 #c9942f;
+}
+
+/* ============================================================
+   LUMORA PROMOTIONS V2.4 — DIRECT CURRENT-SOURCE FIX
+   ============================================================ */
+
+/* Brand accent: exact Lumora gold, used selectively. */
+.promotion-management__benefit,
+.promotion-management__benefit--list,
+.promotion-management__benefit--card {
+    color: #c9942f !important;
+}
+
+.promotion-management__segment--active,
+.promotion-management__toggle {
+    color: #c9942f !important;
+}
+
+.promotion-management__list-row--active {
+    box-shadow: inset -2px 0 0 #c9942f;
+}
+
+/* Builder: compact, single-flow layout — no split-screen feeling. */
+.promotion-builder {
+    width: min(860px, calc(100vw - 48px));
+    max-height: min(760px, 90vh);
+    overflow: hidden;
+}
+
+.promotion-builder > header {
+    min-height: 58px;
+    padding: 10px 16px;
+}
+
+.promotion-builder > header h2 {
+    font-size: 16px;
+}
+
+.promotion-builder > header span {
+    margin-top: 2px;
+    font-size: 9px;
+}
+
+/* Modern text-only step navigation. */
+.promotion-builder__steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    padding: 5px 14px;
+    border-bottom: 1px solid #eceeef;
+    background: #f7f7f6;
+}
+
+.promotion-builder__step {
+    min-height: 34px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #8b9198;
+}
+
+.promotion-builder__step::after {
+    display: none;
+}
+
+.promotion-builder__step > span {
+    display: none;
+}
+
+.promotion-builder__step strong {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.promotion-builder__step--done {
+    color: #59626c;
+}
+
+.promotion-builder__step--active {
+    border-color: #e5d2aa;
+    background: #ffffff;
+    color: #20242a;
+    box-shadow: 0 1px 4px rgb(15 18 21 / 6%);
+}
+
+.promotion-builder__body {
+    min-height: 0;
+    padding: 16px 18px;
+    background: #ffffff;
+}
+
+.promotion-builder__section-title {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+}
+
+.promotion-builder__section-title strong {
+    font-size: 12px;
+}
+
+.promotion-builder__section-title small {
+    font-size: 8px;
+}
+
+/* One continuous form column. */
+.promotion-builder__fields,
+.promotion-builder__advanced {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 9px;
+}
+
+.promotion-builder__wide {
+    grid-column: auto !important;
+}
+
+.promotion-builder__fields label,
+.promotion-builder__advanced > label {
+    gap: 4px;
+    font-size: 9px;
+}
+
+.promotion-builder__fields input,
+.promotion-builder__fields select,
+.promotion-builder__advanced input,
+.promotion-population select {
+    height: 36px;
+    padding: 0 10px;
+}
+
+.promotion-builder__label-text b {
+    color: #c9942f;
+}
+
+/* Population is vertical as well; category/product lists can stay side-by-side inside it. */
+.promotion-population {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+}
+
+.promotion-population__header {
+    grid-column: auto !important;
+}
+
+.promotion-population__group,
+.promotion-population__group--exclude {
+    padding: 9px;
+}
+
+.promotion-population__search {
+    height: 34px;
+}
+
+.promotion-population__options {
+    max-height: 150px;
+}
+
+.promotion-builder__subgroup {
+    margin-top: 10px;
+}
+
+.promotion-builder__checks {
+    gap: 7px 14px;
+}
+
+.promotion-builder__preview {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-color: #e5d2aa;
+    background: #faf3e4;
+}
+
+.promotion-builder__preview span {
+    color: #8b9198;
+}
+
+.promotion-builder__value-control {
+    grid-template-columns: minmax(0, 1fr) 64px;
+}
+
+.promotion-builder__footer {
+    min-height: 52px;
+    padding: 8px 14px !important;
+}
+
+@media (max-width: 760px) {
+    .promotion-builder {
+        width: calc(100vw - 24px);
+        max-height: 94vh;
+    }
+
+    .promotion-builder__steps {
+        overflow-x: auto;
+        grid-template-columns: repeat(5, minmax(105px, 1fr));
+        padding-inline: 8px;
+    }
+
+    .promotion-builder__body {
+        padding: 13px;
+    }
+
+    .promotion-population__checklist {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   LUMORA PROMOTIONS LIST — ACTIONS FIT V1
+   Keep row actions fully inside the list grid.
+   ============================================================ */
+
+.promotion-management__list-head,
+.promotion-management__list-row {
+    grid-template-columns:
+        82px
+        minmax(210px, 1.55fr)
+        minmax(145px, 1fr)
+        minmax(105px, .72fr)
+        minmax(105px, .72fr)
+        minmax(108px, .74fr)
+        148px;
+    column-gap: 8px;
+}
+
+.promotion-management__actions--list {
+    display: grid !important;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    justify-content: stretch;
+    box-sizing: border-box;
+}
+
+.promotion-management__actions--list button {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 28px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1120px) {
+    .promotion-management__list-head,
+    .promotion-management__list-row {
+        min-width: 980px;
     }
 }

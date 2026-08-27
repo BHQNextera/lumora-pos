@@ -1,3 +1,5 @@
+/* LUMORA THERMAL TEXT ALIGNMENT V1 */
+
 import type {
     ThermalPrintDocument,
 } from "./ThermalPrintDocument";
@@ -55,30 +57,26 @@ export function renderThermalDocumentHtml(
                             <span>${escapeHtml(
                                 block.label,
                             )}</span>
-                            <span>${escapeHtml(
+                            <span dir="auto">${escapeHtml(
                                 block.value,
                             )}</span>
                         </div>
                     `;
                 }
 
-                return `
-                    <div
-                        class="text ${
-                            block.bold
-                                ? "bold"
-                                : ""
-                        }"
-                        style="text-align:${
-                            block.alignment ??
-                            "start"
-                        }"
-                    >
-                        ${escapeHtml(
-                            block.value,
-                        )}
-                    </div>
-                `;
+                return `<div
+                    class="text ${
+                        block.bold
+                            ? "bold"
+                            : ""
+                    }"
+                    style="text-align:${
+                        block.alignment ??
+                        "start"
+                    }"
+                >${escapeHtml(
+                    block.value,
+                )}</div>`;
             })
             .join("");
 
@@ -160,8 +158,17 @@ export function renderThermalDocumentHtml(
     }
 
     .row span:last-child {
+        flex:
+            0 0 42%;
+
         text-align:
-            left;
+            right;
+
+        unicode-bidi:
+            isolate;
+
+        font-variant-numeric:
+            tabular-nums;
 
         white-space:
             nowrap;
@@ -185,8 +192,24 @@ export function renderThermalDocumentHtml(
             2mm;
     }
 
+    /* LUMORA THERMAL PREVIEW CENTERING V1 */
+
     @media screen {
+        html {
+            width:
+                100%;
+
+            overflow-x:
+                hidden;
+        }
+
         body {
+            width:
+                min(
+                    100%,
+                    ${profile.paperWidthMm}mm
+                );
+
             margin:
                 20px auto;
 
@@ -198,6 +221,22 @@ export function renderThermalDocumentHtml(
                     42,
                     .18
                 );
+        }
+
+        .receipt {
+            width:
+                min(
+                    calc(100% - 6mm),
+                    ${profile.contentWidthMm}mm
+                );
+        }
+
+        .text[style*="text-align:center"] {
+            width:
+                100%;
+
+            text-align:
+                center !important;
         }
     }
 

@@ -1,4 +1,4 @@
-﻿import type { CartLine } from "../sale/CartLine";
+import type { CartLine } from "../sale/CartLine";
 import type { Product } from "../../types/product";
 
 export type SalesCoachSuggestion = {
@@ -18,40 +18,14 @@ type PairRule = {
     confidence: number;
 };
 
-const TEST_RULES: PairRule[] = [
-    {
-        id: "sandwich-drink",
-        triggerCategories: ["sandwiches"],
-        suggestedProductId: "orange-juice",
-        message:
-            "הכריך הזה ממש מבקש משהו מרענן לידו. אולי תציעי מיץ תפוזים?",
-        confidence: 0.86,
-    },
-    {
-        id: "pastry-coffee",
-        triggerCategories: ["pastries"],
-        suggestedProductId: "cappuccino",
-        message:
-            "מאפה בלי קפה? חבל 😏 אולי תציעי לו קפוצ׳ינו ליד.",
-        confidence: 0.85,
-    },
-    {
-        id: "coffee-cookie",
-        triggerCategories: ["hot-drinks"],
-        suggestedProductId: "cookie",
-        message:
-            "יש כבר קפה בעסקה... עוגייה קטנה ליד יכולה לסגור את הפינה 🍪",
-        confidence: 0.84,
-    },
-    {
-        id: "cheesecake-coffee",
-        triggerProductIds: ["cheesecake"],
-        suggestedProductId: "cappuccino",
-        message:
-            "עוגת גבינה וקפוצ׳ינו זה כמעט זוג קבוע. שווה להציע ☕",
-        confidence: 0.79,
-    },
-];
+const TEST_RULES: PairRule[] = [];
+
+/*
+ * Truth V1:
+ * Demo recommendation rules are intentionally disabled.
+ * Until Lumora has a real recommendation source, the engine
+ * returns no suggestion and the Sales Coach stays hidden.
+ */
 
 function getCoachTitle() {
     const hour = new Date().getHours();

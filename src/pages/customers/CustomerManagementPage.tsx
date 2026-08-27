@@ -5,15 +5,24 @@ import {
 
 import type {
     Customer,
-    CustomerGroupId,
 } from "../../models/customer/Customer";
+import CustomerEditorFields from "../../components/customer/CustomerEditorFields";
+import {
+    buildCustomerFromEditorDraft,
+    createCustomerEditorDraft,
+    createEmptyCustomerEditorDraft,
+    type CustomerEditorDraft,
+} from "../../models/customer/CustomerEditorDraft";
+import {
+    getCustomerValidationMessage,
+} from "../../models/customer/CustomerValidation";
 import {
     getCustomers,
     saveCustomer,
 } from "../../models/customer/CustomerRepository";
 import {
-    getMonetaryValues,
-} from "../../models/monetary-value/MonetaryValueRepository";
+    getTransactions,
+} from "../../models/transaction/TransactionRepository";
 
 import "./customer-management-page.css";
 
@@ -27,51 +36,19 @@ type ManagedCustomer = Customer & {
     updatedAt?: string;
 };
 
-type CustomerDraft = {
-    name: string;
-    phone: string;
-    email: string;
-    externalId: string;
-    birthDate: string;
-    address: string;
-    notes: string;
-    groupIds: CustomerGroupId[];
-    isClubMember: boolean;
-    isActive: boolean;
+const emptyDraft =
+    createEmptyCustomerEditorDraft();
+
+type CustomerManagementPageProps = {
+    onOpenTransactions: (
+        customerId: string,
+        customerName: string,
+    ) => void;
 };
 
-const emptyDraft: CustomerDraft = {
-    name: "",
-    phone: "",
-    email: "",
-    externalId: "",
-    birthDate: "",
-    address: "",
-    notes: "",
-    groupIds: [],
-    isClubMember: false,
-    isActive: true,
-};
-
-const customerGroups: {
-    id: CustomerGroupId;
-    label: string;
-}[] = [
-    {
-        id: "club",
-        label: "Club",
-    },
-    {
-        id: "vip",
-        label: "VIP",
-    },
-    {
-        id: "employee",
-        label: "Employee",
-    },
-];
-
-function CustomerManagementPage() {
+function CustomerManagementPage({
+    onOpenTransactions,
+}: CustomerManagementPageProps) {
     const [
         customers,
         setCustomers,
@@ -103,7 +80,7 @@ function CustomerManagementPage() {
         draft,
         setDraft,
     ] =
-        useState<CustomerDraft>(
+        useState<CustomerEditorDraft>(
             emptyDraft,
         );
 
@@ -115,30 +92,58 @@ function CustomerManagementPage() {
             null,
         );
 
-    const monetaryValues =
+    const netPurchasesByCustomer =
         useMemo(
-            () =>
-                getMonetaryValues(),
+            () => {
+                const totals =
+                    new Map<
+                        string,
+                        number
+                    >();
+
+                for (
+                    const sale of getTransactions()
+                ) {
+                    const customerId =
+                        sale.customer?.id;
+
+                    if (
+                        sale.status !==
+                            "completed" ||
+                        !customerId
+                    ) {
+                        continue;
+                    }
+
+                    totals.set(
+                        customerId,
+                        Math.round(
+                            (
+                                (
+                                    totals.get(
+                                        customerId,
+                                    ) ??
+                                    0
+                                ) +
+                                sale.total +
+                                Number.EPSILON
+                            ) *
+                                100,
+                        ) / 100,
+                    );
+                }
+
+                return totals;
+            },
             [customers],
         );
 
-    const getCustomerBalance = (
+    const getCustomerNetPurchases = (
         customerId: string,
     ) =>
-        monetaryValues
-            .filter(
-                (value) =>
-                    value.customerId ===
-                    customerId &&
-                    value.status ===
-                    "active",
-            )
-            .reduce(
-                (sum, value) =>
-                    sum +
-                    value.remainingAmount,
-                0,
-            );
+        netPurchasesByCustomer.get(
+            customerId,
+        ) ?? 0;
 
     const visibleCustomers =
         useMemo(() => {
@@ -194,7 +199,7 @@ function CustomerManagementPage() {
             "new",
         );
         setDraft(
-            emptyDraft,
+            createEmptyCustomerEditorDraft(),
         );
         setError(null);
     };
@@ -206,37 +211,11 @@ function CustomerManagementPage() {
             customer.id,
         );
 
-        setDraft({
-            name:
-                customer.name,
-            phone:
-                customer.phone ??
-                "",
-            email:
-                customer.email ??
-                "",
-            externalId:
-                customer.externalId ??
-                "",
-            birthDate:
-                customer.birthDate ??
-                "",
-            address:
-                customer.address ??
-                "",
-            notes:
-                customer.notes ??
-                "",
-            groupIds:
-                [
-                    ...customer.groupIds,
-                ],
-            isClubMember:
-                customer.isClubMember,
-            isActive:
-                customer.isActive !==
-                false,
-        });
+        setDraft(
+            createCustomerEditorDraft(
+                customer,
+            ),
+        );
 
         setError(null);
     };
@@ -246,46 +225,12 @@ function CustomerManagementPage() {
             null,
         );
         setDraft(
-            emptyDraft,
+            createEmptyCustomerEditorDraft(),
         );
         setError(null);
     };
 
-    const toggleGroup = (
-        groupId: CustomerGroupId,
-    ) => {
-        setDraft(
-            (current) => ({
-                ...current,
-
-                groupIds:
-                    current.groupIds.includes(
-                        groupId,
-                    )
-                        ? current.groupIds.filter(
-                              (id) =>
-                                  id !==
-                                  groupId,
-                          )
-                        : [
-                              ...current.groupIds,
-                              groupId,
-                          ],
-            }),
-        );
-    };
-
     const save = () => {
-        const name =
-            draft.name.trim();
-
-        if (!name) {
-            setError(
-                "יש להזין שם לקוח.",
-            );
-            return;
-        }
-
         const current =
             editingId &&
             editingId !==
@@ -297,58 +242,11 @@ function CustomerManagementPage() {
                   )
                 : undefined;
 
-        const now =
-            new Date().toISOString();
-
-        const customer: ManagedCustomer = {
-            id:
-                current?.id ??
-                crypto.randomUUID(),
-
-            name,
-
-            phone:
-                draft.phone.trim() ||
-                undefined,
-
-            email:
-                draft.email.trim() ||
-                undefined,
-
-            externalId:
-                draft.externalId.trim() ||
-                undefined,
-
-            birthDate:
-                draft.birthDate.trim() ||
-                undefined,
-
-            address:
-                draft.address.trim() ||
-                undefined,
-
-            notes:
-                draft.notes.trim() ||
-                undefined,
-
-            groupIds:
-                [
-                    ...draft.groupIds,
-                ],
-
-            isClubMember:
-                draft.isClubMember,
-
-            isActive:
-                draft.isActive,
-
-            createdAt:
-                current?.createdAt ??
-                now,
-
-            updatedAt:
-                now,
-        };
+        const customer =
+            buildCustomerFromEditorDraft(
+                draft,
+                current,
+            ) as ManagedCustomer;
 
         try {
             saveCustomer(
@@ -356,81 +254,13 @@ function CustomerManagementPage() {
             );
         }
         catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : "";
+            setError(
+                getCustomerValidationMessage(
+                    error,
+                ),
+            );
 
-            if (
-                message ===
-                "CUSTOMER_INVALID_PHONE"
-            ) {
-                setError(
-                    "יש להזין מספר טלפון סלולרי ישראלי תקין.",
-                );
-                return;
-            }
-
-            if (
-                message ===
-                "CUSTOMER_ID_REQUIRED"
-            ) {
-                setError(
-                    "יש להזין ת״ז.",
-                );
-                return;
-            }
-
-            if (
-                message ===
-                "CUSTOMER_BIRTH_DATE_REQUIRED"
-            ) {
-                setError(
-                    "יש להזין תאריך לידה.",
-                );
-                return;
-            }
-
-            if (
-                message ===
-                "CUSTOMER_INVALID_BIRTH_DATE"
-            ) {
-                setError(
-                    "יש להזין תאריך לידה תקין.",
-                );
-                return;
-            }
-
-            if (
-                message ===
-                "CUSTOMER_ACTIVE_DUPLICATE_PHONE"
-            ) {
-                setError(
-                    "כבר קיים לקוח פעיל עם מספר טלפון זה.",
-                );
-                return;
-            }
-            if (
-                message ===
-                "CUSTOMER_INVALID_ISRAELI_ID"
-            ) {
-                setError(
-                    "יש להזין ת״ז ישראלית תקינה.",
-                );
-                return;
-            }
-
-            if (
-                message ===
-                "CUSTOMER_ACTIVE_DUPLICATE_ID"
-            ) {
-                setError(
-                    "כבר קיים לקוח פעיל עם ת״ז זו.",
-                );
-                return;
-            }
-
-            throw error;
+            return;
         }
 
         setCustomers(
@@ -479,7 +309,7 @@ function CustomerManagementPage() {
                     </h1>
 
                     <span>
-                        לקוחות, קבוצות תמחור, יתרות זיכוי ופרטי קשר.
+                        לקוחות, קבוצות תמחור, רכישות ופרטי קשר.
                     </span>
                 </div>
 
@@ -537,25 +367,30 @@ function CustomerManagementPage() {
                 </strong>
             </div>
 
+            {/* LUMORA CUSTOMER NET PURCHASES V1.2 */}
             <div className="customer-management__table-wrap">
                 <table>
                     <thead>
                         <tr>
                             <th>
-                                לקוח
-                            </th>
-                            <th>
-                                טלפון
-                            </th>
-                            <th>
-                                אימייל
-                            </th>
+                  לקוח
+              </th>
+
+              <th className="customer-management__identity-heading">
+                  ת״ז / ח.פ / ע.מ
+              </th>
+                            <th className="customer-management__contact-heading">
+                  טלפון
+              </th>
+                            <th className="customer-management__contact-heading">
+                  אימייל
+              </th>
                             <th>
                                 קבוצות
                             </th>
-                            <th>
-                                יתרה
-                            </th>
+                            <th className="customer-management__net-purchases-heading">
+                  רכישות נטו
+              </th>
                             <th>
                                 סטטוס
                             </th>
@@ -581,15 +416,11 @@ function CustomerManagementPage() {
                                                 customer.name
                                             }
                                         </strong>
-
-                                        {customer.externalId && (
-                                            <small>
-                                                {
-                                                    customer.externalId
-                                                }
-                                            </small>
-                                        )}
                                     </td>
+
+                      <td className="customer-management__identity">
+                          {customer.externalId ?? "—"}
+                      </td>
 
                                     <td>
                                         {customer.phone ??
@@ -610,14 +441,39 @@ function CustomerManagementPage() {
                                             "—"}
                                     </td>
 
-                                    <td>
-                                        ₪
-                                        {getCustomerBalance(
-                                            customer.id,
-                                        ).toFixed(
-                                            2,
-                                        )}
-                                    </td>
+                                    <td className="customer-management__net-purchases-cell">
+                          <button
+                              type="button"
+                              className="customer-management__net-purchases"
+                              title="מכירות בקיזוז החזרות — לחץ להצגת עסקאות הלקוח"
+
+                              onClick={() =>
+                                  onOpenTransactions(
+                                      customer.id,
+                                      customer.name,
+                                  )
+                              }
+                          >
+                              <span dir="ltr">
+                                  ₪
+                                  {getCustomerNetPurchases(
+                                      customer.id,
+                                  ).toLocaleString(
+                                      "he-IL",
+                                      {
+                                          minimumFractionDigits:
+                                              2,
+                                          maximumFractionDigits:
+                                              2,
+                                      },
+                                  )}
+                              </span>
+
+                              <span aria-hidden="true">
+                                  ←
+                              </span>
+                          </button>
+                      </td>
 
                                     <td>
                                         {customer.isActive ===
@@ -689,288 +545,23 @@ function CustomerManagementPage() {
                             </button>
                         </header>
 
-                        <div className="customer-management__form">
-                            <label>
-                                שם
-                                <input
-                                    value={
-                                        draft.name
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                name:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                טלפון
-                                <input
-                                    dir="ltr"
-                                    value={
-                                        draft.phone
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                phone:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                אימייל
-                                <input
-                                    dir="ltr"
-                                    type="email"
-                                    value={
-                                        draft.email
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                email:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                ת״ז / ח״פ / מזהה
-                                <input
-                                    value={
-                                        draft.externalId
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                externalId:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                תאריך לידה
-                                <input
-                                    type="date"
-                                    dir="ltr"
-                                    value={
-                                        draft.birthDate
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                birthDate:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                כתובת
-                                <input
-                                    value={
-                                        draft.address
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                address:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <label>
-                                הערות
-                                <input
-                                    value={
-                                        draft.notes
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                notes:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            }),
-                                        )
-                                    }
-                                />
-                            </label>
-
-                            <div>
-                                <strong
-                                    style={{
-                                        fontSize:
-                                            "10px",
-                                    }}
-                                >
-                                    קבוצות לקוח
-                                </strong>
-
-                                <div
-                                    style={{
-                                        display:
-                                            "flex",
-                                        flexWrap:
-                                            "wrap",
-                                        gap:
-                                            "10px",
-                                        marginTop:
-                                            "8px",
-                                    }}
-                                >
-                                    {customerGroups.map(
-                                        (
-                                            group,
-                                        ) => (
-                                            <label
-                                                key={
-                                                    group.id
-                                                }
-                                                className="customer-management__check"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={draft.groupIds.includes(
-                                                        group.id,
-                                                    )}
-                                                    onChange={() =>
-                                                        toggleGroup(
-                                                            group.id,
-                                                        )
-                                                    }
-                                                />
-                                                {
-                                                    group.label
-                                                }
-                                            </label>
-                                        ),
-                                    )}
-                                </div>
-                            </div>
-
-                            <label className="customer-management__check">
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        draft.isClubMember
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                isClubMember:
-                                                    event
-                                                        .target
-                                                        .checked,
-                                            }),
-                                        )
-                                    }
-                                />
-                                חבר מועדון
-                            </label>
-
-                            <label className="customer-management__check">
-                                <input
-                                    type="checkbox"
-                                    checked={
-                                        draft.isActive
-                                    }
-                                    onChange={(
-                                        event,
-                                    ) =>
-                                        setDraft(
-                                            (
-                                                current,
-                                            ) => ({
-                                                ...current,
-                                                isActive:
-                                                    event
-                                                        .target
-                                                        .checked,
-                                            }),
-                                        )
-                                    }
-                                />
-                                לקוח פעיל
-                            </label>
-
-                            {error && (
-                                <div className="customer-management__error">
-                                    {error}
-                                </div>
-                            )}
-                        </div>
+                        <CustomerEditorFields
+                            draft={
+                                draft
+                            }
+                            onChange={
+                                setDraft
+                            }
+                            error={
+                                error
+                            }
+                            onClearError={() =>
+                                setError(
+                                    null,
+                                )
+                            }
+                            autoFocusName
+                        />
 
                         <footer>
                             <button

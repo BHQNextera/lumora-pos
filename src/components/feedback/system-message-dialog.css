@@ -1,0 +1,94 @@
+.system-message-dialog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgb(32 36 42 / 46%);
+}
+
+.system-message-dialog {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 16px;
+    width: min(440px, 100%);
+    padding: 24px;
+    border: 1px solid #e5d2aa;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 24px 64px rgb(32 36 42 / 28%);
+    color: #20242a;
+}
+
+.system-message-dialog__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #e5d2aa;
+    border-radius: 12px;
+    background: #faf3e4;
+    color: #b47d1e;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.system-message-dialog__content {
+    min-width: 0;
+}
+
+.system-message-dialog__content h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    line-height: 1.25;
+}
+
+.system-message-dialog__content p {
+    margin: 0;
+    color: #8b9198;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.system-message-dialog button {
+    grid-column: 1 / -1;
+    justify-self: end;
+    min-width: 112px;
+    min-height: 42px;
+    padding: 0 20px;
+    border: 1px solid #b47d1e;
+    border-radius: 12px;
+    background: #c9942f;
+    color: #20242a;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.system-message-dialog button:hover {
+    background: #b47d1e;
+}
+
+.system-message-dialog button:focus-visible {
+    outline: 3px solid #e5d2aa;
+    outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+    .system-message-dialog {
+        grid-template-columns: 36px 1fr;
+        padding: 20px;
+    }
+
+    .system-message-dialog__icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .system-message-dialog button {
+        width: 100%;
+    }
+}

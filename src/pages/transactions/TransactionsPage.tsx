@@ -8,10 +8,7 @@ import {
     getDocumentsForTransaction,
 } from "../../models/document/DocumentRepository";
 import type { CartLine } from "../../models/sale/CartLine";
-import type {
-    Sale,
-    TransactionType,
-} from "../../models/sale/Sale";
+import type { Sale } from "../../models/sale/Sale";
 import {
     filterTransactions,
 } from "../../models/transaction/TransactionFilters";
@@ -21,6 +18,9 @@ import {
 } from "../../models/transaction/TransactionRepository";
 import ReturnsPage from "../returns/ReturnsPage";
 import TransactionDetailsPage from "./TransactionDetailsPage";
+import {
+    formatMoney,
+} from "../../utils/MoneyFormatter";
 
 import "./transactions-page.css";
 
@@ -31,6 +31,14 @@ type TransactionsPageProps = {
 
     scannedSale?: Sale;
     scanId?: number;
+
+
+    customerFilter?: {
+        id: string;
+        name: string;
+    } | null;
+
+    onClearCustomerFilter?: () => void;
 };
 
 type TransactionsView =
@@ -48,13 +56,17 @@ type TransactionsView =
 
 type TypeFilter =
     | "all"
-    | TransactionType;
+    | "sale"
+    | "return";
+
+type SalePayment =
+    Sale["payments"][number];
 
 function getTransactionTypeLabel(
     sale: Sale,
 ) {
     switch (
-    sale.transactionType
+        sale.transactionType
     ) {
         case "return":
             return "החזרה";
@@ -74,6 +86,9 @@ function getDocumentLabel(
         case "tax_invoice_receipt":
             return "חשבונית מס / קבלה";
 
+        case "tax_invoice":
+            return "חשבונית מס";
+
         case "receipt":
             return "קבלה";
 
@@ -90,63 +105,153 @@ function getDocumentLabel(
             return "שובר זיכוי";
 
         case "gift_card_receipt":
-            return "קבלת Gift Card";
+            return "קבלת כרטיס מתנה";
 
         default:
             return "ללא מסמך";
     }
 }
 
-function getPaymentLabel(
+function isCreditDocument(
+    type?: string,
+) {
+    return (
+        type === "tax_credit_invoice" ||
+        type === "credit_receipt" ||
+        type === "credit_voucher"
+    );
+}
+
+function formatMoneyCompact(
+    amount: number,
+) {
+    return formatMoney(
+        Math.abs(
+            amount,
+        ),
+    );
+}
+
+function getPaymentMethodLabel(
+    payment: SalePayment,
+) {
+    switch (payment.method) {
+        case "cash":
+            return "מזומן";
+
+        case "card_terminal": {
+            const brand =
+                payment.cardBrand
+                    ?.trim();
+
+            const last4 =
+                payment.cardLast4
+                    ?.trim();
+
+            if (brand && last4) {
+                return `${brand} •••• ${last4}`;
+            }
+
+            if (last4) {
+                return `אשראי •••• ${last4}`;
+            }
+
+            if (brand) {
+                return brand;
+            }
+
+            return "אשראי";
+        }
+
+        case "store_credit":
+            return "הקפה";
+
+        case "echo":
+            return "Echo";
+
+        case "credit_voucher":
+            return "שובר זיכוי";
+
+        case "gift_card":
+            return "כרטיס מתנה";
+
+        case "bit":
+            return "Bit";
+
+        case "paybox":
+            return "PayBox";
+
+        case "bank_transfer":
+            return "העברה";
+
+        case "cheque":
+            return "המחאה";
+
+        case "external_credit":
+            return "אשראי חיצוני";
+
+        case "custom":
+            return "תשלום אחר";
+
+        default:
+            return payment.method;
+    }
+}
+
+function getPaymentSummary(
     sale: Sale,
 ) {
+    const payments =
+        sale.payments;
+
     if (
-        sale.payments.length === 0
+        payments.length === 0
     ) {
-        return "ללא תשלום";
+        return {
+            primary: "ללא תשלום",
+            secondary: null,
+        };
     }
 
-    const methods = [
-        ...new Set(
-            sale.payments.map(
+    if (
+        payments.length === 1
+    ) {
+        return {
+            primary:
+                getPaymentMethodLabel(
+                    payments[0],
+                ),
+            secondary: null,
+        };
+    }
+
+    const visiblePayments =
+        payments.slice(0, 2);
+
+    const detail =
+        visiblePayments
+            .map(
                 (payment) =>
-                    payment.method,
-            ),
-        ),
-    ];
+                    `${formatMoneyCompact(
+                        payment.amount,
+                    )} ${getPaymentMethodLabel(
+                        payment,
+                    )}`,
+            )
+            .join(" · ");
 
-    return methods
-        .map((method) => {
-            switch (method) {
-                case "cash":
-                    return "מזומן";
+    const hiddenCount =
+        payments.length -
+        visiblePayments.length;
 
-                case "card_terminal":
-                    return "אשראי";
-
-                case "echo":
-                    return "Echo";
-
-                case "credit_voucher":
-                    return "שובר זיכוי";
-
-                case "bit":
-                    return "Bit";
-
-                case "paybox":
-                    return "PayBox";
-
-                case "bank_transfer":
-                    return "העברה";
-
-                case "cheque":
-                    return "המחאה";
-
-                default:
-                    return method;
-            }
-        })
-        .join(" + ");
+    return {
+        primary:
+            `משולב · ${payments.length}`,
+        secondary:
+            hiddenCount > 0
+                ? `${detail} · +${hiddenCount}`
+                : detail,
+    };
 }
 
 function getOriginalDocumentNumber(
@@ -186,10 +291,37 @@ function getOriginalDocumentNumber(
     );
 }
 
+function matchesTypeFilter(
+    sale: Sale,
+    filter: TypeFilter,
+) {
+    if (filter === "all") {
+        return true;
+    }
+
+    const type =
+        sale.transactionType ??
+        "sale";
+
+    if (filter === "sale") {
+        return (
+            type === "sale" ||
+            type === "exchange"
+        );
+    }
+
+    return (
+        type === "return" ||
+        type === "exchange"
+    );
+}
+
 function TransactionsPage({
     onReturnToSale,
     scannedSale,
     scanId,
+    customerFilter,
+    onClearCustomerFilter,
 }: TransactionsPageProps) {
     const [
         search,
@@ -205,51 +337,141 @@ function TransactionsPage({
         );
 
     const [view, setView] =
-    useState<TransactionsView>({
-        type: "list",
-    });
+        useState<TransactionsView>({
+            type: "list",
+        });
 
-useEffect(() => {
-    if (!scannedSale) {
-        return;
-    }
+    useEffect(() => {
+        if (!scannedSale) {
+            return;
+        }
 
-    setView({
-        type: "details",
-        sale: scannedSale,
-    });
-}, [
-    scannedSale,
-    scanId,
-]);
+        setView({
+            type: "details",
+            sale: scannedSale,
+        });
+    }, [
+        scannedSale,
+        scanId,
+    ]);
 
     const transactions =
         useMemo(() => {
-            const base =
-                filterTransactions(
-                    getTransactions(),
-                    {
-                        text: search,
+            const source =
+                getTransactions();
+
+            const query =
+                search
+                    .trim()
+                    .toLocaleLowerCase(
+                        "he-IL",
+                    );
+
+            let base = source;
+
+            if (query) {
+                const genericMatches =
+                    filterTransactions(
+                        source,
+                        {
+                            text: search,
+                        },
+                    );
+
+                const matchingIds =
+                    new Set(
+                        genericMatches.map(
+                            (sale) =>
+                                sale.id,
+                        ),
+                    );
+
+                source.forEach(
+                    (sale) => {
+                        const documents =
+                            getDocumentsForTransaction(
+                                sale.id,
+                            );
+
+                        const documentMatch =
+                            documents.some(
+                                (document) =>
+                                    document.number
+                                        .toLocaleLowerCase(
+                                            "he-IL",
+                                        )
+                                        .includes(
+                                            query,
+                                        ),
+                            );
+
+                        const transactionMatch =
+                            sale.number
+                                .toLocaleLowerCase(
+                                    "he-IL",
+                                )
+                                .includes(
+                                    query,
+                                );
+
+                        const originalDocumentNumber =
+                            getOriginalDocumentNumber(
+                                sale,
+                            );
+
+                        const originalMatch =
+                            originalDocumentNumber
+                                ?.toLocaleLowerCase(
+                                    "he-IL",
+                                )
+                                .includes(
+                                    query,
+                                ) ??
+                            false;
+
+                        if (
+                            documentMatch ||
+                            transactionMatch ||
+                            originalMatch
+                        ) {
+                            matchingIds.add(
+                                sale.id,
+                            );
+                        }
                     },
                 );
 
-            if (
-                typeFilter === "all"
-            ) {
-                return base;
+                base =
+                    source.filter(
+                        (sale) =>
+                            matchingIds.has(
+                                sale.id,
+                            ),
+                    );
             }
 
             return base.filter(
                 (sale) =>
-                    (sale.transactionType ??
-                        "sale") ===
-                    typeFilter,
+                    matchesTypeFilter(
+                        sale,
+                        typeFilter,
+                    ),
             );
         }, [
             search,
             typeFilter,
             view,
         ]);
+
+    const customerScopedTransactions =
+        customerFilter
+            ? transactions.filter(
+                  (sale) =>
+                      sale.customer?.id ===
+                      customerFilter.id,
+              )
+            : transactions;
+
 
     if (
         view.type === "details"
@@ -294,7 +516,7 @@ useEffect(() => {
     return (
         <section className="transactions-page">
             <header className="transactions-page__header">
-                <div>
+                <div className="transactions-page__title">
                     <p className="transactions-page__eyebrow">
                         עסקאות
                     </p>
@@ -302,6 +524,29 @@ useEffect(() => {
                     <h1>
                         עסקאות אחרונות
                     </h1>
+
+                    {customerFilter && (
+                        <div className="transactions-page__customer-filter">
+                            <span>
+                                לקוח:
+                                {" "}
+                                <strong>
+                                    {customerFilter.name}
+                                </strong>
+                            </span>
+
+                            {onClearCustomerFilter && (
+                                <button
+                                    type="button"
+                                    onClick={
+                                        onClearCustomerFilter
+                                    }
+                                >
+                                    הצג את כל העסקאות
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="transactions-page__search-wrap">
@@ -311,7 +556,7 @@ useEffect(() => {
 
                     <input
                         type="search"
-                        placeholder="מספר מסמך, עסקה, מוצר, לקוח, SKU או ברקוד"
+                        placeholder="מספר מסמך, לקוח, מוצר, SKU או ברקוד"
                         value={search}
                         onChange={(event) =>
                             setSearch(
@@ -326,6 +571,7 @@ useEffect(() => {
                             onClick={() =>
                                 setSearch("")
                             }
+                            aria-label="נקה חיפוש"
                         >
                             ×
                         </button>
@@ -337,12 +583,16 @@ useEffect(() => {
                 <div className="transactions-page__filters">
                     <button
                         type="button"
-                        className={`transactions-page__filter ${typeFilter === "all"
+                        className={`transactions-page__filter ${
+                            typeFilter ===
+                            "all"
                                 ? "transactions-page__filter--active"
                                 : ""
-                            }`}
+                        }`}
                         onClick={() =>
-                            setTypeFilter("all")
+                            setTypeFilter(
+                                "all",
+                            )
                         }
                     >
                         הכול
@@ -350,12 +600,16 @@ useEffect(() => {
 
                     <button
                         type="button"
-                        className={`transactions-page__filter ${typeFilter === "sale"
+                        className={`transactions-page__filter ${
+                            typeFilter ===
+                            "sale"
                                 ? "transactions-page__filter--active"
                                 : ""
-                            }`}
+                        }`}
                         onClick={() =>
-                            setTypeFilter("sale")
+                            setTypeFilter(
+                                "sale",
+                            )
                         }
                     >
                         מכירות
@@ -363,40 +617,25 @@ useEffect(() => {
 
                     <button
                         type="button"
-                        className={`transactions-page__filter ${typeFilter ===
-                                "exchange"
+                        className={`transactions-page__filter ${
+                            typeFilter ===
+                            "return"
                                 ? "transactions-page__filter--active"
                                 : ""
-                            }`}
-                        onClick={() =>
-                            setTypeFilter(
-                                "exchange",
-                            )
-                        }
-                    >
-                        החלפות
-                    </button>
-
-                    <button
-                        type="button"
-                        className={`transactions-page__filter ${typeFilter ===
-                                "return"
-                                ? "transactions-page__filter--active"
-                                : ""
-                            }`}
+                        }`}
                         onClick={() =>
                             setTypeFilter(
                                 "return",
                             )
                         }
                     >
-                        זיכויים
+                        החזרות
                     </button>
                 </div>
 
                 <div className="transactions-page__count">
                     <strong>
-                        {transactions.length}
+                        {customerScopedTransactions.length}
                     </strong>
                     <span>
                         תוצאות
@@ -417,15 +656,7 @@ useEffect(() => {
                             </th>
 
                             <th>
-                                עסקה
-                            </th>
-
-                            <th>
-                                סוג
-                            </th>
-
-                            <th>
-                                מסמך מקור
+                                סוג פעולה
                             </th>
 
                             <th>
@@ -433,27 +664,25 @@ useEffect(() => {
                             </th>
 
                             <th>
-                                תאריך ושעה
+                                מועד
+                            </th>
+
+                            <th>
+                                סכום
                             </th>
 
                             <th>
                                 תשלום
                             </th>
 
-                            <th>
-                                סה״כ
-                            </th>
-
-                            <th>
-                                סטטוס
-                            </th>
-
-                            <th />
+                            <th
+                                aria-label="פעולות"
+                            />
                         </tr>
                     </thead>
 
                     <tbody>
-                        {transactions.map(
+                        {customerScopedTransactions.map(
                             (sale) => {
                                 const document =
                                     getDocumentsForTransaction(
@@ -465,9 +694,22 @@ useEffect(() => {
                                         sale,
                                     );
 
+                                const paymentSummary =
+                                    getPaymentSummary(
+                                        sale,
+                                    );
+
+                                const documentType =
+                                    document?.type;
+
+                                const transactionType =
+                                    sale.transactionType ??
+                                    "sale";
+
                                 return (
                                     <tr
                                         key={sale.id}
+                                        className={`transactions-table__row transactions-table__row--${transactionType}`}
                                         onDoubleClick={() =>
                                             setView({
                                                 type: "details",
@@ -476,65 +718,67 @@ useEffect(() => {
                                         }
                                     >
                                         <td>
-                                            {document ? (
-                                                <button
-                                                    type="button"
-                                                    className="transactions-table__document-number"
-                                                    onClick={() =>
-                                                        setView({
-                                                            type: "details",
-                                                            sale,
-                                                        })
-                                                    }
-                                                >
-                                                    {
-                                                        document.number
-                                                    }
-                                                </button>
-                                            ) : (
-                                                <span className="transactions-table__muted">
-                                                    —
+                                            <div className="transactions-table__document">
+                                                {document ? (
+                                                    <button
+                                                        type="button"
+                                                        className="transactions-table__document-number"
+                                                        onClick={() =>
+                                                            setView({
+                                                                type: "details",
+                                                                sale,
+                                                            })
+                                                        }
+                                                    >
+                                                        {
+                                                            document.number
+                                                        }
+                                                    </button>
+                                                ) : (
+                                                    <span className="transactions-table__muted">
+                                                        ללא מסמך
+                                                    </span>
+                                                )}
+
+                                                <span className="transactions-table__internal-number">
+                                                    עסקה {sale.number}
                                                 </span>
-                                            )}
+                                            </div>
                                         </td>
 
                                         <td>
                                             <span
-                                                className={`transactions-table__document-badge transactions-table__document-badge--${sale.total < 0
-                                                        ? "credit"
-                                                        : "sale"
-                                                    }`}
+                                                className={`transactions-table__document-badge ${
+                                                    isCreditDocument(
+                                                        documentType,
+                                                    )
+                                                        ? "transactions-table__document-badge--credit"
+                                                        : "transactions-table__document-badge--sale"
+                                                }`}
                                             >
                                                 {getDocumentLabel(
-                                                    document?.type,
+                                                    documentType,
                                                 )}
                                             </span>
                                         </td>
 
                                         <td>
-                                            <span className="transactions-table__transaction-number">
-                                                {sale.number}
-                                            </span>
-                                        </td>
+                                            <div className="transactions-table__operation">
+                                                <strong>
+                                                    {getTransactionTypeLabel(
+                                                        sale,
+                                                    )}
+                                                </strong>
 
-                                        <td>
-                                            {getTransactionTypeLabel(
-                                                sale,
-                                            )}
-                                        </td>
-
-                                        <td>
-                                            {originalDocumentNumber ? (
-                                                <span className="transactions-table__origin">
-                                                    {
-                                                        originalDocumentNumber
-                                                    }
-                                                </span>
-                                            ) : (
-                                                <span className="transactions-table__muted">
-                                                    —
-                                                </span>
-                                            )}
+                                                {originalDocumentNumber && (
+                                                    <span>
+                                                        מקור{" "}
+                                                        {
+                                                            originalDocumentNumber
+                                                        }
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
 
                                         <td>
@@ -574,35 +818,42 @@ useEffect(() => {
                                         </td>
 
                                         <td>
-                                            {getPaymentLabel(
-                                                sale,
-                                            )}
-                                        </td>
-
-                                        <td>
                                             <strong
-                                                className={
-                                                    sale.total < 0
+                                                className={`lumora-money-value ${
+                                                    sale.total <
+                                                    0
                                                         ? "transactions-table__amount transactions-table__amount--negative"
                                                         : "transactions-table__amount"
-                                                }
+                                                }`}
                                             >
-                                                {sale.total < 0
-                                                    ? "‎-"
-                                                    : ""}
-                                                ₪
-                                                {Math.abs(
+                                                {formatMoney(
                                                     sale.total,
-                                                ).toFixed(
-                                                    2,
                                                 )}
                                             </strong>
                                         </td>
 
                                         <td>
-                                            <span className="transactions-table__status">
-                                                הושלמה
-                                            </span>
+                                            <div
+                                                className="transactions-table__payment"
+                                                title={
+                                                    paymentSummary.secondary ??
+                                                    paymentSummary.primary
+                                                }
+                                            >
+                                                <strong>
+                                                    {
+                                                        paymentSummary.primary
+                                                    }
+                                                </strong>
+
+                                                {paymentSummary.secondary && (
+                                                    <span>
+                                                        {
+                                                            paymentSummary.secondary
+                                                        }
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
 
                                         <td>
@@ -615,7 +866,10 @@ useEffect(() => {
                                                         sale,
                                                     })
                                                 }
-                                                aria-label="פתח עסקה"
+                                                aria-label={`פתח מסמך ${
+                                                    document?.number ??
+                                                    sale.number
+                                                }`}
                                             >
                                                 ←
                                             </button>
@@ -625,11 +879,11 @@ useEffect(() => {
                             },
                         )}
 
-                        {transactions.length ===
+                        {customerScopedTransactions.length ===
                             0 && (
                                 <tr>
                                     <td
-                                        colSpan={11}
+                                        colSpan={8}
                                         className="transactions-table__empty"
                                     >
                                         <strong>

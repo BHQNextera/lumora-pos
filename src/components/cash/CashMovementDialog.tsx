@@ -1,4 +1,7 @@
+// LUMORA CASH MOVEMENT DIALOG V2
+
 import {
+    useEffect,
     useMemo,
     useState,
 } from "react";
@@ -9,6 +12,7 @@ import type {
 
 import {
     getPresentAttendance,
+    subscribeAttendance,
 } from "../../models/attendance/AttendanceRepository";
 
 import {
@@ -24,99 +28,184 @@ import {
     requestCashDrawerOpen,
 } from "../../models/drawer/CashDrawerService";
 
+import {
+    useLocale,
+} from "../../i18n/useLocale";
+
+import "./cash-movement-dialog.css";
+
 type CashMovementDialogProps = {
     shift: RegisterShift;
     onClose: () => void;
     onCompleted: () => void;
 };
 
-const reasonOptions: Array<{
+type ReasonOption = {
     value: CashMovementReason;
     label: string;
-}> = [
-    {
-        value: "float_addition",
-        label: "הוספת עודף / קופה",
-    },
-    {
-        value: "safe_drop",
-        label: "העברה לכספת",
-    },
-    {
-        value: "petty_cash",
-        label: "קופה קטנה",
-    },
-    {
-        value: "change_fund",
-        label: "קרן עודף",
-    },
-    {
-        value: "bank_deposit",
-        label: "הפקדה לבנק",
-    },
-    {
-        value: "other",
-        label: "אחר",
-    },
-];
+};
+
+const cashInReasons:
+    ReasonOption[] = [
+        {
+            value: "float_addition",
+            label: "הוספת מזומן לקופה",
+        },
+        {
+            value: "change_fund",
+            label: "קרן עודף",
+        },
+        {
+            value: "other",
+            label: "אחר",
+        },
+    ];
+
+const cashOutReasons:
+    ReasonOption[] = [
+        {
+            value: "safe_drop",
+            label: "העברה לכספת",
+        },
+        {
+            value: "petty_cash",
+            label: "קופה קטנה",
+        },
+        {
+            value: "bank_deposit",
+            label: "הפקדה לבנק",
+        },
+        {
+            value: "other",
+            label: "אחר",
+        },
+    ];
 
 function CashMovementDialog({
     shift,
     onClose,
     onCompleted,
 }: CashMovementDialogProps) {
-    const presentEmployees =
-        useMemo(
-            () =>
-                getPresentAttendance(),
-            [],
-        );
+    const {
+        direction,
+        locale,
+    } = useLocale();
+
+    const [
+        attendanceRevision,
+        setAttendanceRevision,
+    ] = useState(0);
 
     const [
         type,
         setType,
-    ] =
-        useState<CashMovementType>(
-            "cash_in",
-        );
+    ] = useState<CashMovementType>(
+        "cash_in",
+    );
 
     const [
         amount,
         setAmount,
-    ] =
-        useState("");
+    ] = useState("");
 
     const [
         reason,
         setReason,
-    ] =
-        useState<CashMovementReason>(
-            "float_addition",
-        );
+    ] = useState<CashMovementReason>(
+        "float_addition",
+    );
 
     const [
         note,
         setNote,
-    ] =
-        useState("");
+    ] = useState("");
 
     const [
         employeeId,
         setEmployeeId,
-    ] =
-        useState(
-            presentEmployees.length === 1
-                ? presentEmployees[0].employeeId
-                : "",
-        );
+    ] = useState("");
 
     const [
         error,
         setError,
-    ] =
-        useState<string | null>(
-            null,
+    ] = useState<string | null>(
+        null,
+    );
+
+    useEffect(
+        () =>
+            subscribeAttendance(
+                () =>
+                    setAttendanceRevision(
+                        (current) =>
+                            current + 1,
+                    ),
+            ),
+        [],
+    );
+
+    useEffect(
+        () => {
+            const handleKeyDown = (
+                event: KeyboardEvent,
+            ) => {
+                if (
+                    event.key ===
+                    "Escape"
+                ) {
+                    onClose();
+                }
+            };
+
+            document.addEventListener(
+                "keydown",
+                handleKeyDown,
+            );
+
+            return () => {
+                document.removeEventListener(
+                    "keydown",
+                    handleKeyDown,
+                );
+            };
+        },
+        [onClose],
+    );
+
+    const presentEmployees =
+        useMemo(
+            () =>
+                getPresentAttendance()
+                    .sort(
+                        (left, right) =>
+                            left.employeeName.localeCompare(
+                                right.employeeName,
+                                locale,
+                            ),
+                    ),
+            [attendanceRevision, locale],
         );
+
+    useEffect(
+        () => {
+            if (
+                presentEmployees.some(
+                    (employee) =>
+                        employee.employeeId ===
+                        employeeId,
+                )
+            ) {
+                return;
+            }
+
+            setEmployeeId(
+                presentEmployees.length === 1
+                    ? presentEmployees[0].employeeId
+                    : "",
+            );
+        },
+        [employeeId, presentEmployees],
+    );
 
     const selectedEmployee =
         presentEmployees.find(
@@ -125,16 +214,44 @@ function CashMovementDialog({
                 employeeId,
         );
 
-    const confirm = () => {
-        const numericAmount =
-            Number(amount);
+    const activeReasonOptions =
+        type === "cash_in"
+            ? cashInReasons
+            : cashOutReasons;
 
-        if (
-            !Number.isFinite(
-                numericAmount,
-            ) ||
-            numericAmount <= 0
-        ) {
+    const numericAmount =
+        Number(
+            amount.replace(
+                ",",
+                ".",
+            ),
+        );
+
+    const isValidAmount =
+        Number.isFinite(
+            numericAmount,
+        ) &&
+        numericAmount > 0;
+
+    const selectType = (
+        nextType:
+            CashMovementType,
+    ) => {
+        setType(
+            nextType,
+        );
+        setReason(
+            nextType === "cash_in"
+                ? "float_addition"
+                : "safe_drop",
+        );
+        setError(
+            null,
+        );
+    };
+
+    const confirm = () => {
+        if (!isValidAmount) {
             setError(
                 "יש להזין סכום תקין.",
             );
@@ -175,7 +292,8 @@ function CashMovementDialog({
 
                 reason,
 
-                note,
+                note:
+                    note.trim(),
 
                 employee: {
                     employeeId:
@@ -195,343 +313,285 @@ function CashMovementDialog({
         }
     };
 
+    const movementTitle =
+        type === "cash_in"
+            ? "הפקדה לקופה"
+            : "משיכה מהקופה";
+
     return (
         <div
-            dir="rtl"
-            style={{
-                position:
-                    "fixed",
-                inset:
-                    0,
-                zIndex:
-                    14500,
-                display:
-                    "grid",
-                placeItems:
-                    "center",
-                padding:
-                    "24px",
-                background:
-                    "rgba(15,23,42,.42)",
+            className="cash-movement-dialog__backdrop"
+            dir={direction}
+            onMouseDown={(event) => {
+                if (
+                    event.target ===
+                    event.currentTarget
+                ) {
+                    onClose();
+                }
             }}
         >
             <section
-                style={{
-                    width:
-                        "min(520px, 94vw)",
-                    padding:
-                        "26px",
-                    borderRadius:
-                        "18px",
-                    background:
-                        "#fff",
-                }}
+                aria-labelledby="cash-movement-dialog-title"
+                aria-modal="true"
+                className="cash-movement-dialog"
+                role="dialog"
             >
-                <header
-                    style={{
-                        display:
-                            "flex",
-                        justifyContent:
-                            "space-between",
-                        gap:
-                            "16px",
-                        marginBottom:
-                            "22px",
-                    }}
-                >
+                <header className="cash-movement-dialog__header">
                     <div>
-                        <div
-                            style={{
-                                fontSize:
-                                    "12px",
-                                fontWeight:
-                                    800,
-                            }}
-                        >
-                            CASH MOVEMENT
+                        <div className="cash-movement-dialog__eyebrow">
+                            LUMORA CASH MOVEMENT
                         </div>
 
-                        <h2
-                            style={{
-                                margin:
-                                    "4px 0",
-                            }}
-                        >
+                        <h2 id="cash-movement-dialog-title">
                             תנועת מזומן
                         </h2>
+
+                        <p>
+                            הפקדה או משיכה מתועדת ממשמרת הקופה.
+                        </p>
                     </div>
 
                     <button
+                        aria-label="סגירת חלון תנועת מזומן"
+                        className="cash-movement-dialog__close"
+                        onClick={onClose}
                         type="button"
-                        onClick={
-                            onClose
-                        }
                     >
-                        ✕
+                        ×
                     </button>
                 </header>
 
-                {presentEmployees.length === 0 && (
-                    <div
-                        style={{
-                            marginBottom:
-                                "16px",
-                            padding:
-                                "12px",
-                            border:
-                                "1px solid #dc2626",
-                            borderRadius:
-                                "8px",
-                        }}
-                    >
-                        אין עובד בנוכחות.
-                        לא ניתן לבצע תנועת מזומן.
+                {presentEmployees.length === 0 ? (
+                    <div className="cash-movement-dialog__blocked">
+                        <span
+                            aria-hidden="true"
+                            className="cash-movement-dialog__blocked-icon"
+                        >
+                            !
+                        </span>
+
+                        <strong>
+                            לא ניתן לבצע תנועת מזומן
+                        </strong>
+
+                        <p>
+                            אין עובד בנוכחות. יש לבצע כניסה במסך נוכחות עובדים ולנסות שוב.
+                        </p>
+
+                        <button
+                            className="cash-movement-dialog__secondary-button"
+                            onClick={onClose}
+                            type="button"
+                        >
+                            סגור
+                        </button>
                     </div>
-                )}
+                ) : (
+                    <>
+                        <div className="cash-movement-dialog__body">
+                            <div
+                                aria-label="סוג תנועת מזומן"
+                                className="cash-movement-dialog__type-switch"
+                                role="group"
+                            >
+                                <button
+                                    aria-pressed={
+                                        type === "cash_in"
+                                    }
+                                    className={
+                                        type === "cash_in"
+                                            ? "cash-movement-dialog__type-button cash-movement-dialog__type-button--active"
+                                            : "cash-movement-dialog__type-button"
+                                    }
+                                    onClick={() =>
+                                        selectType(
+                                            "cash_in",
+                                        )
+                                    }
+                                    type="button"
+                                >
+                                    הפקדה לקופה
+                                </button>
 
-                <div
-                    style={{
-                        display:
-                            "grid",
-                        gap:
-                            "14px",
-                    }}
-                >
-                    <label>
-                        סוג פעולה
+                                <button
+                                    aria-pressed={
+                                        type === "cash_out"
+                                    }
+                                    className={
+                                        type === "cash_out"
+                                            ? "cash-movement-dialog__type-button cash-movement-dialog__type-button--active"
+                                            : "cash-movement-dialog__type-button"
+                                    }
+                                    onClick={() =>
+                                        selectType(
+                                            "cash_out",
+                                        )
+                                    }
+                                    type="button"
+                                >
+                                    משיכה מהקופה
+                                </button>
+                            </div>
 
-                        <select
-                            value={
-                                type
-                            }
-                            onChange={(
-                                event,
-                            ) =>
-                                setType(
-                                    event.target
-                                        .value as CashMovementType,
-                                )
-                            }
-                            style={{
-                                display:
-                                    "block",
-                                width:
-                                    "100%",
-                                marginTop:
-                                    "6px",
-                            }}
-                        >
-                            <option value="cash_in">
-                                הפקדה לקופה
-                            </option>
+                            <label className="cash-movement-dialog__field cash-movement-dialog__field--amount">
+                                <span>
+                                    סכום
+                                </span>
 
-                            <option value="cash_out">
-                                משיכה מהקופה
-                            </option>
-                        </select>
-                    </label>
+                                <div className="cash-movement-dialog__amount-input">
+                                    <input
+                                        autoFocus
+                                        inputMode="decimal"
+                                        onChange={(event) => {
+                                            setAmount(
+                                                event.target.value,
+                                            );
+                                            setError(
+                                                null,
+                                            );
+                                        }}
+                                        placeholder="0.00"
+                                        value={amount}
+                                    />
 
-                    <label>
-                        סכום
+                                    <span>
+                                        ₪
+                                    </span>
+                                </div>
+                            </label>
 
-                        <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            inputMode="decimal"
-                            value={
-                                amount
-                            }
-                            onChange={(
-                                event,
-                            ) => {
-                                setAmount(
-                                    event.target.value,
-                                );
+                            <label className="cash-movement-dialog__field">
+                                <span>
+                                    סיבה
+                                </span>
 
-                                setError(
-                                    null,
-                                );
-                            }}
-                            style={{
-                                display:
-                                    "block",
-                                width:
-                                    "100%",
-                                marginTop:
-                                    "6px",
-                            }}
-                        />
-                    </label>
+                                <select
+                                    onChange={(event) => {
+                                        setReason(
+                                            event.target.value as CashMovementReason,
+                                        );
+                                        setError(
+                                            null,
+                                        );
+                                    }}
+                                    value={reason}
+                                >
+                                    {activeReasonOptions.map(
+                                        (option) => (
+                                            <option
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            </label>
 
-                    <label>
-                        סיבה
+                            <label className="cash-movement-dialog__field">
+                                <span>
+                                    עובד מבצע
+                                </span>
 
-                        <select
-                            value={
-                                reason
-                            }
-                            onChange={(
-                                event,
-                            ) =>
-                                setReason(
-                                    event.target
-                                        .value as CashMovementReason,
-                                )
-                            }
-                            style={{
-                                display:
-                                    "block",
-                                width:
-                                    "100%",
-                                marginTop:
-                                    "6px",
-                            }}
-                        >
-                            {reasonOptions.map(
-                                (option) => (
-                                    <option
-                                        key={
-                                            option.value
-                                        }
-                                        value={
-                                            option.value
-                                        }
+                                {presentEmployees.length === 1 ? (
+                                    <div className="cash-movement-dialog__employee-readonly">
+                                        <span className="cash-movement-dialog__presence-dot" />
+
+                                        <strong>
+                                            {presentEmployees[0].employeeName}
+                                        </strong>
+                                    </div>
+                                ) : (
+                                    <select
+                                        onChange={(event) => {
+                                            setEmployeeId(
+                                                event.target.value,
+                                            );
+                                            setError(
+                                                null,
+                                            );
+                                        }}
+                                        value={employeeId}
                                     >
-                                        {
-                                            option.label
-                                        }
-                                    </option>
-                                ),
+                                        <option value="">
+                                            בחר עובד נוכח
+                                        </option>
+
+                                        {presentEmployees.map(
+                                            (employee) => (
+                                                <option
+                                                    key={employee.employeeId}
+                                                    value={employee.employeeId}
+                                                >
+                                                    {employee.employeeName}
+                                                </option>
+                                            ),
+                                        )}
+                                    </select>
+                                )}
+                            </label>
+
+                            <label className="cash-movement-dialog__field">
+                                <span>
+                                    הערה
+                                    <small>
+                                        רשות
+                                    </small>
+                                </span>
+
+                                <textarea
+                                    maxLength={240}
+                                    onChange={(event) =>
+                                        setNote(
+                                            event.target.value,
+                                        )
+                                    }
+                                    placeholder="פרטים נוספים לתיעוד התנועה"
+                                    rows={3}
+                                    value={note}
+                                />
+                            </label>
+
+                            {error && (
+                                <div
+                                    aria-live="polite"
+                                    className="cash-movement-dialog__error"
+                                    role="status"
+                                >
+                                    {error}
+                                </div>
                             )}
-                        </select>
-                    </label>
+                        </div>
 
-                    <label>
-                        עובד
+                        <footer className="cash-movement-dialog__footer">
+                            <button
+                                className="cash-movement-dialog__secondary-button"
+                                onClick={onClose}
+                                type="button"
+                            >
+                                ביטול
+                            </button>
 
-                        <select
-                            value={
-                                employeeId
-                            }
-                            onChange={(
-                                event,
-                            ) => {
-                                setEmployeeId(
-                                    event.target.value,
-                                );
-
-                                setError(
-                                    null,
-                                );
-                            }}
-                            style={{
-                                display:
-                                    "block",
-                                width:
-                                    "100%",
-                                marginTop:
-                                    "6px",
-                            }}
-                        >
-                            <option value="">
-                                בחר עובד
-                            </option>
-
-                            {presentEmployees.map(
-                                (employee) => (
-                                    <option
-                                        key={
-                                            employee.employeeId
-                                        }
-                                        value={
-                                            employee.employeeId
-                                        }
-                                    >
-                                        {
-                                            employee.employeeName
-                                        }
-                                    </option>
-                                ),
-                            )}
-                        </select>
-                    </label>
-
-                    <label>
-                        הערה
-
-                        <textarea
-                            value={
-                                note
-                            }
-                            onChange={(
-                                event,
-                            ) =>
-                                setNote(
-                                    event.target.value,
-                                )
-                            }
-                            rows={3}
-                            style={{
-                                display:
-                                    "block",
-                                width:
-                                    "100%",
-                                marginTop:
-                                    "6px",
-                            }}
-                        />
-                    </label>
-                </div>
-
-                {error && (
-                    <div
-                        style={{
-                            marginTop:
-                                "14px",
-                            padding:
-                                "10px",
-                            border:
-                                "1px solid #dc2626",
-                            borderRadius:
-                                "8px",
-                        }}
-                    >
-                        {error}
-                    </div>
+                            <button
+                                className="cash-movement-dialog__confirm"
+                                disabled={
+                                    !isValidAmount ||
+                                    !selectedEmployee
+                                }
+                                onClick={confirm}
+                                type="button"
+                            >
+                                {isValidAmount
+                                    ? `${movementTitle} · ₪${numericAmount.toFixed(
+                                          2,
+                                      )}`
+                                    : movementTitle}
+                            </button>
+                        </footer>
+                    </>
                 )}
-
-                <div
-                    style={{
-                        display:
-                            "flex",
-                        gap:
-                            "8px",
-                        marginTop:
-                            "22px",
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={
-                            confirm
-                        }
-                        disabled={
-                            presentEmployees.length === 0
-                        }
-                    >
-                        אישור
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={
-                            onClose
-                        }
-                    >
-                        ביטול
-                    </button>
-                </div>
             </section>
         </div>
     );

@@ -22,7 +22,7 @@
 .lumora-cart__header h2 {
     margin: 0;
     color: var(--text);
-    font-size: 19px;
+    font-size: 17px;
     font-weight: 600;
 }
 
@@ -75,13 +75,13 @@
 }
 
 .lumora-cart__empty strong {
-    color: #292d32;
+    color: #20242a;
     font-size: 13px;
     font-weight: 600;
 }
 
 .lumora-cart__empty span {
-    color: #858b94;
+    color: #8b9198;
     font-size: 10px;
 }
 
@@ -113,8 +113,8 @@
 }
 
 .lumora-cart-line--selected {
-    background: #f3f4f5;
-    box-shadow: inset -3px 0 0 #4b5057;
+    background: #fafafa;
+    box-shadow: inset -3px 0 0 #c9942f;
 }
 
 .lumora-cart-line--return {
@@ -125,7 +125,7 @@
     width: 46px;
     height: 46px;
     border-radius: 10px;
-    background: #f4f5f6;
+    background: #fafafa;
     object-fit: cover;
 }
 
@@ -136,7 +136,7 @@
 .lumora-cart-line__main>strong {
     display: block;
     overflow: hidden;
-    color: #292d32;
+    color: #20242a;
     font-size: 11px;
     font-weight: 600;
     text-overflow: ellipsis;
@@ -147,12 +147,12 @@
 .lumora-cart-line__origin {
     display: block;
     margin-top: 3px;
-    color: #7d838c;
-    font-size: 9px;
+    color: #8b9198;
+    font-size: 10px;
 }
 
 .lumora-cart-line__origin {
-    color: #696f77;
+    color: #8b9198;
 }
 
 .lumora-cart-line__discount {
@@ -162,10 +162,10 @@
     gap: 5px;
     margin-top: 5px;
     padding: 2px 6px;
-    border-radius: 6px;
-    background: #f0f2f3;
-    color: #555b63;
-    font-size: 8px;
+    border-radius: 8px;
+    background: #fafafa;
+    color: #8b9198;
+    font-size: 10px;
 }
 
 .lumora-cart-line__discount strong {
@@ -194,28 +194,28 @@
 .lumora-cart-line__quantity button {
     height: 29px;
     padding: 0;
-    background: #f8f9fa;
-    color: #393e44;
+    background: #fafafa;
+    color: #20242a;
     cursor: pointer;
     font-size: 14px;
 }
 
 .lumora-cart-line__quantity span {
-    color: #30343a;
+    color: #20242a;
     font-size: 10px;
     font-weight: 600;
     text-align: center;
 }
 
 .lumora-cart-line__total {
-    color: #2d3137;
+    color: #20242a;
     font-size: 11px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
 .lumora-cart-line__total--return {
-    color: #555b62;
+    color: #8b9198;
 }
 
 .lumora-cart__summary {
@@ -232,18 +232,18 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    color: #747a83;
+    color: #8b9198;
     font-size: 10px;
 }
 
 .lumora-cart__summary>div strong {
-    color: #35393f;
+    color: #20242a;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
 }
 
 .lumora-cart__summary-discount strong {
-    color: #555b62 !important;
+    color: #8b9198 !important;
 }
 
 .lumora-cart__total {
@@ -253,13 +253,13 @@
 }
 
 .lumora-cart__total span {
-    color: #30343a;
+    color: #20242a;
     font-size: 12px;
     font-weight: 600;
 }
 
 .lumora-cart__total strong {
-    color: #25292e !important;
+    color: #20242a !important;
     font-size: 22px;
     font-weight: 600 !important;
     letter-spacing: -0.02em;
@@ -273,7 +273,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 0 18px;
-    border-radius: 11px;
+    border-radius: 12px;
     background: var(--primary);
     color: #fff;
     cursor: pointer;
@@ -291,8 +291,8 @@
 }
 
 .lumora-cart__checkout:disabled {
-    background: #d8dde4;
-    color: #929aa6;
+    background: #eceeef;
+    color: #8b9198;
     cursor: not-allowed;
 }
 /* ============================================================
@@ -328,7 +328,7 @@
     padding: 0 9px;
     border: 1px solid var(--border);
     border-radius: 8px;
-    background: #f7faf8;
+    background: #fafafa;
     font-size: 10px;
 }
 
@@ -339,11 +339,11 @@
 
 .lumora-cart__coupon-active button {
     padding: 3px 7px;
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .lumora-cart__coupon-overlay {
@@ -353,7 +353,7 @@
     display: grid;
     place-items: center;
     padding: 24px;
-    background: rgb(15 23 42 / 38%);
+    background: rgb(20 23 27 / 32%);
     direction: rtl;
 }
 
@@ -363,7 +363,7 @@
     border: 1px solid var(--border);
     border-radius: 16px;
     background: var(--surface);
-    box-shadow: 0 24px 70px rgb(15 23 42 / 22%);
+    box-shadow: 0 24px 70px rgb(15 18 21 / 22%);
 }
 
 .lumora-cart__coupon-dialog-header {
@@ -393,7 +393,7 @@
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: #f1f3f4;
+    background: #fafafa;
     cursor: pointer;
     font-size: 18px;
 }
@@ -410,12 +410,12 @@
 
 .lumora-cart__coupon-dialog > input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgb(35 139 99 / 12%);
+    box-shadow: 0 0 0 3px rgb(201 148 47 / 12%);
 }
 
 .lumora-cart__coupon-error {
     margin-top: 7px;
-    color: #a33d3d;
+    color: #a53e3e;
     font-size: 10px;
 }
 
@@ -459,7 +459,7 @@
   height: 30px;
   padding: 0 3px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   outline: none;
   background: transparent;
   color: inherit;
@@ -480,12 +480,12 @@
   background: #ffffff;
   box-shadow:
     0 0 0 2px
-    rgb(199 169 107 / 35%);
+    rgb(201 148 47 / 28%);
 }
 
 /* QUANTITY DIRECT ENTRY TYPOGRAPHY FIX */
 .lumora-cart-line__quantity-input {
-  color: #30343a;
+  color: #20242a;
   font-family: inherit;
   font-size: 10px;
   font-weight: 600;
@@ -500,7 +500,7 @@
 .pos-app-shell--sale .sale-page__cart .lumora-cart__header {
     min-height: 46px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e7e8ea;
+    border-bottom: 1px solid #e4e5e7;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__header > div {
@@ -527,7 +527,7 @@
     padding: 0 9px;
     border: 0;
     background: transparent;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__lines {
@@ -541,7 +541,7 @@
     min-height: 82px;
     padding: 10px 2px;
     border: 0;
-    border-bottom: 1px solid #eceef0;
+    border-bottom: 1px solid #eceeef;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
@@ -553,8 +553,8 @@
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line--selected {
     border-radius: 9px;
-    background: #f5f5f4;
-    box-shadow: inset -2px 0 0 #c7922f;
+    background: #fafafa;
+    box-shadow: inset -2px 0 0 #c9942f;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line__image {
@@ -571,7 +571,7 @@
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line__unit-price,
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line__origin {
     margin-top: 4px;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line__controls {
@@ -583,7 +583,7 @@
     grid-template-columns: 28px 34px 28px;
     border-color: #dedfe1;
     border-radius: 8px;
-    background: #f7f7f6;
+    background: #fafafa;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line__quantity button {
@@ -606,7 +606,7 @@
     margin-top: 0;
     padding: 14px 2px 11px;
     border: 0;
-    border-top: 1px solid #e5e6e8;
+    border-top: 1px solid #e4e5e7;
     border-radius: 0;
     background: transparent !important;
 }
@@ -620,23 +620,23 @@
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__summary-discount strong {
-    color: #5d6269 !important;
+    color: #8b9198 !important;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__total {
     margin-top: 4px;
     padding-top: 12px;
-    border-top: 1px solid #d8dade;
+    border-top: 1px solid #dedfe1;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__total span {
-    color: #272b30;
+    color: #20242a;
     font-size: 13px;
     font-weight: 750;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__total strong {
-    color: #181b1f !important;
+    color: #20242a !important;
     font-size: 24px;
     font-weight: 800 !important;
     letter-spacing: -0.03em;
@@ -646,25 +646,25 @@
     min-height: 58px !important;
     margin-top: 0;
     padding: 0 18px;
-    border: 1px solid #a86f16 !important;
-    border-radius: 11px !important;
+    border: 1px solid #b47d1e !important;
+    border-radius: 12px !important;
     background:
         linear-gradient(
             180deg,
-            #d5aa56 0%,
-            #c69231 100%
+            #c9942f 0%,
+            #b47d1e 100%
         ) !important;
-    color: #21170a !important;
+    color: #ffffff !important;
     box-shadow:
-        0 7px 18px rgb(126 87 23 / 18%);
+        0 7px 18px rgb(180 125 30 / 18%);
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__checkout:hover:not(:disabled) {
     background:
         linear-gradient(
             180deg,
-            #ddb561 0%,
-            #cc9a3a 100%
+            #c9942f 0%,
+            #b47d1e 100%
         ) !important;
     transform: none;
 }
@@ -672,7 +672,7 @@
 .pos-app-shell--sale .sale-page__cart .lumora-cart__checkout span,
 .pos-app-shell--sale .sale-page__cart .lumora-cart__checkout strong,
 .pos-app-shell--sale .sale-page__cart .lumora-cart__checkout-amount {
-    color: #21170a !important;
+    color: #ffffff !important;
     font-weight: 750;
 }
 /* LUMORA CART TOKEN ALIGNMENT V2 */
@@ -709,7 +709,7 @@
     border: 1px solid #dedfe1;
     border-radius: 9px;
     background: #ffffff;
-    color: #687079;
+    color: #8b9198;
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart__clear:hover:not(:disabled) {
@@ -750,7 +750,7 @@
 .pos-app-shell--sale .sale-page__cart .lumora-cart__checkout {
     min-height: 58px !important;
     border: 1px solid #b47d1e !important;
-    border-radius: 11px !important;
+    border-radius: 12px !important;
     background: #c9942f !important;
     color: #ffffff !important;
     box-shadow:
@@ -843,10 +843,10 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: #686e76;
+    color: #8b9198;
     cursor: pointer;
     font-family: inherit;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     line-height: 1.25;
     text-align: right;
@@ -859,7 +859,7 @@
 }
 
 .pos-app-shell--sale .sale-page__cart .lumora-cart-line__seller:focus-visible {
-    border-radius: 4px;
+    border-radius: 8px;
     outline: 2px solid rgb(201 148 47 / 28%);
     outline-offset: 2px;
 }
@@ -915,7 +915,7 @@
 
 .lumora-cart__seller-dialog-header span {
     margin-top: 3px;
-    color: #4b5158;
+    color: #8b9198;
     font-size: 11px;
     font-weight: 600;
 }
@@ -936,7 +936,7 @@
     border: 1px solid #dedfe1;
     border-radius: 9px;
     background: #ffffff;
-    color: #687079;
+    color: #8b9198;
     cursor: pointer;
     font-size: 18px;
 }
@@ -955,7 +955,7 @@
 
 .lumora-cart__seller-field > span,
 .lumora-cart__seller-question {
-    color: #666c74;
+    color: #8b9198;
     font-size: 10px;
     font-weight: 600;
 }
@@ -1011,7 +1011,7 @@
 .lumora-cart__seller-actions button:hover:not(:disabled) {
     border-color: #e5d2aa;
     background: #faf3e4;
-    color: #8a5c13;
+    color: #b47d1e;
 }
 
 .lumora-cart__seller-actions button:first-child {
@@ -1029,4 +1029,50 @@
 .lumora-cart__seller-actions button:disabled {
     opacity: .45;
     cursor: not-allowed;
+}
+
+/* LUMORA QUANTITY SAFETY V1.2 */
+.lumora-cart__quantity-notice {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 6px 8px;
+    padding: 9px 10px;
+    border: 1px solid #e5d2aa;
+    border-radius: 9px;
+    background: #faf3e4;
+    color: #20242a;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.lumora-cart__quantity-notice > span {
+    min-width: 0;
+}
+
+.lumora-cart__quantity-notice-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+}
+
+.lumora-cart__quantity-notice-actions button {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid #e5d2aa;
+    border-radius: 8px;
+    background: #fff;
+    color: #20242a;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
+.lumora-cart__quantity-notice-actions button:first-child {
+    border-color: #c9942f;
+    background: #c9942f;
+    color: #fff;
 }

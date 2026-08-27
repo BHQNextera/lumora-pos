@@ -1,4 +1,7 @@
 import type {
+    StoreCreditManagerApproval,
+} from "./store-credit/StoreCreditService";
+import type {
     PaymentMethodCode,
 } from "./PaymentMethod";
 
@@ -35,7 +38,22 @@ export type Payment = {
     externalReference?: string;
     providerReference?: string;
 
-    createdAt: string;
+
+
+
+    /** Card scheme/brand reported by the real terminal/provider. */
+    cardBrand?: string;
+
+    /** Last four digits reported by the real terminal/provider. */
+    cardLast4?: string;
+    /**
+     * Present only when a store-credit payment exceeded
+     * the customer's available credit and a manager
+     * explicitly approved the exception.
+     */
+    storeCreditManagerApproval?:
+        StoreCreditManagerApproval;
+createdAt: string;
 };
 
 export type PaymentTotals = {

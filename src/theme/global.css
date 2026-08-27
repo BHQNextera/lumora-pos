@@ -699,12 +699,14 @@ button.pos-sidebar__shift-status:hover {
 }
 
 .pos-status-bar__right {
-  gap: 16px;
   min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .pos-status-bar__items {
   gap: 14px;
+  flex: 0 0 auto;
 }
 
 .pos-status-bar__operation {
@@ -734,17 +736,29 @@ button.pos-sidebar__shift-status:hover {
   gap: 5px;
 }
 
+.pos-status-bar__item[data-tone="warning"] {
+  color: #8a651e;
+}
+
+.pos-status-bar__item[data-tone="unavailable"] {
+  color: var(--danger);
+}
+
 .pos-status-bar__indicator {
   width: 6px;
   height: 6px;
   border-radius: 50%;
 }
 
-.pos-status-bar__indicator--connected {
+.pos-status-bar__indicator--ready {
   background: var(--success);
 }
 
-.pos-status-bar__indicator--disconnected {
+.pos-status-bar__indicator--warning {
+  background: #c9942f;
+}
+
+.pos-status-bar__indicator--unavailable {
   background: var(--danger);
 }
 
@@ -753,11 +767,10 @@ button.pos-sidebar__shift-status:hover {
   font-size: 11px;
 }
 
-.pos-status-bar__lock {
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
+.pos-status-bar__detail {
+  color: var(--text);
   font-size: 9px;
+  font-weight: 750;
 }
 
 @media (max-width: 1420px) {
@@ -4634,4 +4647,137 @@ select {
     max-width: 210px !important;
     flex: 0 0 auto !important;
     white-space: nowrap !important;
+}
+
+/* LUMORA MONEY DISPLAY FOUNDATION V1 */
+.lumora-money-value {
+    display: inline-block;
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    white-space: nowrap;
+}
+
+/* LUMORA SELLER SELECTION VISUAL V1 */
+.pos-app-shell--sale .sale-page__seller-selection-overlay {
+  padding: 20px !important;
+}
+
+.pos-app-shell--sale .sale-page__seller-selection-overlay > section {
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 40px)) !important;
+  max-width: 460px !important;
+  padding: 22px !important;
+  border: 1px solid var(--lumora-gold-border) !important;
+  border-radius: 16px !important;
+  background: var(--surface) !important;
+}
+
+.pos-app-shell--sale .sale-page__seller-selection-overlay h2 {
+  margin: 0 0 5px !important;
+  color: var(--text) !important;
+  font-size: 24px !important;
+  font-weight: 750 !important;
+  line-height: 1.2 !important;
+  text-align: right !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:first-of-type {
+  margin-bottom: 18px !important;
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  opacity: 1 !important;
+  text-align: right !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:last-child {
+  gap: 8px !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:last-child
+> button {
+  box-sizing: border-box;
+  width: 100% !important;
+  min-height: 46px !important;
+  padding: 0 14px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  font: inherit !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  text-align: right !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:last-child
+> button:not(:last-child) {
+  box-shadow:
+    inset -3px 0 0
+    var(--lumora-gold) !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:last-child
+> button:not(:last-child):hover {
+  border-color: var(--lumora-gold-border) !important;
+  background: var(--lumora-gold-soft) !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:last-child
+> button:last-child {
+  min-height: 40px !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+> section
+> div:last-child
+> button:last-child:hover {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+strong {
+  color: var(--text) !important;
+  font-size: 14px !important;
+}
+
+.pos-app-shell--sale
+.sale-page__seller-selection-overlay
+p {
+  margin: 7px 0 14px !important;
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
 }

@@ -1,7 +1,8 @@
 export type SupportedLocale =
     | "he"
     | "en"
-    | "el";
+    | "el"
+    | "ru";
 
 export type TextDirection =
     | "rtl"

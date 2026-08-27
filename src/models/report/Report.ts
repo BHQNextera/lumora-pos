@@ -2,8 +2,11 @@ export type ReportId =
     | "sales-summary"
     | "payments-summary"
     | "product-sales"
+    | "category-sales"
     | "returns-summary"
-    | "seller-sales";
+    | "seller-sales"
+    | "inventory-valuation"
+    | "attendance";
 
 export type ReportColumn = {
     id: string;

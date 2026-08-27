@@ -11,6 +11,9 @@ export const employeeSeed:
         name:
             "שי",
 
+        employeeNumber:
+            1,
+
         code:
             "01",
 
@@ -30,6 +33,9 @@ export const employeeSeed:
 
         name:
             "קובי",
+
+        employeeNumber:
+            2,
 
         code:
             "02",

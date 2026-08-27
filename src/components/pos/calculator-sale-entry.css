@@ -17,7 +17,7 @@
 
 .calculator-sale-entry__eyebrow {
     margin: 0;
-    color: #6f7b76;
+    color: #8b9198;
     font-size: 11px;
     font-weight: 700;
 }
@@ -29,15 +29,15 @@
     justify-content: flex-end;
     gap: 8px;
     padding: 18px 22px;
-    border: 1px solid #dfe5e2;
+    border: 1px solid #e4e5e7;
     border-radius: 16px;
-    background: #f8faf9;
+    background: #fafafa;
     font-variant-numeric: tabular-nums;
 }
 
 .calculator-sale-entry__amount span {
     font-size: 24px;
-    color: #68736f;
+    color: #8b9198;
 }
 
 .calculator-sale-entry__amount strong {
@@ -55,14 +55,14 @@
 .calculator-sale-entry__description span {
     font-size: 12px;
     font-weight: 700;
-    color: #59645f;
+    color: #8b9198;
 }
 
 .calculator-sale-entry__description input {
     width: 100%;
     min-height: 46px;
     padding: 0 14px;
-    border: 1px solid #d7dfdb;
+    border: 1px solid #e4e5e7;
     border-radius: 10px;
     background: #fff;
     font: inherit;
@@ -76,7 +76,7 @@
 
 .calculator-sale-entry__keypad button {
     min-height: 64px;
-    border: 1px solid #d9e0dd;
+    border: 1px solid #e4e5e7;
     border-radius: 12px;
     background: #fff;
     font: inherit;
@@ -86,7 +86,7 @@
 }
 
 .calculator-sale-entry__keypad button:hover {
-    background: #f4f7f5;
+    background: #fafafa;
 }
 
 .calculator-sale-entry__keypad .calculator-sale-entry__utility {

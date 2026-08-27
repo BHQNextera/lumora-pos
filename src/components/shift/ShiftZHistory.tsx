@@ -1,3 +1,5 @@
+import { formatMoney as money } from "../../utils/MoneyFormatter";
+
 import {
     useState,
 } from "react";
@@ -12,10 +14,30 @@ import type {
 
 import ShiftZReportDialog from "./ShiftZReportDialog";
 
-function money(
-    value: number,
+
+function dateOnly(
+    value: string,
 ) {
-    return `₪${value.toFixed(2)}`;
+    return new Date(
+        value,
+    ).toLocaleDateString(
+        "he-IL",
+    );
+}
+
+function timeOnly(
+    value: string,
+) {
+    return new Date(
+        value,
+    ).toLocaleTimeString(
+        "he-IL",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        },
+    );
 }
 
 function ShiftZHistory() {
@@ -43,43 +65,40 @@ function ShiftZHistory() {
     return (
         <>
             <section
+                className="shift-z-history"
                 dir="rtl"
-                style={{
-                    display:
-                        "grid",
-                    gap:
-                        "16px",
-                }}
             >
-                <header>
-                    <h2
-                        style={{
-                            margin:
-                                "0 0 4px",
-                        }}
-                    >
-                        היסטוריית דוחות Z
-                    </h2>
+                <header className="shift-z-history__header">
+                    <div>
+                        <h2>
+                            דוחות סגירת קופה
+                        </h2>
 
-                    <span>
-                        דוחות סגירת קופה שמורים
-                    </span>
+                        <span>
+                            פתיחה וסגירה, מחזור והפרשי מזומן לכל Z
+                        </span>
+                    </div>
+
+                    <small>
+                        {reports.length} דוחות
+                    </small>
                 </header>
 
-                <div
-                    style={{
-                        overflowX:
-                            "auto",
-                    }}
-                >
-                    <table
-                        style={{
-                            width:
-                                "100%",
-                            borderCollapse:
-                                "collapse",
-                        }}
-                    >
+                <div className="shift-z-history__table-wrap">
+                    <table className="shift-z-history__table">
+                        <colgroup>
+                            <col className="shift-z-history__col shift-z-history__col--z" />
+                            <col className="shift-z-history__col shift-z-history__col--date" />
+                            <col className="shift-z-history__col shift-z-history__col--time" />
+                            <col className="shift-z-history__col shift-z-history__col--time" />
+                            <col className="shift-z-history__col shift-z-history__col--register" />
+                            <col className="shift-z-history__col shift-z-history__col--closer" />
+                            <col className="shift-z-history__col shift-z-history__col--transactions" />
+                            <col className="shift-z-history__col shift-z-history__col--money" />
+                            <col className="shift-z-history__col shift-z-history__col--money" />
+                            <col className="shift-z-history__col shift-z-history__col--action" />
+                        </colgroup>
+
                         <thead>
                             <tr>
                                 <th>
@@ -87,7 +106,15 @@ function ShiftZHistory() {
                                 </th>
 
                                 <th>
-                                    תאריך סגירה
+                                    תאריך
+                                </th>
+
+                                <th>
+                                    שעת פתיחה
+                                </th>
+
+                                <th>
+                                    שעת סגירה
                                 </th>
 
                                 <th>
@@ -126,43 +153,55 @@ function ShiftZHistory() {
                                             report.id
                                         }
                                     >
-                                        <td>
-                                            <strong>
-                                                {
-                                                    report.number
-                                                }
-                                            </strong>
+                                        <td className="shift-z-history__z-number">
+                                            {
+                                                report.number
+                                            }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__date">
                                             {
-                                                new Date(
+                                                dateOnly(
                                                     report.closedAt,
-                                                ).toLocaleString(
-                                                    "he-IL",
                                                 )
                                             }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__time">
+                                            {
+                                                timeOnly(
+                                                    report.openedAt,
+                                                )
+                                            }
+                                        </td>
+
+                                        <td className="shift-z-history__time">
+                                            {
+                                                timeOnly(
+                                                    report.closedAt,
+                                                )
+                                            }
+                                        </td>
+
+                                        <td className="shift-z-history__numeric">
                                             {
                                                 report.registerCode
                                             }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__closer">
                                             {
                                                 report.closedBy.employeeName
                                             }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__numeric">
                                             {
                                                 report.transactionCount
                                             }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__money">
                                             {
                                                 money(
                                                     report.netSales,
@@ -170,7 +209,7 @@ function ShiftZHistory() {
                                             }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__money">
                                             {
                                                 money(
                                                     report.cashVariance,
@@ -178,8 +217,9 @@ function ShiftZHistory() {
                                             }
                                         </td>
 
-                                        <td>
+                                        <td className="shift-z-history__action-cell">
                                             <button
+                                                className="shift-z-history__action"
                                                 type="button"
                                                 onClick={() =>
                                                     setSelectedReport(
@@ -198,8 +238,9 @@ function ShiftZHistory() {
                                 0 && (
                                 <tr>
                                     <td
+                                        className="shift-z-history__empty"
                                         colSpan={
-                                            8
+                                            10
                                         }
                                     >
                                         אין דוחות Z שמורים.

@@ -7,6 +7,11 @@ import PaymentMethodRenderer from "../../components/payment/PaymentMethodRendere
 import PaymentSummary from "../../components/payment/PaymentSummary";
 
 import {
+    getActiveBusinessOperatingProfile,
+    getActiveRegisterProfile,
+} from "../../config/ActiveBusinessConfiguration";
+
+import {
     requestCashDrawerOpen,
 } from "../../models/drawer/CashDrawerService";
 import {
@@ -20,9 +25,13 @@ import {
     calculatePaymentTotals,
     type Payment,
 } from "../../models/Payment";
-import type {
-    PaymentMethodCode,
+import {
+    isPaymentMethodRuntimeAvailable,
+    resolvePaymentMethods,
+    type PaymentMethodCode,
 } from "../../models/PaymentMethod";
+
+import PaymentMethodIcon from "../../components/payment/PaymentMethodIcon";
 
 import "./payment-page.css";
 
@@ -44,20 +53,135 @@ type VoucherNotice = {
     amount: number;
 };
 
-const primaryPaymentMethods: PrimaryPaymentMethod[] = [
-    { code: "cash", icon: "₪", title: "מזומן", description: "תשלום מלא או חלקי" },
-    { code: "card_terminal", icon: "▤", title: "אשראי", description: "תשלום דרך מסופון" },
-    { code: "echo", icon: "◉", title: "Echo", description: "בקשת תשלום דיגיטלית" },
-    { code: "credit_voucher", icon: "₪", title: "שובר זיכוי", description: "מימוש מלא או חלקי" },
-    { code: "gift_card", icon: "G", title: "Gift Card", description: "מימוש יתרה קיימת" },
-    { code: "custom", icon: "+", title: "אמצעי נוסף", description: "Bit, העברה, המחאה ועוד" },
-];
+const paymentMethodPresentation:
+    Record<
+        PaymentMethodCode,
+        {
+            icon: string;
+            description: string;
+        }
+    > = {
+    cash: {
+        icon: "₪",
+        description:
+            "תשלום מלא או חלקי",
+    },
+
+    card_terminal: {
+        icon: "▤",
+        description:
+            "תשלום דרך מסופון",
+    },
+
+    echo: {
+        icon: "◉",
+        description:
+            "בקשת תשלום דיגיטלית",
+    },
+
+    credit_voucher: {
+        icon: "₪",
+        description:
+            "מימוש מלא או חלקי",
+    },
+
+    gift_card: {
+        icon: "G",
+        description:
+            "מימוש יתרה קיימת",
+    },
+
+    store_credit: {
+        icon: "ח",
+        description:
+            "תשלום בהקפה / יתרת לקוח",
+    },
+
+    bit: {
+        icon: "B",
+        description:
+            "תשלום מתועד ב-Bit",
+    },
+
+    paybox: {
+        icon: "P",
+        description:
+            "תשלום מתועד ב-PayBox",
+    },
+
+    bank_transfer: {
+        icon: "↔",
+        description:
+            "תשלום בהעברה בנקאית",
+    },
+
+    cheque: {
+        icon: "▱",
+        description:
+            "תשלום בהמחאה",
+    },
+
+    external_credit: {
+        icon: "▤",
+        description:
+            "אשראי שסולק מחוץ ל-Lumora",
+    },
+
+    custom: {
+        icon: "+",
+        description:
+            "אמצעי תשלום תיעודי",
+    },
+};
 
 function PaymentPage({
     total,
     onBack,
     onComplete,
 }: PaymentPageProps) {
+    const activeBusinessProfile =
+        getActiveBusinessOperatingProfile();
+
+    const activeRegisterProfile =
+        getActiveRegisterProfile();
+
+    const primaryPaymentMethods:
+        PrimaryPaymentMethod[] =
+        resolvePaymentMethods(
+            activeBusinessProfile
+                .paymentMethods,
+        )
+            .filter(
+                (method) =>
+                    method.isActive &&
+                    isPaymentMethodRuntimeAvailable(
+                        method.code,
+                    ) &&
+                    (
+                        method.code !==
+                            "external_credit" ||
+                        activeRegisterProfile
+                            .hardware
+                            .paymentTerminalEnabled
+                    ),
+            )
+            .map((method) => ({
+                code:
+                    method.code,
+
+                icon:
+                    paymentMethodPresentation[
+                        method.code
+                    ].icon,
+
+                title:
+                    method.name,
+
+                description:
+                    paymentMethodPresentation[
+                        method.code
+                    ].description,
+            }));
     const [selectedMethod, setSelectedMethod] =
         useState<PaymentMethodCode | null>(null);
     const [payments, setPayments] =
@@ -78,6 +202,22 @@ function PaymentPage({
     const remainingAmount =
         paymentTotals.remainingAmount;
 
+    const pendingStoreCreditAmount =
+        payments
+            .filter(
+                (payment) =>
+                    payment.status ===
+                        "approved" &&
+                    payment.method ===
+                        "store_credit",
+            )
+            .reduce(
+                (sum, payment) =>
+                    sum +
+                    payment.amount,
+                0,
+            );
+
     const finalizeOrStore = (
         nextPayments: Payment[],
     ) => {
@@ -95,6 +235,60 @@ function PaymentPage({
         setPayments(nextPayments);
         setSelectedMethod(null);
     };
+    const addStoreCreditPayment = (
+        amount: number,
+        customerId: string,
+        managerApproval?:
+            Payment["storeCreditManagerApproval"],
+    ) => {
+        const normalizedAmount =
+            Math.round(
+                (
+                    amount +
+                    Number.EPSILON
+                ) * 100,
+            ) / 100;
+
+        if (
+            remainingAmount <= 0 ||
+            normalizedAmount <= 0 ||
+            normalizedAmount >
+                remainingAmount + 0.001
+        ) {
+            return;
+        }
+
+        const payment: Payment = {
+            id:
+                crypto.randomUUID(),
+
+            method:
+                "store_credit",
+
+            status:
+                "approved",
+
+            amount:
+                normalizedAmount,
+
+            externalReference:
+                customerId,
+
+            storeCreditManagerApproval:
+                managerApproval,
+
+            createdAt:
+                new Date().toISOString(),
+        };
+
+        finalizeOrStore([
+            ...payments,
+            payment,
+        ]);
+    };
+
+
+
 
     const addCashPayment = (
         cashPayment: {
@@ -181,10 +375,12 @@ function PaymentPage({
         );
     };
 
-    const addElectronicPayment = (
-        method: "card_terminal" | "echo",
+    const addReferencedPayment = (
+        method:
+            | "echo"
+            | "external_credit",
         amount: number,
-        providerReference: string,
+        reference: string,
     ) => {
         if (
             remainingAmount <= 0 ||
@@ -201,7 +397,16 @@ function PaymentPage({
                 amount,
                 remainingAmount,
             ),
-            providerReference,
+            ...(method ===
+            "external_credit"
+                ? {
+                      externalReference:
+                          reference,
+                  }
+                : {
+                      providerReference:
+                          reference,
+                  }),
             createdAt:
                 new Date().toISOString(),
         };
@@ -430,7 +635,7 @@ function PaymentPage({
                 placeItems: "center",
                 padding: "24px",
                 background:
-                    "rgba(17, 24, 39, 0.32)",
+                    "rgb(20 23 27 / 32%)",
             }}
         >
             <div
@@ -442,11 +647,11 @@ function PaymentPage({
                         "min(420px, 100%)",
                     padding: "20px",
                     border:
-                        "1px solid #e0e4e2",
+                        "1px solid #e4e5e7",
                     borderRadius: "14px",
                     background: "#fff",
                     boxShadow:
-                        "0 18px 50px rgba(15, 23, 42, 0.16)",
+                        "0 18px 50px rgb(15 18 21 / 22%)",
                 }}
             >
                 <h2
@@ -531,7 +736,7 @@ function PaymentPage({
                                 }
                             >
                                 <span className="payment-method-card__icon">
-                                    {method.icon}
+                                    <PaymentMethodIcon code={method.code} />
                                 </span>
 
                                 <strong>
@@ -565,12 +770,18 @@ function PaymentPage({
                         remainingAmount={
                             remainingAmount
                         }
+                        pendingStoreCreditAmount={
+                            pendingStoreCreditAmount
+                        }
                         onAddCashPayment={
                             addCashPayment
                         }
-                        onApproveElectronicPayment={
-                            addElectronicPayment
+                        onApproveReferencedPayment={
+                            addReferencedPayment
+                        }                        onAddStoreCreditPayment={
+                            addStoreCreditPayment
                         }
+
                         onRedeemStoredValue={
                             redeemStoredValue
                         }
@@ -589,9 +800,9 @@ function PaymentPage({
                             padding:
                                 "12px 0",
                             borderTop:
-                                "1px solid #ecefed",
+                                "1px solid #eceeef",
                             borderBottom:
-                                "1px solid #ecefed",
+                                "1px solid #eceeef",
                         }}
                     >
                         <span>
@@ -623,9 +834,9 @@ function PaymentPage({
                             padding:
                                 "12px 0",
                             borderTop:
-                                "1px solid #ecefed",
+                                "1px solid #eceeef",
                             borderBottom:
-                                "1px solid #ecefed",
+                                "1px solid #eceeef",
                         }}
                     >
                         <div
