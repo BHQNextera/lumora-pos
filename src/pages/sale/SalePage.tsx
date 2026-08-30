@@ -1169,15 +1169,8 @@ const [
                         variantSearchMatch;
 
                     const segmentMatch =
-                        activeProfile.operatingModel ===
-                            "calculator"
-                            ? false
-                            : activeProfile.operatingModel ===
-                                  "fashion"
-                                ? true
-                                : !isFashionProduct(
-                                      product,
-                                  );
+                        activeProfile.operatingModel !==
+                            "calculator";
 
                     return (
                         product.isActive &&
@@ -1572,6 +1565,11 @@ const [
 
             stockOnHand:
                 variant.stockOnHand,
+
+            imageUrl:
+                ((variant as ProductVariant & {
+                    imageUrl?: string;
+                }).imageUrl || product.imageUrl),
         };
 
         const existing =
@@ -1700,15 +1698,15 @@ const [
             name: string;
         },
     ) => {
-        if (
-            activeProfile.operatingModel ===
-                "fashion" &&
-            isFashionProduct(
-                product,
-            )
-        ) {
+        const hasActiveVariants =
+            product.variants?.some(
+                (variant) =>
+                    variant.isActive,
+            ) ?? false;
+
+        if (hasActiveVariants) {
             setSelectedFashionProduct(
-                product,
+                product as FashionProduct,
             );
 
             return;

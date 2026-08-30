@@ -1,9 +1,13 @@
 import {
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from "react";
 
+import {
+    pullAndApplyNexteraCatalog,
+} from "../integrations/nextera/NexteraCatalogSync";
 import type {
     ReactNode,
 } from "react";
@@ -38,6 +42,87 @@ function CatalogProvider({
                 getCatalogProducts(),
         );
 
+    // LUMORA_LIVE_CATALOG_SYNC_V1
+    useEffect(() => {
+        let cancelled = false;
+        let inFlight = false;
+
+        const refreshFromNextera =
+            async () => {
+                if (
+                    cancelled ||
+                    inFlight ||
+                    (
+                        typeof navigator !== "undefined" &&
+                        navigator.onLine === false
+                    )
+                ) {
+                    return;
+                }
+
+                inFlight = true;
+
+                try {
+                    await pullAndApplyNexteraCatalog();
+
+                    if (!cancelled) {
+                        setProducts(
+                            getCatalogProducts(),
+                        );
+                    }
+                } catch (error) {
+                    console.error(
+                        "Background Nextera catalog sync failed:",
+                        error,
+                    );
+                } finally {
+                    inFlight = false;
+                }
+            };
+
+        void refreshFromNextera();
+
+        const intervalId =
+            window.setInterval(
+                () => {
+                    void refreshFromNextera();
+                },
+                5000,
+            );
+
+        const handleOnline = () => {
+            void refreshFromNextera();
+        };
+
+        const handleFocus = () => {
+            void refreshFromNextera();
+        };
+
+        window.addEventListener(
+            "online",
+            handleOnline,
+        );
+        window.addEventListener(
+            "focus",
+            handleFocus,
+        );
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(
+                intervalId,
+            );
+            window.removeEventListener(
+                "online",
+                handleOnline,
+            );
+            window.removeEventListener(
+                "focus",
+                handleFocus,
+            );
+        };
+    }, []);
+
     const commit =
         useCallback(
             (
@@ -68,6 +153,8 @@ function CatalogProvider({
             [],
         );
 
+    // NEXTERA_CATALOG_SYNC_V1
+    
     const addProduct =
         useCallback(
             (product: Product) => {
