@@ -1,4 +1,8 @@
 import {
+    replaceNexteraBranches,
+} from "../../models/organization/BranchRepository";
+
+import {
     getCatalogProducts,
     saveCatalogProducts,
 } from "../../models/catalog/CatalogRepository";
@@ -40,6 +44,15 @@ type ProjectionClassification = {
     is_active: boolean;
 };
 
+type ProjectionBranch = {
+    id: string;
+    tenant_id: string;
+    code: string;
+    name: string;
+    is_active: boolean;
+    updated_at: string;
+};
+
 type ProjectionVariant = {
     id: string;
     external_id?: string | null;
@@ -68,7 +81,8 @@ type CatalogProjection = {
     catalog_version?: string;
     classifications: ProjectionClassification[];
     products: ProjectionProduct[];
-};
+
+    organization_branches?: ProjectionBranch[];};
 
 type ClaimedEvent = {
     event_id: string;
@@ -538,6 +552,30 @@ function mapProduct(
 function applyProjection(
     projection: CatalogProjection,
 ) {
+    // BRANCH_PROJECTION_APPLY_V1
+    if (
+        Array.isArray(
+            projection.organization_branches,
+        )
+    ) {
+        replaceNexteraBranches(
+            projection.organization_branches.map(
+                (branch) => ({
+                    id: branch.id,
+                    tenantId:
+                        branch.tenant_id,
+                    code: branch.code,
+                    name: branch.name,
+                    isActive:
+                        branch.is_active !==
+                        false,
+                    updatedAt:
+                        branch.updated_at,
+                }),
+            ),
+        );
+    }
+
     if (
         projection.schema_version !==
         "nextera.catalog.projection.v1"
