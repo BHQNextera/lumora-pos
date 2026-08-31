@@ -1,3 +1,4 @@
+import { replaceNexteraRegisters } from "../../models/organization/RegisterRepository";
 import {
     replaceNexteraBranches,
 } from "../../models/organization/BranchRepository";
@@ -53,6 +54,17 @@ type ProjectionBranch = {
     updated_at: string;
 };
 
+type ProjectionRegister = {
+    id: string;
+    tenant_id: string;
+    branch_id: string;
+    branch_code?: string | null;
+    code: string;
+    name: string;
+    is_active: boolean;
+    updated_at: string;
+};
+
 type ProjectionVariant = {
     id: string;
     external_id?: string | null;
@@ -82,7 +94,8 @@ type CatalogProjection = {
     classifications: ProjectionClassification[];
     products: ProjectionProduct[];
 
-    organization_branches?: ProjectionBranch[];};
+    organization_branches?: ProjectionBranch[];
+    organization_registers?: ProjectionRegister[];};
 
 type ClaimedEvent = {
     event_id: string;
@@ -573,6 +586,22 @@ function applyProjection(
                         branch.updated_at,
                 }),
             ),
+        );
+    }
+
+    // REGISTER_PROJECTION_APPLY_V1
+    if (Array.isArray(projection.organization_registers)) {
+        replaceNexteraRegisters(
+            projection.organization_registers.map((item) => ({
+                id: item.id,
+                tenantId: item.tenant_id,
+                branchId: item.branch_id,
+                branchCode: item.branch_code ?? "",
+                code: item.code,
+                name: item.name,
+                isActive: item.is_active,
+                updatedAt: item.updated_at,
+            })),
         );
     }
 
