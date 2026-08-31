@@ -413,6 +413,36 @@ function SectionHeading({
 }
 
 function SettingsPage() {
+
+  // NEXTERA_MANAGED_SETTINGS_IDENTITY_V1
+  const [
+    nexteraIdentityRevision,
+    setNexteraIdentityRevision,
+  ] = useState(0);
+
+  useEffect(() => {
+    return subscribeRegisterLocalSettings(
+      () => {
+        setNexteraIdentityRevision(
+          (current) =>
+            current + 1,
+        );
+      },
+    );
+  }, []);
+
+  void nexteraIdentityRevision;
+
+  const nexteraManagedRegister =
+    getRegisterLocalSettings(
+      getActiveRegisterProfile(),
+    );
+
+  const nexteraManagedIdentity =
+    Boolean(
+      nexteraManagedRegister.registerId,
+    );
+
   const [
     activeSection,
     setActiveSection,
@@ -1265,7 +1295,7 @@ function SettingsPage() {
             <SectionHeading
               title="עסק וסניף"
               description="זהות העסק והסניף הפעיל נשמרת מקומית ומשמשת את Lumora גם ללא מערכת ניהול חיצונית."
-              badge={`סניף ${configuration.storeCode}`}
+              badge={`סניף ${nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}`}
             />
 
             <div className="settings-page__business-summary">
@@ -1274,7 +1304,7 @@ function SettingsPage() {
                   קוד סניף
                 </span>
                 <strong>
-                  {configuration.storeCode}
+                  {nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}
                 </strong>
               </div>
 
@@ -1442,12 +1472,12 @@ function SettingsPage() {
                     הסניף הפעיל
                   </strong>
                   <span>
-                    פרטים מקומיים לסניף {configuration.storeCode}. טלפון וכתובת סניף גוברים על פרטי העסק בתפעול המקומי.
+                    פרטים מקומיים לסניף {nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}. טלפון וכתובת סניף גוברים על פרטי העסק בתפעול המקומי.
                   </span>
                 </div>
 
                 <span className="settings-page__business-branch-code">
-                  {configuration.storeCode}
+                  {nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}
                 </span>
               </div>
 
@@ -1527,7 +1557,7 @@ function SettingsPage() {
                   מיסוי הסניף
                 </strong>
                 <span>
-                  קוד הסניף {configuration.storeCode} משויך כרגע לפרופיל {branchTaxProfile ===
+                  קוד הסניף {nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode} משויך כרגע לפרופיל {branchTaxProfile ===
                   "eilat_free_trade_zone"
                     ? "אזור אילת"
                     : "ישראל רגיל"}. שינוי פרופיל המס מתבצע במסך ״מע״מ ומחירים״.
@@ -1548,7 +1578,7 @@ function SettingsPage() {
             <SectionHeading
               title="קופה"
               description="זהות מקומית של העמדה. כל קופה עובדת עצמאית ושומרת את הזהות שלה גם במערך רב־קופתי."
-              badge={`קופה ${configuration.registerCode}`}
+              badge={`קופה ${nexteraManagedIdentity ? nexteraManagedRegister.registerCode : configuration.registerCode}`}
             />
 
             <div className="settings-page__register-summary">
@@ -1557,7 +1587,7 @@ function SettingsPage() {
                   סניף
                 </span>
                 <strong>
-                  {configuration.storeCode}
+                  {nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}
                 </strong>
               </div>
 
@@ -1566,7 +1596,7 @@ function SettingsPage() {
                   קופה
                 </span>
                 <strong>
-                  {configuration.registerCode}
+                  {nexteraManagedIdentity ? nexteraManagedRegister.registerCode : configuration.registerCode}
                 </strong>
               </div>
 
@@ -1575,7 +1605,8 @@ function SettingsPage() {
                   ניהול
                 </span>
                 <strong>
-                  {configuration.source ===
+                  {nexteraManagedIdentity ||
+                  configuration.source ===
                   "nextera"
                     ? "Nextera"
                     : "Standalone"}
@@ -1595,7 +1626,8 @@ function SettingsPage() {
                 </div>
 
                 <span className="settings-page__register-source-badge">
-                  {configuration.source ===
+                  {nexteraManagedIdentity ||
+                  configuration.source ===
                   "nextera"
                     ? "מנוהל מרכזית"
                     : "מקומי"}
@@ -1608,16 +1640,23 @@ function SettingsPage() {
                     קוד סניף
                   </span>
 
+                  {nexteraManagedIdentity && (
+                    <div className="mb-3 rounded-xl border border-[#E5D2AA] bg-[#FFF9ED] px-3 py-2 text-xs font-semibold text-[#8A5B0A]">
+                      מנוהל על ידי Nextera · סניף {nexteraManagedRegister.branchCode || "—"} · קופה {nexteraManagedRegister.registerCode || "—"} · {nexteraManagedRegister.registerName || ""}
+                    </div>
+                  )}
+
                   <input
                     dir="ltr"
                     inputMode="numeric"
                     maxLength={3}
                     disabled={
-                      configuration.source ===
-                      "nextera"
+                      nexteraManagedIdentity
                     }
                     value={
-                      storeCodeDraft
+                      nexteraManagedIdentity
+                        ? nexteraManagedRegister.branchCode
+                        : storeCodeDraft
                     }
                     onChange={(
                       event,
@@ -1662,11 +1701,12 @@ function SettingsPage() {
                     inputMode="numeric"
                     maxLength={3}
                     disabled={
-                      configuration.source ===
-                      "nextera"
+                      nexteraManagedIdentity
                     }
                     value={
-                      registerCodeDraft
+                      nexteraManagedIdentity
+                        ? nexteraManagedRegister.registerCode
+                        : registerCodeDraft
                     }
                     onChange={(
                       event,
@@ -1707,6 +1747,14 @@ function SettingsPage() {
                   </span>
 
                   <input
+                    disabled={
+                        nexteraManagedIdentity
+                    }
+                    title={
+                        nexteraManagedIdentity
+                            ? "מנוהל על ידי Nextera"
+                            : undefined
+                    }
                     value={
                       registerLocalSettings.registerName
                     }
@@ -2885,10 +2933,10 @@ function SettingsPage() {
                 </span>
                 <strong>
                   {profile.identity.branchName ??
-                    `סניף ${configuration.storeCode}`}
+                    `סניף ${nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}`}
                 </strong>
                 <small>
-                  Store {configuration.storeCode}
+                  Store {nexteraManagedIdentity ? nexteraManagedRegister.branchCode : configuration.storeCode}
                 </small>
               </div>
 

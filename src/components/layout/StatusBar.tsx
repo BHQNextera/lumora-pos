@@ -220,8 +220,29 @@ function StatusBar({
 
           <strong>
             {
+              registerSettings
+                .registerCode ||
               activeShift
-                ?.registerCode ??
+                ?.registerCode ||
+              "—"
+            }
+          </strong>
+        </div>
+
+        <span
+          className="pos-status-bar__separator"
+          aria-hidden="true"
+        />
+
+        <div className="pos-status-bar__operation">
+          <span>סניף</span>
+
+          <strong>
+            {
+              registerSettings
+                .branchCode ||
+              activeShift
+                ?.storeCode ||
               "—"
             }
           </strong>

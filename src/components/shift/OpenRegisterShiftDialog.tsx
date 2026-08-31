@@ -1,4 +1,12 @@
 import {
+    getRegisterLocalSettings,
+} from "../../config/RegisterLocalSettings";
+
+import {
+    getActiveRegisterProfile,
+} from "../../config/ActiveBusinessConfiguration";
+
+import {
     useMemo,
     useState,
 } from "react";
@@ -156,12 +164,26 @@ function OpenRegisterShiftDialog({
                 "coin",
         );
 
-    const registerCode =
-        existingShift?.registerCode ??
-        businessConfiguration.registerCode;
+    // NEXTERA_MANAGED_REGISTER_IDENTITY_V1
+    const canonicalRegisterIdentity =
+        getRegisterLocalSettings(
+            getActiveRegisterProfile(),
+        );
 
     const storeCode =
-        businessConfiguration.storeCode;
+        canonicalRegisterIdentity
+            .branchCode ||
+        businessConfiguration
+            .storeCode;
+
+    const registerCode =
+        canonicalRegisterIdentity
+            .registerCode ||
+        existingShift
+            ?.registerCode ||
+        getActiveRegisterProfile()
+            ?.registerCode ||
+        "";
 
     const businessName =
         identity.tradingName ??

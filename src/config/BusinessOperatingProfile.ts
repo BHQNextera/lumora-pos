@@ -226,10 +226,10 @@ export const defaultBusinessOperatingProfile:
             "lumora-unprovisioned",
 
         businessName:
-            "Lumora - Unprovisioned",
+            "Lumora",
 
         tradingName:
-            "Lumora - Unprovisioned",
+            "Lumora",
 
         countryCode:
             "IL",

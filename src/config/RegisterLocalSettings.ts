@@ -14,7 +14,16 @@ import type {
     RegisterOperatingProfile,
 } from "./BusinessOperatingProfile";
 
+import {
+    getNexteraRegisters,
+} from "../models/organization/RegisterRepository";
+
 export type RegisterLocalSettings = {
+    tenantId: string;
+    branchId: string;
+    branchCode: string;
+    registerId: string;
+    registerCode: string;
     registerName: string;
 
     scannerEnabled:
@@ -29,6 +38,21 @@ const STORAGE_KEY =
 
 const defaultSettings:
     RegisterLocalSettings = {
+    tenantId:
+        "",
+
+    branchId:
+        "",
+
+    branchCode:
+        "",
+
+    registerId:
+        "",
+
+    registerCode:
+        "",
+
     registerName:
         "",
 
@@ -88,6 +112,36 @@ function normalizeSettings(
         Partial<RegisterLocalSettings>,
 ): RegisterLocalSettings {
     return {
+        tenantId:
+            typeof value.tenantId ===
+                "string"
+                ? value.tenantId
+                : "",
+
+        branchId:
+            typeof value.branchId ===
+                "string"
+                ? value.branchId
+                : "",
+
+        branchCode:
+            typeof value.branchCode ===
+                "string"
+                ? value.branchCode.slice(0, 80)
+                : "",
+
+        registerId:
+            typeof value.registerId ===
+                "string"
+                ? value.registerId
+                : "",
+
+        registerCode:
+            typeof value.registerCode ===
+                "string"
+                ? value.registerCode.slice(0, 80)
+                : "",
+
         registerName:
             typeof value.registerName ===
                 "string"
@@ -231,11 +285,36 @@ export function getRegisterLocalSettings(
     base:
         RegisterOperatingProfile | undefined,
 ): {
+    tenantId: string;
+    branchId: string;
+    branchCode: string;
+    registerId: string;
+    registerCode: string;
     registerName: string;
     scannerEnabled: boolean;
     paymentTerminalEnabled: boolean;
 } {
     return {
+        tenantId:
+            currentSettings
+                .tenantId,
+
+        branchId:
+            currentSettings
+                .branchId,
+
+        branchCode:
+            currentSettings
+                .branchCode,
+
+        registerId:
+            currentSettings
+                .registerId,
+
+        registerCode:
+            currentSettings
+                .registerCode,
+
         registerName:
             currentSettings
                 .registerName,
@@ -274,6 +353,117 @@ export function saveRegisterLocalSettings(
     };
 }
 
+export function reconcileRegisterLocalBinding():
+RegisterLocalSettings {
+    const registers =
+        getNexteraRegisters();
+
+    const existing =
+        currentSettings.registerId
+            ? registers.find(
+                (register) =>
+                    register.id ===
+                    currentSettings.registerId,
+            )
+            : undefined;
+
+    const activeRegisters =
+        registers.filter(
+            (register) =>
+                register.isActive,
+        );
+
+    const candidate =
+        existing ??
+        (
+            !currentSettings.registerId &&
+            activeRegisters.length === 1
+                ? activeRegisters[0]
+                : undefined
+        );
+
+    if (!candidate) {
+        return {
+            ...currentSettings,
+        };
+    }
+
+    const next =
+        normalizeSettings({
+            ...currentSettings,
+            tenantId:
+                candidate.tenantId,
+            branchId:
+                candidate.branchId,
+            branchCode:
+                candidate.branchCode,
+            registerId:
+                candidate.id,
+            registerCode:
+                candidate.code,
+            registerName:
+                candidate.name,
+        });
+
+    if (
+        JSON.stringify(next) ===
+        JSON.stringify(currentSettings)
+    ) {
+        return {
+            ...currentSettings,
+        };
+    }
+
+    currentSettings =
+        next;
+
+    notify();
+    persist();
+
+    return {
+        ...currentSettings,
+    };
+}
+
+export function bindRegisterLocalSettingsToNexteraRegister(
+    registerId: string,
+): RegisterLocalSettings {
+    const register =
+        getNexteraRegisters()
+            .find(
+                (candidate) =>
+                    candidate.id ===
+                    registerId,
+            );
+
+    if (!register) {
+        throw new Error(
+            "Register not found in Nextera register cache.",
+        );
+    }
+
+    if (!register.isActive) {
+        throw new Error(
+            "Inactive register cannot be bound to this Lumora device.",
+        );
+    }
+
+    return saveRegisterLocalSettings({
+        tenantId:
+            register.tenantId,
+        branchId:
+            register.branchId,
+        branchCode:
+            register.branchCode,
+        registerId:
+            register.id,
+        registerCode:
+            register.code,
+        registerName:
+            register.name,
+    });
+}
+
 export function applyRegisterLocalSettingsToProfile(
     base:
         RegisterOperatingProfile | undefined,
@@ -288,8 +478,13 @@ export function applyRegisterLocalSettingsToProfile(
         );
 
     return {
-        storeCode,
-        registerCode,
+        storeCode:
+            resolved.branchCode ||
+            storeCode,
+
+        registerCode:
+            resolved.registerCode ||
+            registerCode,
 
         printer: {
             paperFormat:

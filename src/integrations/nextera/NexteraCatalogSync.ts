@@ -1,3 +1,7 @@
+import {
+    reconcileRegisterLocalBinding,
+} from "../../config/RegisterLocalSettings";
+
 import { replaceNexteraRegisters } from "../../models/organization/RegisterRepository";
 import {
     replaceNexteraBranches,
@@ -604,6 +608,9 @@ function applyProjection(
             })),
         );
     }
+
+    // REGISTER_BINDING_RECONCILE_V1
+    reconcileRegisterLocalBinding();
 
     if (
         projection.schema_version !==

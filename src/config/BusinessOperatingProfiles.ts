@@ -13,10 +13,10 @@ const baseIdentity = {
         "lumora-unprovisioned",
 
     businessName:
-        "Lumora - Unprovisioned",
+        "Lumora",
 
     tradingName:
-        "Lumora - Unprovisioned",
+        "Lumora",
 
     branchName:
         "",
