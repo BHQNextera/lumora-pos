@@ -639,22 +639,8 @@ function validateInput(
         );
     }
 
-    if (!code) {
-        throw new Error(
-            "EMPLOYEE_CODE_REQUIRED",
-        );
-    }
-
-    if (
-        roles.length ===
-        0
-    ) {
-        throw new Error(
-            "EMPLOYEE_ROLE_REQUIRED",
-        );
-    }
-
     const duplicateCode =
+        Boolean(code) &&
         employees.some(
             (employee) =>
                 employee.id !==
@@ -672,7 +658,8 @@ function validateInput(
 
     return {
         name,
-        code,
+        code:
+            code || undefined,
         roles,
         isActive:
             input.isActive,

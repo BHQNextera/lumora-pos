@@ -1,4 +1,8 @@
 import {
+    requireEmployeePinAuthorization,
+} from "../../security/EmployeePinGate";
+
+import {
     isTauri,
 } from "@tauri-apps/api/core";
 
@@ -222,10 +226,22 @@ export type ClockInEmployeeInput = {
     employeeName: string;
 };
 
-export function clockInEmployee(
+export async function clockInEmployee(
     input:
         ClockInEmployeeInput,
 ) {
+    // EMPLOYEE_PIN_CLOCK_IN_GATE_V1
+    const authorized =
+        await requireEmployeePinAuthorization(
+            input.employeeId,
+            input.employeeName,
+            "clock_in",
+        );
+
+    if (!authorized) {
+        return undefined;
+    }
+
     const existing =
         getEmployeePresence(
             input.employeeId,
@@ -274,9 +290,30 @@ export function clockInEmployee(
     return entry;
 }
 
-export function clockOutEmployee(
+export async function clockOutEmployee(
     employeeId: string,
 ) {
+    // EMPLOYEE_PIN_CLOCK_OUT_GATE_V1
+    const present =
+        getEmployeePresence(
+            employeeId,
+        );
+
+    if (!present) {
+        return undefined;
+    }
+
+    const authorized =
+        await requireEmployeePinAuthorization(
+            employeeId,
+            present.employeeName,
+            "clock_out",
+        );
+
+    if (!authorized) {
+        return undefined;
+    }
+
     const configuration =
         getActiveBusinessConfiguration();
 

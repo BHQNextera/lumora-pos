@@ -43,6 +43,11 @@ import {
   updateEmployee,
 } from "../../models/employee/EmployeeRepository";
 import {
+  assertEmployeePinFormat,
+  hasEmployeePin,
+  setEmployeePin,
+} from "../../models/employee/EmployeePinService";
+import {
   isPaymentMethodRuntimeAvailable,
   movePaymentMethod,
   resolvePaymentMethods,
@@ -202,6 +207,17 @@ const emptyEmployeeEditor:
 function getEmployeeErrorMessage(
   error: unknown,
 ) {
+  if (error instanceof Error) {
+    switch (error.message) {
+      case "EMPLOYEE_PIN_REQUIRED":
+        return "חובה להגדיר קוד כניסה אישי לעובד.";
+      case "EMPLOYEE_PIN_FORMAT":
+        return "קוד הכניסה חייב להכיל 4–6 ספרות.";
+      case "EMPLOYEE_PIN_CONFIRM_MISMATCH":
+        return "אימות קוד הכניסה אינו תואם.";
+    }
+  }
+
   if (!(error instanceof Error)) {
     return "לא ניתן לשמור את העובד.";
   }
@@ -776,10 +792,23 @@ function SettingsPage() {
         employee.isActive,
     );
 
+  const [
+    employeePinDraft,
+    setEmployeePinDraft,
+  ] = useState("");
+
+  const [
+    employeePinConfirmDraft,
+    setEmployeePinConfirmDraft,
+  ] = useState("");
+
   const openNewEmployee = () => {
     setEmployeeEditorError(
       "",
     );
+
+    setEmployeePinDraft("");
+    setEmployeePinConfirmDraft("");
 
     setEmployeeEditor({
       ...emptyEmployeeEditor,
@@ -796,6 +825,9 @@ function SettingsPage() {
     setEmployeeEditorError(
       "",
     );
+
+    setEmployeePinDraft("");
+    setEmployeePinConfirmDraft("");
 
     setEmployeeEditor({
       mode:
@@ -847,7 +879,7 @@ function SettingsPage() {
     );
   };
 
-  const saveEmployee = () => {
+  const saveEmployee = async () => {
     if (!employeeEditor) {
       return;
     }
@@ -857,6 +889,49 @@ function SettingsPage() {
     );
 
     try {
+      // EMPLOYEE_SECURE_PIN_SAVE_V1
+      const pin =
+        employeePinDraft.trim();
+
+      const pinConfirm =
+        employeePinConfirmDraft.trim();
+
+      const editingEmployeeId =
+        employeeEditor.mode === "edit"
+          ? employeeEditor.employeeId
+          : undefined;
+
+      const alreadyHasPin =
+        editingEmployeeId
+          ? await hasEmployeePin(
+              editingEmployeeId,
+            )
+          : false;
+
+      if (
+        !pin &&
+        !alreadyHasPin
+      ) {
+        throw new Error(
+          "EMPLOYEE_PIN_REQUIRED",
+        );
+      }
+
+      if (pin) {
+        assertEmployeePinFormat(
+          pin,
+        );
+
+        if (
+          pin !==
+          pinConfirm
+        ) {
+          throw new Error(
+            "EMPLOYEE_PIN_CONFIRM_MISMATCH",
+          );
+        }
+      }
+
       const input = {
         name:
           employeeEditor.name,
@@ -877,12 +952,28 @@ function SettingsPage() {
           employeeEditor.employeeId,
           input,
         );
+
+        if (pin) {
+          await setEmployeePin(
+            employeeEditor.employeeId,
+            pin,
+          );
+        }
       }
       else {
-        createEmployee(
-          input,
+        const createdEmployee =
+          createEmployee(
+            input,
+          );
+
+        await setEmployeePin(
+          createdEmployee.id,
+          pin,
         );
       }
+
+      setEmployeePinDraft("");
+      setEmployeePinConfirmDraft("");
 
       setEmployeeEditor(
         null,
@@ -3905,7 +3996,7 @@ function SettingsPage() {
 
               <label className="settings-page__field">
                 <span>
-                  קוד עובד / קוד תפעולי
+                  קוד עובד (אופציונלי)
                 </span>
                 <input
                   value={
@@ -3923,8 +4014,59 @@ function SettingsPage() {
                   placeholder="לדוגמה: 03"
                 />
                 <small>
-                  הקוד נשאר ייחודי ומשמש לצרכים תפעוליים; מספר העובד מוקצה בנפרד.
+                  מזהה עסקי אופציונלי לצורכי חיפוש, שכר ואינטגרציות; מספר העובד מוקצה בנפרד.
                 </small>
+              </label>
+
+              <label className="settings-page__field">
+                <span>
+                  קוד כניסה אישי (PIN)
+                </span>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  maxLength={6}
+                  value={employeePinDraft}
+                  onChange={(event) =>
+                    setEmployeePinDraft(
+                      event.target.value.replace(
+                        /\D/g,
+                        "",
+                      ),
+                    )
+                  }
+                  placeholder={
+                    employeeEditor.mode === "create"
+                      ? "4–6 ספרות"
+                      : "השאר ריק כדי לשמור את הקוד הקיים"
+                  }
+                />
+                <small>
+                  הקוד משמש לאימות כניסה והחתמת נוכחות. הוא נשמר מקומית כ-hash ואינו נשלח ל-Nextera.
+                </small>
+              </label>
+
+              <label className="settings-page__field">
+                <span>
+                  אימות קוד כניסה
+                </span>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  maxLength={6}
+                  value={employeePinConfirmDraft}
+                  onChange={(event) =>
+                    setEmployeePinConfirmDraft(
+                      event.target.value.replace(
+                        /\D/g,
+                        "",
+                      ),
+                    )
+                  }
+                  placeholder="הקלד שוב את הקוד"
+                />
               </label>
 
               <fieldset className="settings-page__roles-fieldset">

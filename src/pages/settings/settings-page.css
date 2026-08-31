@@ -630,6 +630,9 @@
 
 .settings-page__employee-dialog {
   width: min(520px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid #dedfe1;
   border-radius: 16px;
@@ -2459,4 +2462,36 @@
   .settings-page__register-name-field {
     grid-column: auto;
   }
+}
+
+
+@media (max-height: 760px) {
+  .settings-page__modal-overlay {
+    place-items: start center;
+    overflow-y: auto;
+  }
+
+  .settings-page__employee-dialog {
+    max-height: calc(100vh - 24px);
+  }
+}
+
+/* EMPLOYEE_DIALOG_SCROLL_FIX_V3 */
+.settings-page__employee-dialog {
+  max-height: calc(100vh - 48px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.settings-page__dialog-body {
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.settings-page__dialog-footer {
+  flex: 0 0 auto !important;
+  background: #fff;
 }
