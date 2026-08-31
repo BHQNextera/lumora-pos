@@ -1,4 +1,9 @@
 import {
+    applyNexteraEmployeeIdentityProjection,
+    hydrateEmployees,
+} from "../../models/employee/EmployeeRepository";
+
+import {
     reconcileRegisterLocalBinding,
 } from "../../config/RegisterLocalSettings";
 
@@ -47,6 +52,15 @@ type ProjectionClassification = {
     name_en?: string | null;
     name_el?: string | null;
     is_active: boolean;
+};
+
+type ProjectionEmployee = {
+    id: string;
+    tenant_id: string;
+    name: string;
+    code?: string | null;
+    is_active: boolean;
+    updated_at: string;
 };
 
 type ProjectionBranch = {
@@ -99,7 +113,8 @@ type CatalogProjection = {
     products: ProjectionProduct[];
 
     organization_branches?: ProjectionBranch[];
-    organization_registers?: ProjectionRegister[];};
+    organization_registers?: ProjectionRegister[];    employees?: ProjectionEmployee[];
+};
 
 type ClaimedEvent = {
     event_id: string;
@@ -566,9 +581,35 @@ function mapProduct(
     };
 }
 
-function applyProjection(
+async function applyProjection(
     projection: CatalogProjection,
 ) {
+    // EMPLOYEE_HYDRATION_BARRIER_V1
+    // Prevent late SQLite hydration from overwriting
+    // employees that just arrived from Nextera.
+    await hydrateEmployees();
+
+    // EMPLOYEE_PROJECTION_APPLY_V1
+    if (
+        Array.isArray(
+            projection.employees,
+        )
+    ) {
+        applyNexteraEmployeeIdentityProjection(
+            projection.employees.map(
+                (employee) => ({
+                    id: employee.id,
+                    name: employee.name,
+                    code:
+                        employee.code ??
+                        "",
+                    isActive:
+                        employee.is_active,
+                }),
+            ),
+        );
+    }
+
     // BRANCH_PROJECTION_APPLY_V1
     if (
         Array.isArray(
@@ -851,6 +892,73 @@ export async function pullAndApplyNexteraCatalog():
         events.length ===
         0
     ) {
+        // CATALOG_SNAPSHOT_RECONCILE_V1
+        // The queue is delivery-oriented and may already have been
+        // consumed by an earlier poll/runtime. Reconcile against the
+        // latest projection so this device cannot remain stale.
+        const snapshot =
+            await rpc(
+                config,
+                "get_lumora_catalog_snapshot_v1",
+                {
+                    requested_connection_id:
+                        config.connectionId,
+                    requested_token:
+                        config.pullToken,
+                },
+            ) as {
+                found?: boolean;
+                idempotency_key?: string;
+                payload?: CatalogProjection | null;
+            };
+
+        if (
+            snapshot.found &&
+            snapshot.payload
+        ) {
+            const result =
+                await applyProjection(
+                    snapshot.payload,
+                );
+
+            const state =
+                readState();
+
+            const snapshotKey =
+                snapshot.idempotency_key;
+
+            writeState({
+                managedProductIds:
+                    result.managedProductIds,
+
+                appliedIdempotencyKeys:
+                    snapshotKey
+                        ? Array.from(
+                            new Set([
+                                ...state
+                                    .appliedIdempotencyKeys,
+                                snapshotKey,
+                            ]),
+                        ).slice(-100)
+                        : state
+                            .appliedIdempotencyKeys,
+
+                lastCatalogVersion:
+                    snapshot.payload
+                        .catalog_version,
+
+                lastSyncedAt:
+                    new Date()
+                        .toISOString(),
+            });
+
+            return {
+                applied: true,
+                products:
+                    result.products,
+            };
+        }
+
         return {
             applied: false,
             products:
@@ -885,7 +993,7 @@ export async function pullAndApplyNexteraCatalog():
 
         try {
             const result =
-                applyProjection(
+                await applyProjection(
                     event.payload,
                 );
 

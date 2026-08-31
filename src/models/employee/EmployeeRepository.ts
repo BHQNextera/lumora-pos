@@ -1,4 +1,8 @@
 import {
+    enqueueLumoraEmployeeSync,
+} from "../../integrations/nextera/EmployeeNexteraSync";
+
+import {
     isTauri,
 } from "@tauri-apps/api/core";
 
@@ -81,6 +85,18 @@ Promise<RuntimeStorage> {
     }
 
     return storagePromise;
+}
+
+function enqueueEmployeeIdentitySync(
+    employee: Employee,
+): void {
+    enqueueLumoraEmployeeSync({
+        id: employee.id,
+        name: employee.name,
+        code: employee.code,
+        isActive:
+            employee.isActive,
+    });
 }
 
 function cloneEmployee(
@@ -690,6 +706,10 @@ export function createEmployee(
     notify();
     persistEmployees();
 
+    enqueueEmployeeIdentitySync(
+        employee,
+    );
+
     return cloneEmployee(
         employee,
     );
@@ -741,6 +761,10 @@ export function updateEmployee(
     notify();
     persistEmployees();
 
+    enqueueEmployeeIdentitySync(
+        updated,
+    );
+
     return cloneEmployee(
         updated,
     );
@@ -775,4 +799,93 @@ export function setEmployeeActive(
             isActive,
         },
     );
+}
+
+
+export type NexteraEmployeeIdentityProjection = {
+    id: string;
+    name: string;
+    code?: string;
+    isActive: boolean;
+};
+
+export function applyNexteraEmployeeIdentityProjection(
+    incoming:
+        NexteraEmployeeIdentityProjection[],
+): void {
+    if (incoming.length === 0) {
+        return;
+    }
+
+    const byId =
+        new Map(
+            employees.map(
+                (employee) => [
+                    employee.id,
+                    employee,
+                ],
+            ),
+        );
+
+    let nextEmployeeNumber =
+        employees.reduce(
+            (max, employee) =>
+                Math.max(
+                    max,
+                    employee.employeeNumber ?? 0,
+                ),
+            0,
+        ) + 1;
+
+    let changed =
+        false;
+
+    for (const item of incoming) {
+        const existing =
+            byId.get(item.id);
+
+        const next:
+            Employee = {
+            id: item.id,
+            name:
+                item.name.trim(),
+            employeeNumber:
+                existing?.employeeNumber ??
+                nextEmployeeNumber++,
+            code:
+                item.code?.trim() ||
+                undefined,
+            roles:
+                existing
+                    ? [...existing.roles]
+                    : [],
+            isActive:
+                item.isActive,
+        };
+
+        if (
+            !existing ||
+            JSON.stringify(existing) !==
+                JSON.stringify(next)
+        ) {
+            byId.set(
+                item.id,
+                next,
+            );
+            changed = true;
+        }
+    }
+
+    if (!changed) {
+        return;
+    }
+
+    employees =
+        Array.from(
+            byId.values(),
+        );
+
+    syncLegacyEmployeeSeed();
+    notify();
+    persistEmployees();
 }
