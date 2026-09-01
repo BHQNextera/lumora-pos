@@ -4,6 +4,7 @@ export type LumoraEmployeeIdentitySnapshot = {
     code?: string;
     isActive: boolean;
     canSell: boolean;
+    roles: string[];
 };
 
 type EmployeeSyncEvent = {
@@ -105,7 +106,7 @@ async function sendEvent(
 
     const response =
         await fetch(
-            `${config.baseUrl}/rest/v1/rpc/receive_lumora_employee_v2`,
+            `${config.baseUrl}/rest/v1/rpc/receive_lumora_employee_v4`,
             {
                 method: "POST",
                 headers: {
@@ -134,6 +135,8 @@ async function sendEvent(
                                 event.employee.isActive,
                     can_sell:
                         event.employee.canSell,
+                    roles:
+                        event.employee.roles,
                         },
                     }),
             },

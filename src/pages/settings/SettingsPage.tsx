@@ -43,6 +43,11 @@ import {
   updateEmployee,
 } from "../../models/employee/EmployeeRepository";
 import {
+  getEmployeeRoleCatalog,
+  getEmployeeRoleLabel,
+  isEmployeeCreateFromPosAllowed,
+} from "../../models/employee/EmployeeRoleCatalog";
+import {
   assertEmployeePinFormat,
   hasEmployeePin,
   setEmployeePin,
@@ -299,12 +304,6 @@ const paymentMethodDescriptions:
   custom:
     "אמצעי תשלום תיעודי נוסף.",
 };
-
-const roleLabels = {
-  seller: "מוכר",
-  cashier: "קופאי",
-  manager: "מנהל",
-} as const;
 
 function BooleanState({
   value,
@@ -803,6 +802,7 @@ function SettingsPage() {
   ] = useState("");
 
   const openNewEmployee = () => {
+    if (!isEmployeeCreateFromPosAllowed()) return;
     setEmployeeEditorError(
       "",
     );
@@ -2034,7 +2034,7 @@ function SettingsPage() {
                         {employee.roles.map(
                           (role) => (
                             <span key={role}>
-                              {roleLabels[role]}
+                              {getEmployeeRoleLabel(role)}
                             </span>
                           ),
                         )}
@@ -4075,13 +4075,7 @@ function SettingsPage() {
                 </legend>
 
                 <div className="settings-page__role-choices">
-                  {(
-                    [
-                      "seller",
-                      "cashier",
-                      "manager",
-                    ] as EmployeeRole[]
-                  ).map(
+                  {getEmployeeRoleCatalog().map((item) => item.roleKey).map(
                     (role) => {
                       const selected =
                         employeeEditor.roles.includes(
@@ -4106,7 +4100,7 @@ function SettingsPage() {
                             )
                           }
                         >
-                          {roleLabels[role]}
+                          {getEmployeeRoleLabel(role)}
                         </button>
                       );
                     },

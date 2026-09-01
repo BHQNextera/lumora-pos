@@ -1,4 +1,7 @@
 import {
+    applyNexteraEmployeeRoleCatalog,
+} from "../../models/employee/EmployeeRoleCatalog";
+import {
     applyNexteraEmployeeIdentityProjection,
     hydrateEmployees,
 } from "../../models/employee/EmployeeRepository";
@@ -54,6 +57,16 @@ type ProjectionClassification = {
     is_active: boolean;
 };
 
+type ProjectionStaffRole = {
+    id: string;
+    role_key: string;
+    name_he?: string | null;
+    name_en?: string | null;
+    name_el?: string | null;
+    is_active: boolean;
+    sort_order: number;
+};
+
 type ProjectionEmployee = {
     id: string;
     tenant_id: string;
@@ -61,6 +74,7 @@ type ProjectionEmployee = {
     code?: string | null;
     is_active: boolean;
     can_sell?: boolean;
+    role_keys?: string[];
     updated_at: string;
 };
 
@@ -117,6 +131,10 @@ type CatalogProjection = {
 
     organization_branches?: ProjectionBranch[];
     organization_registers?: ProjectionRegister[];    employees?: ProjectionEmployee[];
+    staff_roles?: ProjectionStaffRole[];
+    employee_policy?: {
+        allow_employee_create_from_pos?: boolean;
+    };
 };
 
 type ClaimedEvent = {
@@ -592,6 +610,19 @@ async function applyProjection(
     // employees that just arrived from Nextera.
     await hydrateEmployees();
 
+    applyNexteraEmployeeRoleCatalog(
+        (projection.staff_roles ?? []).map((role) => ({
+            id: role.id,
+            roleKey: role.role_key,
+            nameHe: role.name_he ?? "",
+            nameEn: role.name_en ?? "",
+            nameEl: role.name_el ?? "",
+            isActive: role.is_active,
+            sortOrder: role.sort_order,
+        })),
+        projection.employee_policy?.allow_employee_create_from_pos !== false,
+    );
+
     // EMPLOYEE_PROJECTION_APPLY_V1
     if (
         Array.isArray(
@@ -606,7 +637,7 @@ async function applyProjection(
                     code:
                         employee.code ??
                         "",
-                    isActive: employee.is_active, canSell: employee.can_sell === true,}),
+                    isActive: employee.is_active, canSell: employee.can_sell === true, roles: employee.role_keys ?? (employee.can_sell ? ["seller"] : []), }),
             ),
         );
     }

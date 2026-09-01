@@ -1,7 +1,4 @@
-export type EmployeeRole =
-    | "seller"
-    | "cashier"
-    | "manager";
+export type EmployeeRole = string;
 
 export type Employee = {
     id: string;

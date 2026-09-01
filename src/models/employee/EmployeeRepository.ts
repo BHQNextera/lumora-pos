@@ -98,6 +98,7 @@ function enqueueEmployeeIdentitySync(
             employee.isActive,
         canSell:
             employee.roles.includes("seller"),
+        roles: [...employee.roles],
     });
 }
 
@@ -113,28 +114,16 @@ function cloneEmployee(
 }
 
 function normalizeRoles(
-    roles:
-        EmployeeRole[],
+    roles: EmployeeRole[],
 ): EmployeeRole[] {
-    const allowed =
-        new Set<EmployeeRole>([
-            "seller",
-            "cashier",
-            "manager",
-        ]);
-
     return Array.from(
         new Set(
-            roles.filter(
-                (role) =>
-                    allowed.has(
-                        role,
-                    ),
-            ),
+            roles
+                .map((role) => role.trim())
+                .filter(Boolean),
         ),
     );
 }
-
 function isValidEmployeeNumber(
     value: unknown,
 ): value is number {
@@ -797,6 +786,7 @@ export type NexteraEmployeeIdentityProjection = {
     code?: string;
     isActive: boolean;
     canSell: boolean;
+    roles: EmployeeRole[];
 };
 
 export function applyNexteraEmployeeIdentityProjection(
@@ -845,7 +835,9 @@ export function applyNexteraEmployeeIdentityProjection(
             code:
                 item.code?.trim() ||
                 undefined,
-            roles: item.canSell ? Array.from(new Set([...(existing?.roles ?? []), "seller" as const])) : (existing?.roles ?? []).filter((role) => role !== "seller"),
+            roles:
+                [...item.roles],
+
             isActive:
                 item.isActive,
         };
