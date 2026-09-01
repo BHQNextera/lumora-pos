@@ -96,6 +96,8 @@ function enqueueEmployeeIdentitySync(
         code: employee.code,
         isActive:
             employee.isActive,
+        canSell:
+            employee.roles.includes("seller"),
     });
 }
 
@@ -794,6 +796,7 @@ export type NexteraEmployeeIdentityProjection = {
     name: string;
     code?: string;
     isActive: boolean;
+    canSell: boolean;
 };
 
 export function applyNexteraEmployeeIdentityProjection(
@@ -842,10 +845,7 @@ export function applyNexteraEmployeeIdentityProjection(
             code:
                 item.code?.trim() ||
                 undefined,
-            roles:
-                existing
-                    ? [...existing.roles]
-                    : [],
+            roles: item.canSell ? Array.from(new Set([...(existing?.roles ?? []), "seller" as const])) : (existing?.roles ?? []).filter((role) => role !== "seller"),
             isActive:
                 item.isActive,
         };

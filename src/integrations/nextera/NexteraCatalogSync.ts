@@ -60,6 +60,7 @@ type ProjectionEmployee = {
     name: string;
     code?: string | null;
     is_active: boolean;
+    can_sell?: boolean;
     updated_at: string;
 };
 
@@ -69,6 +70,7 @@ type ProjectionBranch = {
     code: string;
     name: string;
     is_active: boolean;
+    can_sell?: boolean;
     updated_at: string;
 };
 
@@ -80,6 +82,7 @@ type ProjectionRegister = {
     code: string;
     name: string;
     is_active: boolean;
+    can_sell?: boolean;
     updated_at: string;
 };
 
@@ -603,9 +606,7 @@ async function applyProjection(
                     code:
                         employee.code ??
                         "",
-                    isActive:
-                        employee.is_active,
-                }),
+                    isActive: employee.is_active, canSell: employee.can_sell === true,}),
             ),
         );
     }
