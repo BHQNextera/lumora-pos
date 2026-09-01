@@ -1,3 +1,5 @@
+import { invoke } from "@tauri-apps/api/core";
+import { LastNexteraSyncStatus } from "./LastNexteraSyncStatus";
 import {
   useEffect,
   useState,
@@ -39,6 +41,28 @@ type SystemStatus = {
   title: string;
 };
 
+// INTERNET_REACHABILITY_V1
+async function probeInternetReachability():
+Promise<boolean> {
+  if (
+    typeof navigator !== "undefined" &&
+    navigator.onLine === false
+  ) {
+    return false;
+  }
+
+  try {
+    return await invoke<boolean>(
+      "check_internet_reachability",
+    );
+  }
+  catch {
+    // Browser-only development fallback.
+    return typeof navigator === "undefined"
+      ? false
+      : navigator.onLine;
+  }
+}
 type StatusBarProps = {
   activeShift?: RegisterShift;
 };
@@ -62,9 +86,8 @@ function StatusBar({
 
   useEffect(() => {
     const updateOnlineStatus = () => {
-      setIsOnline(
-        navigator.onLine,
-      );
+      void probeInternetReachability()
+        .then(setIsOnline);
     };
 
     window.addEventListener(
@@ -76,6 +99,14 @@ function StatusBar({
       "offline",
       updateOnlineStatus,
     );
+
+    void updateOnlineStatus();
+
+    const internetProbeIntervalId =
+      window.setInterval(
+        updateOnlineStatus,
+        10000,
+      );
 
     const unsubscribePrinter =
       subscribeRegisterPrinterConfig(
@@ -106,6 +137,10 @@ function StatusBar({
       window.removeEventListener(
         "offline",
         updateOnlineStatus,
+      );
+
+      window.clearInterval(
+        internetProbeIntervalId,
       );
 
       unsubscribePrinter();
@@ -316,6 +351,7 @@ function StatusBar({
 
       <div className="pos-status-bar__right">
         <div className="pos-status-bar__items">
+          <LastNexteraSyncStatus />
           {statuses.map(
             (status) => (
               <div

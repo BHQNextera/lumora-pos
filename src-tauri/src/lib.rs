@@ -66,6 +66,30 @@ fn export_report_file(
 
     Ok(target.to_string_lossy().to_string())
 }
+
+#[tauri::command]
+fn check_internet_reachability() -> bool {
+    let timeout =
+        std::time::Duration::from_millis(1500);
+
+    [
+        "1.1.1.1:443",
+        "8.8.8.8:443",
+    ]
+    .iter()
+    .filter_map(|endpoint| {
+        endpoint
+            .parse::<std::net::SocketAddr>()
+            .ok()
+    })
+    .any(|address| {
+        std::net::TcpStream::connect_timeout(
+            &address,
+            timeout,
+        )
+        .is_ok()
+    })
+}
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -80,7 +104,7 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![export_report_file])
+        .invoke_handler(tauri::generate_handler![export_report_file, check_internet_reachability])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

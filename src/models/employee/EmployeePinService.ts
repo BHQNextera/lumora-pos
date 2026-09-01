@@ -494,3 +494,231 @@ export async function verifyEmployeePin(
             "invalid",
     };
 }
+
+// EMPLOYEE_CREDENTIAL_PROVISIONING_V1
+
+const PROVISION_STATE_STORAGE_KEY =
+    "lumora.employee-pin-provisioning.v1";
+
+export type ProvisionedEmployeePinCredential = {
+    employeeId: string;
+    algorithm:
+        "PBKDF2-SHA256";
+    iterations: number;
+    saltBase64: string;
+    hashBase64: string;
+    credentialVersion: number;
+    revokedAt?: string | null;
+    updatedAt: string;
+};
+
+type EmployeePinProvisionState = {
+    credentialVersion: number;
+    revoked: boolean;
+    updatedAt: string;
+};
+
+type EmployeePinProvisionStateMap =
+    Record<
+        string,
+        EmployeePinProvisionState
+    >;
+
+let provisionStateWriteQueue:
+    Promise<void> =
+        Promise.resolve();
+
+async function readProvisionState():
+Promise<EmployeePinProvisionStateMap> {
+    const storage =
+        await getStorage();
+
+    const raw =
+        await storage.getItem(
+            PROVISION_STATE_STORAGE_KEY,
+        );
+
+    if (!raw) {
+        return {};
+    }
+
+    try {
+        const parsed =
+            JSON.parse(raw);
+
+        return (
+            parsed &&
+            typeof parsed ===
+                "object"
+        )
+            ? parsed
+            : {};
+    }
+    catch {
+        return {};
+    }
+}
+
+function writeProvisionState(
+    state:
+        EmployeePinProvisionStateMap,
+): Promise<void> {
+    provisionStateWriteQueue =
+        provisionStateWriteQueue
+            .catch(
+                () => undefined,
+            )
+            .then(
+                async () => {
+                    const storage =
+                        await getStorage();
+
+                    await storage.setItem(
+                        PROVISION_STATE_STORAGE_KEY,
+                        JSON.stringify(
+                            state,
+                        ),
+                    );
+                },
+            );
+
+    return provisionStateWriteQueue;
+}
+
+export async function applyNexteraEmployeePinCredentialProvisioning(
+    incoming:
+        ProvisionedEmployeePinCredential[],
+): Promise<void> {
+    const credentials =
+        await readCredentials();
+
+    const provisionState =
+        await readProvisionState();
+
+    let credentialsChanged =
+        false;
+
+    let stateChanged =
+        false;
+
+    for (
+        const credential of incoming
+    ) {
+        if (
+            !credential.employeeId ||
+            credential.algorithm !==
+                "PBKDF2-SHA256" ||
+            credential.iterations !==
+                ITERATIONS ||
+            !credential.saltBase64 ||
+            !credential.hashBase64 ||
+            !Number.isSafeInteger(
+                credential.credentialVersion,
+            ) ||
+            credential.credentialVersion <
+                1
+        ) {
+            throw new Error(
+                "EMPLOYEE_PIN_PROVISIONING_CONTRACT_INVALID",
+            );
+        }
+
+        const previousVersion =
+            provisionState[
+                credential.employeeId
+            ]?.credentialVersion ??
+            0;
+
+        if (
+            credential.credentialVersion <=
+            previousVersion
+        ) {
+            continue;
+        }
+
+        if (credential.revokedAt) {
+            if (
+                credentials[
+                    credential.employeeId
+                ]
+            ) {
+                delete credentials[
+                    credential.employeeId
+                ];
+
+                credentialsChanged =
+                    true;
+            }
+
+            provisionState[
+                credential.employeeId
+            ] = {
+                credentialVersion:
+                    credential.credentialVersion,
+                revoked:
+                    true,
+                updatedAt:
+                    credential.updatedAt,
+            };
+
+            stateChanged =
+                true;
+
+            continue;
+        }
+
+        credentials[
+            credential.employeeId
+        ] = {
+            employeeId:
+                credential.employeeId,
+
+            algorithm:
+                credential.algorithm,
+
+            iterations:
+                credential.iterations,
+
+            saltBase64:
+                credential.saltBase64,
+
+            hashBase64:
+                credential.hashBase64,
+
+            failedAttempts:
+                0,
+
+            updatedAt:
+                credential.updatedAt,
+        };
+
+        provisionState[
+            credential.employeeId
+        ] = {
+            credentialVersion:
+                credential.credentialVersion,
+            revoked:
+                false,
+            updatedAt:
+                credential.updatedAt,
+        };
+
+        credentialsChanged =
+            true;
+
+        stateChanged =
+            true;
+    }
+
+    if (credentialsChanged) {
+        await writeCredentials(
+            credentials,
+        );
+    }
+
+    if (stateChanged) {
+        await writeProvisionState(
+            provisionState,
+        );
+    }
+}

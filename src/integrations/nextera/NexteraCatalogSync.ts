@@ -1,3 +1,5 @@
+import { markSuccessfulNexteraSync } from "./NexteraSyncStatus";
+import { applyNexteraEmployeePinCredentialProvisioning } from "../../models/employee/EmployeePinService";
 import {
     applyNexteraEmployeeRoleCatalog,
 } from "../../models/employee/EmployeeRoleCatalog";
@@ -886,7 +888,78 @@ async function acknowledge(
     );
 }
 
-export async function pullAndApplyNexteraCatalog():
+// EMPLOYEE_CREDENTIAL_PULL_V1
+type EmployeeCredentialProvisioningResponse = {
+    credentials?: Array<{
+        employee_id: string;
+        algorithm:
+            "PBKDF2-SHA256";
+        iterations: number;
+        salt_base64: string;
+        hash_base64: string;
+        credential_version: number;
+        revoked_at?: string | null;
+        updated_at: string;
+    }>;
+};
+
+async function pullAndApplyNexteraEmployeeCredentials(
+    config:
+        CatalogSyncConfig,
+): Promise<void> {
+    const response =
+        await rpc(
+            config,
+            "get_lumora_employee_credentials_v1",
+            {
+                requested_connection_id:
+                    config.connectionId,
+
+                requested_token:
+                    config.pullToken,
+            },
+        ) as EmployeeCredentialProvisioningResponse;
+
+    const credentials =
+        Array.isArray(
+            response.credentials,
+        )
+            ? response.credentials
+            : [];
+
+    await applyNexteraEmployeePinCredentialProvisioning(
+        credentials.map(
+            (credential) => ({
+                employeeId:
+                    credential.employee_id,
+
+                algorithm:
+                    credential.algorithm,
+
+                iterations:
+                    credential.iterations,
+
+                saltBase64:
+                    credential.salt_base64,
+
+                hashBase64:
+                    credential.hash_base64,
+
+                credentialVersion:
+                    credential.credential_version,
+
+                revokedAt:
+                    credential.revoked_at ??
+                    null,
+
+                updatedAt:
+                    credential.updated_at,
+            }),
+        ),
+    );
+}
+
+async function pullAndApplyNexteraCatalogInternal():
     Promise<NexteraCatalogSyncResult> {
     const config =
         readConfig();
@@ -901,6 +974,10 @@ export async function pullAndApplyNexteraCatalog():
                 existingProducts,
         };
     }
+
+    await pullAndApplyNexteraEmployeeCredentials(
+        config,
+    );
 
     const claimed =
         await rpc(
@@ -1083,4 +1160,20 @@ export async function pullAndApplyNexteraCatalog():
         applied,
         products,
     };
+}
+
+// LAST_SUCCESSFUL_NEXTERA_SYNC_V1
+export async function pullAndApplyNexteraCatalog():
+    Promise<NexteraCatalogSyncResult> {
+    const hasConfig =
+        Boolean(readConfig());
+
+    const result =
+        await pullAndApplyNexteraCatalogInternal();
+
+    if (hasConfig) {
+        markSuccessfulNexteraSync();
+    }
+
+    return result;
 }

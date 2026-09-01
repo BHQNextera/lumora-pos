@@ -1,3 +1,4 @@
+import { ManualNexteraSyncAction } from "../../components/system/ManualNexteraSyncAction";
 // LUMORA SELLER EMPLOYEE SYNC V1
 import {
     applyStoreCreditBalanceMovement,
@@ -3774,6 +3775,7 @@ const [
                                             </header>
 
                                             <div className="sale-page__more-actions-grid">
+                                                <ManualNexteraSyncAction />
                                                 <button
                                                     type="button"
                                                     className="sale-page__more-actions-card"

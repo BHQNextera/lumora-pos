@@ -6,8 +6,9 @@ import {
 } from "react";
 
 import {
-    pullAndApplyNexteraCatalog,
-} from "../integrations/nextera/NexteraCatalogSync";
+    NEXTERA_SYNC_APPLIED_EVENT,
+    requestNexteraSync,
+} from "../integrations/nextera/NexteraSyncCoordinator";
 import type {
     ReactNode,
 } from "react";
@@ -63,7 +64,7 @@ function CatalogProvider({
                 inFlight = true;
 
                 try {
-                    await pullAndApplyNexteraCatalog();
+                    await requestNexteraSync();
 
                     if (!cancelled) {
                         setProducts(
@@ -87,7 +88,7 @@ function CatalogProvider({
                 () => {
                     void refreshFromNextera();
                 },
-                5000,
+                15000,
             );
 
         const handleOnline = () => {
@@ -107,6 +108,19 @@ function CatalogProvider({
             handleFocus,
         );
 
+        const handleSyncApplied = () => {
+            if (!cancelled) {
+                setProducts(
+                    getCatalogProducts(),
+                );
+            }
+        };
+
+        window.addEventListener(
+            NEXTERA_SYNC_APPLIED_EVENT,
+            handleSyncApplied,
+        );
+
         return () => {
             cancelled = true;
             window.clearInterval(
@@ -119,6 +133,11 @@ function CatalogProvider({
             window.removeEventListener(
                 "focus",
                 handleFocus,
+            );
+
+            window.removeEventListener(
+                NEXTERA_SYNC_APPLIED_EVENT,
+                handleSyncApplied,
             );
         };
     }, []);
