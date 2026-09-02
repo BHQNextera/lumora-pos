@@ -17,6 +17,7 @@ import type {
 import type {
     Employee,
     EmployeeRole,
+    EmployeeSellerScope,
 } from "./Employee";
 
 import {
@@ -38,6 +39,12 @@ let employees:
                 roles: [
                     ...employee.roles,
                 ],
+                sellerScopes:
+                    employee.sellerScopes?.map(
+                        (scope) => ({
+                            ...scope,
+                        }),
+                    ),
             }),
         );
 
@@ -110,6 +117,12 @@ function cloneEmployee(
         roles: [
             ...employee.roles,
         ],
+        sellerScopes:
+            employee.sellerScopes?.map(
+                (scope) => ({
+                    ...scope,
+                }),
+            ),
     };
 }
 
@@ -124,6 +137,75 @@ function normalizeRoles(
         ),
     );
 }
+function normalizeSellerScopes(
+    value: unknown,
+): EmployeeSellerScope[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    const normalized =
+        value.reduce<EmployeeSellerScope[]>(
+            (
+                result,
+                candidate,
+            ) => {
+                if (
+                    !candidate ||
+                    typeof candidate !==
+                        "object"
+                ) {
+                    return result;
+                }
+
+                const item =
+                    candidate as {
+                        branchId?: unknown;
+                        registerId?: unknown;
+                    };
+
+                const branchId =
+                    typeof item.branchId ===
+                        "string"
+                        ? item.branchId.trim()
+                        : "";
+
+                const registerId =
+                    typeof item.registerId ===
+                        "string"
+                        ? item.registerId.trim()
+                        : "";
+
+                if (!branchId) {
+                    return result;
+                }
+
+                result.push({
+                    branchId,
+                    ...(registerId
+                        ? {
+                            registerId,
+                        }
+                        : {}),
+                });
+
+                return result;
+            },
+            [],
+        );
+
+    return Array.from(
+        new Map(
+            normalized.map(
+                (scope) => [
+                    scope.branchId + ":" + (scope.registerId ?? "*"),
+                    scope,
+                ],
+            ),
+        ).values(),
+    );
+}
+
 function isValidEmployeeNumber(
     value: unknown,
 ): value is number {
@@ -285,6 +367,11 @@ function parseEmployees(
                                 : [],
                         );
 
+                    const sellerScopes =
+                        normalizeSellerScopes(
+                            item.sellerScopes,
+                        );
+
                     if (
                         !item.id ||
                         typeof item.id !==
@@ -304,6 +391,12 @@ function parseEmployees(
                             ? item.code.trim()
                             : "";
 
+                    const nexteraStaffMemberId =
+                        typeof item.nexteraStaffMemberId ===
+                            "string"
+                            ? item.nexteraStaffMemberId.trim()
+                            : "";
+
                     const employee:
                         Employee = {
                         id:
@@ -311,6 +404,7 @@ function parseEmployees(
                         name:
                             item.name.trim(),
                         roles,
+                        sellerScopes,
                         isActive:
                             item.isActive !==
                             false,
@@ -325,6 +419,11 @@ function parseEmployees(
                         ...(code
                             ? {
                                 code,
+                            }
+                            : {}),
+                        ...(nexteraStaffMemberId
+                            ? {
+                                nexteraStaffMemberId,
                             }
                             : {}),
                     };
@@ -784,9 +883,12 @@ export type NexteraEmployeeIdentityProjection = {
     id: string;
     name: string;
     code?: string;
+    nexteraStaffMemberId?: string;
     isActive: boolean;
     canSell: boolean;
     roles: EmployeeRole[];
+    sellerScopes:
+        EmployeeSellerScope[];
 };
 
 export function applyNexteraEmployeeIdentityProjection(
@@ -835,8 +937,16 @@ export function applyNexteraEmployeeIdentityProjection(
             code:
                 item.code?.trim() ||
                 undefined,
+            nexteraStaffMemberId:
+                item.nexteraStaffMemberId?.trim() ||
+                undefined,
             roles:
                 [...item.roles],
+
+            sellerScopes:
+                normalizeSellerScopes(
+                    item.sellerScopes,
+                ),
 
             isActive:
                 item.isActive,

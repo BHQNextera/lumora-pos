@@ -1,5 +1,10 @@
 export type EmployeeRole = string;
 
+export type EmployeeSellerScope = {
+    branchId: string;
+    registerId?: string;
+};
+
 export type Employee = {
     id: string;
 
@@ -14,8 +19,21 @@ export type Employee = {
 
     code?: string;
 
+    /**
+     * Canonical Nextera staff identity when this local employee is linked.
+     * Legacy/local Lumora employee IDs remain stable and are never rewritten.
+     */
+    nexteraStaffMemberId?: string;
+
     roles:
         EmployeeRole[];
+
+    /**
+     * Empty/undefined means all active branch/register locations.
+     * When populated, at least one scope must match the active register.
+     */
+    sellerScopes?:
+        EmployeeSellerScope[];
 
     isActive: boolean;
 };

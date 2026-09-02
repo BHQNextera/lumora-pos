@@ -75,9 +75,14 @@ type ProjectionEmployee = {
     tenant_id: string;
     name: string;
     code?: string | null;
+    nextera_staff_member_id?: string | null;
     is_active: boolean;
     can_sell?: boolean;
     role_keys?: string[];
+    seller_scopes?: Array<{
+        branch_id: string;
+        register_id?: string | null;
+    }>;
     updated_at: string;
 };
 
@@ -642,7 +647,45 @@ async function applyProjection(
                     code:
                         employee.code ??
                         "",
-                    isActive: employee.is_active, canSell: employee.can_sell === true, roles: employee.role_keys ?? (employee.can_sell ? ["seller"] : []), }),
+                    nexteraStaffMemberId:
+                        employee.nextera_staff_member_id ??
+                        undefined,
+                    isActive:
+                        employee.is_active,
+                    canSell:
+                        employee.can_sell ===
+                        true,
+                    roles:
+                        employee.role_keys ??
+                        (
+                            employee.can_sell
+                                ? ["seller"]
+                                : []
+                        ),
+                    sellerScopes:
+                        (
+                            employee.seller_scopes ??
+                            []
+                        )
+                            .filter(
+                                (scope) =>
+                                    Boolean(
+                                        scope.branch_id,
+                                    ),
+                            )
+                            .map(
+                                (scope) => ({
+                                    branchId:
+                                        scope.branch_id,
+                                    ...(scope.register_id
+                                        ? {
+                                            registerId:
+                                                scope.register_id,
+                                        }
+                                        : {}),
+                                }),
+                            ),
+                }),
             ),
         );
     }

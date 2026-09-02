@@ -106,7 +106,7 @@ async function sendEvent(
 
     const response =
         await fetch(
-            `${config.baseUrl}/rest/v1/rpc/receive_lumora_employee_v4`,
+            `${config.baseUrl}/rest/v1/rpc/receive_lumora_employee_v5`,
             {
                 method: "POST",
                 headers: {
@@ -218,15 +218,14 @@ Promise<void> {
     return flushPromise;
 }
 
-export function enqueueLumoraEmployeeSync(
+function createEmployeeSyncEvent(
     employee:
         LumoraEmployeeIdentitySnapshot,
-): void {
+): EmployeeSyncEvent {
     const eventId =
         crypto.randomUUID();
 
-    const event:
-        EmployeeSyncEvent = {
+    return {
         id: eventId,
         idempotencyKey:
             `lumora:employee:${employee.id}:${eventId}`,
@@ -238,13 +237,43 @@ export function enqueueLumoraEmployeeSync(
         attemptCount:
             0,
     };
+}
 
+export function enqueueLumoraEmployeeSync(
+    employee:
+        LumoraEmployeeIdentitySnapshot,
+): void {
     writeOutbox([
         ...readOutbox(),
-        event,
+        createEmployeeSyncEvent(
+            employee,
+        ),
     ]);
 
     void flushLumoraEmployeeSyncOutbox();
+}
+
+export async function syncLumoraEmployeeIdentitySnapshot(
+    employees:
+        LumoraEmployeeIdentitySnapshot[],
+): Promise<void> {
+    await flushLumoraEmployeeSyncOutbox();
+
+    if (employees.length === 0) {
+        return;
+    }
+
+    const events =
+        employees.map(
+            createEmployeeSyncEvent,
+        );
+
+    writeOutbox([
+        ...readOutbox(),
+        ...events,
+    ]);
+
+    await flushLumoraEmployeeSyncOutbox();
 }
 
 if (

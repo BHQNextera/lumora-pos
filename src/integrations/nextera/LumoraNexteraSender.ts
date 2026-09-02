@@ -15,6 +15,10 @@ import type {
 } from "../../models/sale/SaleLine";
 
 import {
+    getEmployees,
+} from "../../models/employee/EmployeeRepository";
+
+import {
     getPendingLumoraNexteraOutbox,
     markLumoraNexteraOutboxDelivered,
     markLumoraNexteraOutboxFailed,
@@ -166,6 +170,29 @@ function lineDiscountTotal(
     );
 }
 
+function canonicalSellerId(
+    line: SaleLine,
+): string | null {
+    const localSellerId =
+        line.seller?.employeeId;
+
+    if (!localSellerId) {
+        return null;
+    }
+
+    const employee =
+        getEmployees().find(
+            (candidate) =>
+                candidate.id ===
+                    localSellerId,
+        );
+
+    return (
+        employee?.nexteraStaffMemberId ??
+        localSellerId
+    );
+}
+
 function mapLine(
     line: SaleLine,
 ) {
@@ -212,6 +239,27 @@ function mapLine(
 
         total:
             line.netAmount,
+
+        /*
+         * Seller identity V2:
+         * - seller_id = canonical Nextera staff UUID when linked.
+         * - seller_lumora_employee_id preserves the stable local/legacy identity.
+         * - name is a historical snapshot only.
+         */
+        seller_id:
+            canonicalSellerId(
+                line,
+            ),
+
+        seller_lumora_employee_id:
+            line.seller
+                ?.employeeId ??
+            null,
+
+        seller_name_snapshot:
+            line.seller
+                ?.employeeName ??
+            null,
 
         metadata: {
             product_name:

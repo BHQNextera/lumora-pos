@@ -3,7 +3,7 @@ import {
 } from "react";
 
 import {
-  requestNexteraSync,
+  requestManualNexteraSync,
 } from "../../integrations/nextera/NexteraSyncCoordinator";
 
 type SyncState =
@@ -28,7 +28,7 @@ export function ManualNexteraSyncAction() {
     setState("syncing");
 
     try {
-      await requestNexteraSync();
+      await requestManualNexteraSync();
       setState("success");
     }
     catch (error) {
