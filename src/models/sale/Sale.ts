@@ -1,6 +1,7 @@
 import type { Payment } from "../Payment";
 import type { CouponRedemptionPolicy, CouponValueType } from "../coupon/Coupon";
 import type { SaleLine } from "./SaleLine";
+import type { PosActionAuthorization } from "../employee/PosActionAuthorization";
 
 export type SaleStatus =
     | "draft"
@@ -62,7 +63,11 @@ customer: SaleCustomer;
     subtotal: number;
     discount: number;
 
-    coupon?: AppliedSaleCoupon;
+    transactionDiscountAuthorization?: PosActionAuthorization;
+
+
+    returnRefundAuthorization?: PosActionAuthorization;
+coupon?: AppliedSaleCoupon;
 
     /**
      * Transaction/document-level operator note.

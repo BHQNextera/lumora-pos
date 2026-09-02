@@ -29,7 +29,8 @@ type SidebarProps = {
   onOpenRegisterShift: () => void;
   onOpenAttendance: () => void;
   onOpenCashMovement: () => void;
-  onOpenXReport: () => void;
+  canOpenCashMovement?: boolean;
+  onSwitchCashier: () => void;
   onCloseRegisterShift: () => void;
 
   collapsed?: boolean;
@@ -51,8 +52,9 @@ function Sidebar({
   onOpenRegisterShift,
   onOpenAttendance,
   onOpenCashMovement,
-  onOpenXReport,
-  onCloseRegisterShift,
+  canOpenCashMovement = true,
+  onSwitchCashier,
+onCloseRegisterShift,
   collapsed = false,
   onToggleCollapsed,
 }: SidebarProps) {
@@ -298,6 +300,12 @@ function Sidebar({
               type="button"
               className="pos-sidebar__drawer-button"
               onClick={onOpenCashMovement}
+              disabled={!canOpenCashMovement}
+              title={
+                canOpenCashMovement
+                  ? undefined
+                  : "אין הרשאה לתנועת מזומן"
+              }
             >
               <span aria-hidden="true">
                 ₪
@@ -308,12 +316,12 @@ function Sidebar({
             <button
               type="button"
               className="pos-sidebar__drawer-button"
-              onClick={onOpenXReport}
+              onClick={onSwitchCashier}
             >
               <span aria-hidden="true">
-                X
+                {"\uD83D\uDD12"}
               </span>
-              דוח X
+              {"\u05d4\u05d7\u05dc\u05e4\u05ea \u05e7\u05d5\u05e4\u05d0\u05d9"}
             </button>
 
             <button

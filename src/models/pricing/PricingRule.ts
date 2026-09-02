@@ -1,3 +1,5 @@
+import type { PosActionAuthorization } from "../employee/PosActionAuthorization";
+
 export type DiscountType =
     | "percentage"
     | "fixed_amount";
@@ -28,6 +30,7 @@ export type PricingRule = {
     source?: PricingRuleSource;
 
     promotionId?: string;
-
     promotionParticipantLineIds?: string[];
+
+    authorization?: PosActionAuthorization;
 };

@@ -579,6 +579,9 @@ export type CompleteSaleOptions = {
     printDocumentNote?: boolean;
     applyCancellationFee?: boolean;
     storeCreditObligo?: Sale["storeCreditObligo"];
+    transactionDiscountAuthorization?: Sale["transactionDiscountAuthorization"];
+
+    returnRefundAuthorization?: Sale["returnRefundAuthorization"];
 };
 
 export async function completeSale(
@@ -738,14 +741,19 @@ export async function completeSale(
             completedLines,
 
         subtotal,
-
         discount:
             roundMoney(
                 lineDiscount +
                 couponDiscount,
             ),
 
-        coupon:
+        transactionDiscountAuthorization:
+            options.transactionDiscountAuthorization,
+
+
+        returnRefundAuthorization:
+            options.returnRefundAuthorization,
+coupon:
             options.coupon
                 ? {
                     ...options.coupon,

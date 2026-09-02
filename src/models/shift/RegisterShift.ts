@@ -5,6 +5,24 @@ export type RegisterShiftStatus =
     | "open"
     | "closed";
 
+export type RegisterShiftAuthorization = {
+    actionPermissionKey: string;
+
+    actor: {
+        employeeId: string;
+        employeeName: string;
+    };
+
+    approver?: {
+        approvalId: string;
+        employeeId: string;
+        employeeName: string;
+        approvedAt: string;
+    };
+
+    authorizedAt: string;
+};
+
 export type RegisterShift = {
     id: string;
 
@@ -37,4 +55,9 @@ export type RegisterShift = {
     closingCash?: number;
 
     closingCashDeclaration?: CashDeclaration;
+
+    openingAuthorization?: RegisterShiftAuthorization;
+
+
+    closingAuthorization?: RegisterShiftAuthorization;
 };

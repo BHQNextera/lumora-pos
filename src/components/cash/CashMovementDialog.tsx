@@ -2,7 +2,6 @@
 
 import {
     useEffect,
-    useMemo,
     useState,
 } from "react";
 
@@ -10,10 +9,13 @@ import type {
     RegisterShift,
 } from "../../models/shift/RegisterShift";
 
-import {
-    getPresentAttendance,
-    subscribeAttendance,
-} from "../../models/attendance/AttendanceRepository";
+import type {
+    Employee,
+} from "../../models/employee/Employee";
+
+import type {
+    PosManagerApproval,
+} from "../../models/employee/PosManagerApprovalService";
 
 import {
     createCashMovement,
@@ -36,6 +38,8 @@ import "./cash-movement-dialog.css";
 
 type CashMovementDialogProps = {
     shift: RegisterShift;
+    currentOperator: Employee;
+    approval?: PosManagerApproval | null;
     onClose: () => void;
     onCompleted: () => void;
 };
@@ -83,18 +87,14 @@ const cashOutReasons:
 
 function CashMovementDialog({
     shift,
+    currentOperator,
+    approval,
     onClose,
     onCompleted,
 }: CashMovementDialogProps) {
     const {
         direction,
-        locale,
     } = useLocale();
-
-    const [
-        attendanceRevision,
-        setAttendanceRevision,
-    ] = useState(0);
 
     const [
         type,
@@ -121,27 +121,10 @@ function CashMovementDialog({
     ] = useState("");
 
     const [
-        employeeId,
-        setEmployeeId,
-    ] = useState("");
-
-    const [
         error,
         setError,
     ] = useState<string | null>(
         null,
-    );
-
-    useEffect(
-        () =>
-            subscribeAttendance(
-                () =>
-                    setAttendanceRevision(
-                        (current) =>
-                            current + 1,
-                    ),
-            ),
-        [],
     );
 
     useEffect(
@@ -171,48 +154,6 @@ function CashMovementDialog({
         },
         [onClose],
     );
-
-    const presentEmployees =
-        useMemo(
-            () =>
-                getPresentAttendance()
-                    .sort(
-                        (left, right) =>
-                            left.employeeName.localeCompare(
-                                right.employeeName,
-                                locale,
-                            ),
-                    ),
-            [attendanceRevision, locale],
-        );
-
-    useEffect(
-        () => {
-            if (
-                presentEmployees.some(
-                    (employee) =>
-                        employee.employeeId ===
-                        employeeId,
-                )
-            ) {
-                return;
-            }
-
-            setEmployeeId(
-                presentEmployees.length === 1
-                    ? presentEmployees[0].employeeId
-                    : "",
-            );
-        },
-        [employeeId, presentEmployees],
-    );
-
-    const selectedEmployee =
-        presentEmployees.find(
-            (employee) =>
-                employee.employeeId ===
-                employeeId,
-        );
 
     const activeReasonOptions =
         type === "cash_in"
@@ -259,14 +200,6 @@ function CashMovementDialog({
             return;
         }
 
-        if (!selectedEmployee) {
-            setError(
-                "יש לבחור עובד נוכח.",
-            );
-
-            return;
-        }
-
         try {
             requestCashDrawerOpen(
                 "manual",
@@ -295,12 +228,46 @@ function CashMovementDialog({
                 note:
                     note.trim(),
 
+                authorization: {
+                    actionPermissionKey:
+                        "pos.cash_movement",
+
+                    actor: {
+                        employeeId:
+                            currentOperator.id,
+
+                        employeeName:
+                            currentOperator.name,
+                    },
+
+                    approver:
+                        approval
+                            ? {
+                                approvalId:
+                                    approval.approvalId,
+
+                                employeeId:
+                                    approval.approver.employeeId,
+
+                                employeeName:
+                                    approval.approver.employeeName,
+
+                                approvedAt:
+                                    approval.approvedAt,
+                            }
+                            : undefined,
+
+                    authorizedAt:
+                        approval?.approvedAt ??
+                        new Date().toISOString(),
+                },
+
                 employee: {
                     employeeId:
-                        selectedEmployee.employeeId,
+                        currentOperator.id,
 
                     employeeName:
-                        selectedEmployee.employeeName,
+                        currentOperator.name,
                 },
             });
 
@@ -362,33 +329,7 @@ function CashMovementDialog({
                     </button>
                 </header>
 
-                {presentEmployees.length === 0 ? (
-                    <div className="cash-movement-dialog__blocked">
-                        <span
-                            aria-hidden="true"
-                            className="cash-movement-dialog__blocked-icon"
-                        >
-                            !
-                        </span>
-
-                        <strong>
-                            לא ניתן לבצע תנועת מזומן
-                        </strong>
-
-                        <p>
-                            אין עובד בנוכחות. יש לבצע כניסה במסך נוכחות עובדים ולנסות שוב.
-                        </p>
-
-                        <button
-                            className="cash-movement-dialog__secondary-button"
-                            onClick={onClose}
-                            type="button"
-                        >
-                            סגור
-                        </button>
-                    </div>
-                ) : (
-                    <>
+                <>
                         <div className="cash-movement-dialog__body">
                             <div
                                 aria-label="סוג תנועת מזומן"
@@ -495,42 +436,13 @@ function CashMovementDialog({
                                     עובד מבצע
                                 </span>
 
-                                {presentEmployees.length === 1 ? (
-                                    <div className="cash-movement-dialog__employee-readonly">
-                                        <span className="cash-movement-dialog__presence-dot" />
+                                <div className="cash-movement-dialog__employee-readonly">
+                                    <span className="cash-movement-dialog__presence-dot" />
 
-                                        <strong>
-                                            {presentEmployees[0].employeeName}
-                                        </strong>
-                                    </div>
-                                ) : (
-                                    <select
-                                        onChange={(event) => {
-                                            setEmployeeId(
-                                                event.target.value,
-                                            );
-                                            setError(
-                                                null,
-                                            );
-                                        }}
-                                        value={employeeId}
-                                    >
-                                        <option value="">
-                                            בחר עובד נוכח
-                                        </option>
-
-                                        {presentEmployees.map(
-                                            (employee) => (
-                                                <option
-                                                    key={employee.employeeId}
-                                                    value={employee.employeeId}
-                                                >
-                                                    {employee.employeeName}
-                                                </option>
-                                            ),
-                                        )}
-                                    </select>
-                                )}
+                                    <strong>
+                                        {currentOperator.name}
+                                    </strong>
+                                </div>
                             </label>
 
                             <label className="cash-movement-dialog__field">
@@ -576,10 +488,7 @@ function CashMovementDialog({
 
                             <button
                                 className="cash-movement-dialog__confirm"
-                                disabled={
-                                    !isValidAmount ||
-                                    !selectedEmployee
-                                }
+                                disabled={!isValidAmount}
                                 onClick={confirm}
                                 type="button"
                             >
@@ -591,7 +500,6 @@ function CashMovementDialog({
                             </button>
                         </footer>
                     </>
-                )}
             </section>
         </div>
     );

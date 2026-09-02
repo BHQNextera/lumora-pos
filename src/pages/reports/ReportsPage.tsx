@@ -439,7 +439,13 @@ function getAttendancePermissionMessage(
         : "נדרש מנהל מורשה.";
 }
 
-function ReportsPage() {
+type ReportsPageProps = {
+    onOpenXReport: () => void;
+};
+
+function ReportsPage({
+    onOpenXReport,
+}: ReportsPageProps) {
     const [
         selectedReportId,
         setSelectedReportId,
@@ -1185,6 +1191,15 @@ function ReportsPage() {
                 </div>
 
                 <div className="reports-page__header-actions">
+                    <button
+                        type="button"
+                        className="reports-page__secondary-action"
+                        onClick={
+                            onOpenXReport
+                        }
+                    >
+                        {"\u05d3\u05d5\u05d7 X"}
+                    </button>
                     <button
                         type="button"
                         className="reports-page__secondary-action"

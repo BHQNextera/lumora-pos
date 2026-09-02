@@ -33,6 +33,24 @@ export type CashMovement = {
         employeeName: string;
     };
 
+    authorization?: {
+        actionPermissionKey: string;
+
+        actor: {
+            employeeId: string;
+            employeeName: string;
+        };
+
+        approver?: {
+            approvalId: string;
+            employeeId: string;
+            employeeName: string;
+            approvedAt: string;
+        };
+
+        authorizedAt: string;
+    };
+
     createdAt: string;
 };
 

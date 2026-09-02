@@ -67,6 +67,7 @@ type ProjectionStaffRole = {
     name_el?: string | null;
     is_active: boolean;
     sort_order: number;
+    permission_keys?: string[];
 };
 
 type ProjectionEmployee = {
@@ -621,6 +622,8 @@ async function applyProjection(
             nameEl: role.name_el ?? "",
             isActive: role.is_active,
             sortOrder: role.sort_order,
+            permissionKeys:
+                role.permission_keys ?? [],
         })),
         projection.employee_policy?.allow_employee_create_from_pos !== false,
     );

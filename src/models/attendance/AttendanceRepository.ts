@@ -290,30 +290,9 @@ export async function clockInEmployee(
     return entry;
 }
 
-export async function clockOutEmployee(
+function applyEmployeeClockOut(
     employeeId: string,
 ) {
-    // EMPLOYEE_PIN_CLOCK_OUT_GATE_V1
-    const present =
-        getEmployeePresence(
-            employeeId,
-        );
-
-    if (!present) {
-        return undefined;
-    }
-
-    const authorized =
-        await requireEmployeePinAuthorization(
-            employeeId,
-            present.employeeName,
-            "clock_out",
-        );
-
-    if (!authorized) {
-        return undefined;
-    }
-
     const configuration =
         getActiveBusinessConfiguration();
 
@@ -363,6 +342,44 @@ export async function clockOutEmployee(
     return changed;
 }
 
+export async function clockOutEmployee(
+    employeeId: string,
+) {
+    // Manual employee clock-out always requires PIN.
+    const present =
+        getEmployeePresence(
+            employeeId,
+        );
+
+    if (!present) {
+        return undefined;
+    }
+
+    const authorized =
+        await requireEmployeePinAuthorization(
+            employeeId,
+            present.employeeName,
+            "clock_out",
+        );
+
+    if (!authorized) {
+        return undefined;
+    }
+
+    return applyEmployeeClockOut(
+        employeeId,
+    );
+}
+
+export function clockOutEmployeeAutomatically(
+    employeeId: string,
+) {
+    // System-triggered clock-out after register close / Z.
+    // No employee PIN is required.
+    return applyEmployeeClockOut(
+        employeeId,
+    );
+}
 
 export type AddManualAttendanceEntryInput = {
     employeeId: string;

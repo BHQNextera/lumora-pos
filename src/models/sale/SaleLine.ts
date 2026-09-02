@@ -1,3 +1,4 @@
+import type { PosActionAuthorization } from "../employee/PosActionAuthorization";
 import type {
     ProductVariantIdentity,
 } from "../catalog/ProductVariantIdentity";
@@ -78,6 +79,8 @@ export type SaleLine = {
     unitPrice: number;
 
     originalUnitPrice?: number;
+    priceOverrideAuthorization?: PosActionAuthorization;
+    lineDiscountAuthorization?: PosActionAuthorization;
 
     grossAmount: number;
 

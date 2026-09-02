@@ -21,6 +21,10 @@ import {
 } from "../../models/employee/EmployeeSeed";
 
 import {
+    verifyEmployeePin,
+} from "../../models/employee/EmployeePinService";
+
+import {
     getActiveBusinessConfiguration,
     getActiveBusinessOperatingProfile,
 } from "../../config/ActiveBusinessConfiguration";
@@ -34,11 +38,26 @@ import type {
     RegisterShift,
 } from "../../models/shift/RegisterShift";
 
+import type {
+    Employee,
+} from "../../models/employee/Employee";
+
+import {
+    employeeRolesHavePermission,
+} from "../../models/employee/EmployeeRoleCatalog";
+
+import PosManagerApprovalDialog
+    from "../system/PosManagerApprovalDialog";
+
+import type {
+    PosManagerApproval,
+} from "../../models/employee/PosManagerApprovalService";
 import "./open-register-shift-dialog.css";
 
 type OpenRegisterShiftDialogProps = {
     onEnter: (
         shift: RegisterShift,
+        operator: Employee,
     ) => void;
 };
 
@@ -80,6 +99,21 @@ function getInitials(
 function OpenRegisterShiftDialog({
     onEnter,
 }: OpenRegisterShiftDialogProps) {
+    const [
+        showOpeningApproval,
+        setShowOpeningApproval,
+    ] =
+        useState(false);
+
+    const [
+        openingApproval,
+        setOpeningApproval,
+    ] =
+        useState<
+            PosManagerApproval |
+            null
+        >(null);
+
     const existingShift =
         getActiveRegisterShift();
 
@@ -101,6 +135,12 @@ function OpenRegisterShiftDialog({
     const [
         employeeId,
         setEmployeeId,
+    ] =
+        useState("");
+
+    const [
+        pin,
+        setPin,
     ] =
         useState("");
 
@@ -247,37 +287,103 @@ function OpenRegisterShiftDialog({
         );
     };
 
-    const requestEntry = () => {
-        if (!selectedEmployee) {
-            setError(
-                "יש לבחור עובד.",
+    const requestEntry =
+        async () => {
+            if (!selectedEmployee) {
+                setError(
+                    "יש לבחור עובד.",
+                );
+
+                return;
+            }
+
+            if (!/^\d{4,6}$/.test(pin)) {
+                setError(
+                    "יש להזין PIN בן 4–6 ספרות.",
+                );
+
+                return;
+            }
+
+            const verification =
+                await verifyEmployeePin(
+                    selectedEmployee.id,
+                    pin,
+                );
+
+            if (!verification.ok) {
+                setError(
+                    "PIN שגוי או לא זמין.",
+                );
+
+                return;
+            }
+
+            setError(null);
+
+            if (existingShift) {
+                onEnter(
+                    existingShift,
+                    selectedEmployee,
+                );
+
+                return;
+            }
+
+            setOpeningApproval(
+                null,
             );
 
-            return;
-        }
+            if (
+                employeeRolesHavePermission(
+                    selectedEmployee.roles,
+                    "pos.register.open",
+                )
+            ) {
+                setShowConfirmation(
+                    true,
+                );
 
-        if (existingShift) {
-            onEnter(
-                existingShift,
+                return;
+            }
+
+            setShowOpeningApproval(
+                true,
             );
-
-            return;
-        }
-
-        setError(
-            null,
-        );
-
-        setShowConfirmation(
-            true,
-        );
-    };
+        };
 
     const confirmOpening = () => {
         if (
             existingShift ||
             !selectedEmployee
         ) {
+            return;
+        }
+
+        const hasDirectPermission =
+            employeeRolesHavePermission(
+                selectedEmployee.roles,
+                "pos.register.open",
+            );
+
+        if (
+            !hasDirectPermission &&
+            (
+                !openingApproval ||
+                openingApproval.actionPermissionKey !==
+                    "pos.register.open" ||
+                openingApproval.actor.employeeId !==
+                    selectedEmployee.id
+            )
+        ) {
+            setShowConfirmation(
+                false,
+            );
+
+            setError(
+                "נדרש אישור מנהל לפתיחת קופה.",
+            );
+
             return;
         }
 
@@ -294,6 +400,41 @@ function OpenRegisterShiftDialog({
                         openingCashDeclaration.total,
 
                     openingCashDeclaration,
+
+                    openingAuthorization: {
+                        actionPermissionKey:
+                            "pos.register.open",
+
+                        actor: {
+                            employeeId:
+                                selectedEmployee.id,
+
+                            employeeName:
+                                selectedEmployee.name,
+                        },
+
+                        approver:
+                            openingApproval
+                                ? {
+                                    approvalId:
+                                        openingApproval.approvalId,
+
+                                    employeeId:
+                                        openingApproval.approver.employeeId,
+
+                                    employeeName:
+                                        openingApproval.approver.employeeName,
+
+                                    approvedAt:
+                                        openingApproval.approvedAt,
+                                }
+                                : undefined,
+
+                        authorizedAt:
+                            openingApproval?.approvedAt ??
+                            new Date()
+                                .toISOString(),
+                    },
                 });
 
             setShowConfirmation(
@@ -302,6 +443,7 @@ function OpenRegisterShiftDialog({
 
             onEnter(
                 shift,
+                selectedEmployee,
             );
         }
         catch {
@@ -559,6 +701,39 @@ function OpenRegisterShiftDialog({
                         </select>
                     </div>
 
+                    <div className="register-v3__employee-row">
+                        <label htmlFor="register-v3-pin">
+                            PIN
+                        </label>
+
+                        <input
+                            id="register-v3-pin"
+                            type="password"
+                            inputMode="numeric"
+                            autoComplete="off"
+                            maxLength={6}
+                            value={pin}
+                            disabled={!selectedEmployee}
+                            onChange={(event) => {
+                                setPin(
+                                    event.target.value
+                                        .replace(/\D/g, "")
+                                        .slice(0, 6),
+                                );
+
+                                setError(null);
+                            }}
+                            onKeyDown={(event) => {
+                                if (
+                                    event.key === "Enter"
+                                ) {
+                                    void requestEntry();
+                                }
+                            }}
+                            placeholder="4–6 ספרות"
+                        />
+                    </div>
+
                     {!existingShift && (
                         <section className="register-v3__declaration">
                             <div className="register-v3__declaration-head">
@@ -738,6 +913,38 @@ function OpenRegisterShiftDialog({
                         </section>
                     </div>
                 )}
+            {showOpeningApproval &&
+                selectedEmployee && (
+                <PosManagerApprovalDialog
+                    actor={
+                        selectedEmployee
+                    }
+                    actionPermissionKey="pos.register.open"
+                    actionLabel="פתיחת קופה"
+                    onApproved={(approval) => {
+                        setOpeningApproval(
+                            approval,
+                        );
+
+                        setShowOpeningApproval(
+                            false,
+                        );
+
+                        setShowConfirmation(
+                            true,
+                        );
+                    }}
+                    onCancel={() => {
+                        setShowOpeningApproval(
+                            false,
+                        );
+
+                        setOpeningApproval(
+                            null,
+                        );
+                    }}
+                />
+            )}
         </div>
     );
 }

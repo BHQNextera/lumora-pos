@@ -1,3 +1,12 @@
+import type { Employee } from "../../models/employee/Employee";
+import { employeeRolesHavePermission } from "../../models/employee/EmployeeRoleCatalog";
+import type { PosManagerApproval } from "../../models/employee/PosManagerApprovalService";
+import type { PosActionAuthorization } from "../../models/employee/PosActionAuthorization";
+import {
+    recordPosVoidCancelAudit,
+} from "../../models/audit/PosVoidCancelAuditRepository";
+import PosManagerApprovalDialog from "../../components/system/PosManagerApprovalDialog";
+
 import { ManualNexteraSyncAction } from "../../components/system/ManualNexteraSyncAction";
 // LUMORA SELLER EMPLOYEE SYNC V1
 import {
@@ -169,6 +178,7 @@ import SaleCompletePage from "../sale-complete/SaleCompletePage";
 
 
 type SalePageProps = {
+    currentOperator: Employee | null;
     incomingReturnLines?: CartLine[];
     onReturnLinesConsumed?: () => void;
 };
@@ -204,6 +214,7 @@ const categories: CategoryOption[] = [
 ];
 
 function SalePage({
+    currentOperator,
     incomingReturnLines = [],
     onReturnLinesConsumed,
 }: SalePageProps) {
@@ -818,7 +829,39 @@ function SalePage({
     ] =
         useState<number | null>(null);
 
+
+
     const [
+        showReturnRefundApproval,
+        setShowReturnRefundApproval,
+    ] = useState(false);
+
+    const [
+        returnRefundAuthorization,
+        setReturnRefundAuthorization,
+    ] = useState<PosActionAuthorization | null>(
+        null,
+    );
+
+    const [
+        returnRefundPermissionKey,
+        setReturnRefundPermissionKey,
+    ] = useState<
+        | "pos.return_refund"
+        | "pos.return_refund.override"
+        | null
+    >(null);
+    const [
+        showVoidCancelApproval,
+        setShowVoidCancelApproval,
+    ] = useState(false);
+
+    const [
+        voidCancelInProgress,
+        setVoidCancelInProgress,
+    ] = useState(false);
+
+const [
         reservedTransactionNumber,
         setReservedTransactionNumber,
     ] = useState<string | null>(
@@ -862,6 +905,36 @@ const [
     ] = useState(false);
 
     const [
+        showTransactionDiscountApproval,
+        setShowTransactionDiscountApproval,
+    ] = useState(false);
+
+    const [
+        transactionDiscountApproval,
+        setTransactionDiscountApproval,
+    ] = useState<PosManagerApproval | null>(null);
+
+    const requestTransactionDiscount = () => {
+        if (!currentOperator) {
+            return;
+        }
+
+        setTransactionDiscountApproval(null);
+
+        if (
+            employeeRolesHavePermission(
+                currentOperator.roles,
+                "pos.discount.transaction",
+            )
+        ) {
+            setShowTransactionDiscount(true);
+            return;
+        }
+
+        setShowTransactionDiscountApproval(true);
+    };
+
+    const [
         noteEditorKind,
         setNoteEditorKind,
     ] = useState<
@@ -883,10 +956,86 @@ const [
         useState<string | null>(null);
 
     const [
+        pendingPriceOverrideLineId,
+        setPendingPriceOverrideLineId,
+    ] = useState<string | null>(null);
+
+    const [
+        showPriceOverrideApproval,
+        setShowPriceOverrideApproval,
+    ] = useState(false);
+
+    const [
+        priceOverrideApproval,
+        setPriceOverrideApproval,
+    ] = useState<PosManagerApproval | null>(null);
+
+    const requestPriceOverride = (
+        lineId: string,
+    ) => {
+        if (!currentOperator) {
+            return;
+        }
+
+        setPriceOverrideApproval(null);
+
+        if (
+            employeeRolesHavePermission(
+                currentOperator.roles,
+                "pos.price_override",
+            )
+        ) {
+            setEditingPriceLineId(lineId);
+            return;
+        }
+
+        setPendingPriceOverrideLineId(lineId);
+        setShowPriceOverrideApproval(true);
+    };
+
+    const [
         editingDiscountLineId,
         setEditingDiscountLineId,
     ] =
         useState<string | null>(null);
+
+    const [
+        pendingLineDiscountLineId,
+        setPendingLineDiscountLineId,
+    ] = useState<string | null>(null);
+
+    const [
+        showLineDiscountApproval,
+        setShowLineDiscountApproval,
+    ] = useState(false);
+
+    const [
+        lineDiscountApproval,
+        setLineDiscountApproval,
+    ] = useState<PosManagerApproval | null>(null);
+
+    const requestLineDiscount = (
+        lineId: string,
+    ) => {
+        if (!currentOperator) {
+            return;
+        }
+
+        setLineDiscountApproval(null);
+
+        if (
+            employeeRolesHavePermission(
+                currentOperator.roles,
+                "pos.discount.line",
+            )
+        ) {
+            setEditingDiscountLineId(lineId);
+            return;
+        }
+
+        setPendingLineDiscountLineId(lineId);
+        setShowLineDiscountApproval(true);
+    };
 
     useEffect(() => {
         if (
@@ -1024,7 +1173,7 @@ const [
                             return;
                         }
 
-                        setEditingDiscountLineId(
+                        requestLineDiscount(
                             saleActionAvailability
                                 .selectedSaleLineId,
                         );
@@ -1032,9 +1181,7 @@ const [
 
                 openTransactionDiscount:
                     () => {
-                        setShowTransactionDiscount(
-                            true,
-                        );
+                        requestTransactionDiscount();
                     },
 
                 openLineNote:
@@ -1081,7 +1228,7 @@ const [
                             return;
                         }
 
-                        setEditingPriceLineId(
+                        requestPriceOverride(
                             saleActionAvailability
                                 .selectedSaleLineId,
                         );
@@ -1979,10 +2126,75 @@ const [
         );
     };
 
+    const getPriceOverrideAuthorization =
+        (): PosActionAuthorization | null => {
+            if (!currentOperator) {
+                return null;
+            }
+
+            const direct =
+                employeeRolesHavePermission(
+                    currentOperator.roles,
+                    "pos.price_override",
+                );
+
+            if (
+                !direct &&
+                (
+                    !priceOverrideApproval ||
+                    priceOverrideApproval.actionPermissionKey !==
+                        "pos.price_override" ||
+                    priceOverrideApproval.actor.employeeId !==
+                        currentOperator.id
+                )
+            ) {
+                return null;
+            }
+
+            return {
+                actionPermissionKey:
+                    "pos.price_override",
+
+                actor: {
+                    employeeId:
+                        currentOperator.id,
+                    employeeName:
+                        currentOperator.name,
+                },
+
+                approver:
+                    priceOverrideApproval
+                        ? {
+                            approvalId:
+                                priceOverrideApproval.approvalId,
+                            employeeId:
+                                priceOverrideApproval.approver.employeeId,
+                            employeeName:
+                                priceOverrideApproval.approver.employeeName,
+                            approvedAt:
+                                priceOverrideApproval.approvedAt,
+                        }
+                        : undefined,
+
+                authorizedAt:
+                    priceOverrideApproval?.approvedAt ??
+                    new Date().toISOString(),
+            };
+        };
+
     const applyPriceOverride = (
         lineId: string,
         price: number,
     ) => {
+        const authorization =
+            getPriceOverrideAuthorization();
+
+        if (!authorization) {
+            setEditingPriceLineId(null);
+            setPriceOverrideApproval(null);
+            return;
+        }
+
         updateCartLines(
             (current) =>
                 current.map(
@@ -1996,23 +2208,33 @@ const [
 
                         return {
                             ...line,
-
                             originalUnitPrice:
                                 line.originalUnitPrice ??
                                 line.unitPrice,
-
                             unitPrice: price,
+                            priceOverrideAuthorization:
+                                authorization,
                         };
                     },
                 ),
         );
 
         setEditingPriceLineId(null);
+        setPriceOverrideApproval(null);
     };
 
     const resetPriceOverride = (
         lineId: string,
     ) => {
+        const authorization =
+            getPriceOverrideAuthorization();
+
+        if (!authorization) {
+            setEditingPriceLineId(null);
+            setPriceOverrideApproval(null);
+            return;
+        }
+
         updateCartLines(
             (current) =>
                 current.map(
@@ -2020,26 +2242,139 @@ const [
                         if (
                             line.id !== lineId ||
                             line.originalUnitPrice ===
-                            undefined
+                                undefined
                         ) {
                             return line;
                         }
 
                         return {
                             ...line,
-
                             unitPrice:
                                 line.originalUnitPrice,
-
                             originalUnitPrice:
                                 undefined,
+                            priceOverrideAuthorization:
+                                authorization,
                         };
                     },
                 ),
         );
 
         setEditingPriceLineId(null);
+        setPriceOverrideApproval(null);
     };
+
+    const getLineDiscountAuthorization =
+        (): PosActionAuthorization | null => {
+            if (!currentOperator) {
+                return null;
+            }
+
+            const direct =
+                employeeRolesHavePermission(
+                    currentOperator.roles,
+                    "pos.discount.line",
+                );
+
+            if (
+                !direct &&
+                (
+                    !lineDiscountApproval ||
+                    lineDiscountApproval.actionPermissionKey !==
+                        "pos.discount.line" ||
+                    lineDiscountApproval.actor.employeeId !==
+                        currentOperator.id
+                )
+            ) {
+                return null;
+            }
+
+            return {
+                actionPermissionKey:
+                    "pos.discount.line",
+
+                actor: {
+                    employeeId:
+                        currentOperator.id,
+                    employeeName:
+                        currentOperator.name,
+                },
+
+                approver:
+                    lineDiscountApproval
+                        ? {
+                            approvalId:
+                                lineDiscountApproval.approvalId,
+                            employeeId:
+                                lineDiscountApproval.approver.employeeId,
+                            employeeName:
+                                lineDiscountApproval.approver.employeeName,
+                            approvedAt:
+                                lineDiscountApproval.approvedAt,
+                        }
+                        : undefined,
+
+                authorizedAt:
+                    lineDiscountApproval?.approvedAt ??
+                    new Date().toISOString(),
+            };
+        };
+
+    const getTransactionDiscountAuthorization =
+        (): PosActionAuthorization | null => {
+            if (!currentOperator) {
+                return null;
+            }
+
+            const direct =
+                employeeRolesHavePermission(
+                    currentOperator.roles,
+                    "pos.discount.transaction",
+                );
+
+            if (
+                !direct &&
+                (
+                    !transactionDiscountApproval ||
+                    transactionDiscountApproval.actionPermissionKey !==
+                        "pos.discount.transaction" ||
+                    transactionDiscountApproval.actor.employeeId !==
+                        currentOperator.id
+                )
+            ) {
+                return null;
+            }
+
+            return {
+                actionPermissionKey:
+                    "pos.discount.transaction",
+
+                actor: {
+                    employeeId:
+                        currentOperator.id,
+                    employeeName:
+                        currentOperator.name,
+                },
+
+                approver:
+                    transactionDiscountApproval
+                        ? {
+                            approvalId:
+                                transactionDiscountApproval.approvalId,
+                            employeeId:
+                                transactionDiscountApproval.approver.employeeId,
+                            employeeName:
+                                transactionDiscountApproval.approver.employeeName,
+                            approvedAt:
+                                transactionDiscountApproval.approvedAt,
+                        }
+                        : undefined,
+
+                authorizedAt:
+                    transactionDiscountApproval?.approvedAt ??
+                    new Date().toISOString(),
+            };
+        };
 
     const currentPercentageRule =
         pricingRules.find(
@@ -2055,7 +2390,7 @@ const [
                 "transaction-amount",
         );
 
-    const removeTransactionDiscount =
+    const clearTransactionDiscountRules =
         () => {
             removePricingRule(
                 "transaction-percentage",
@@ -2068,35 +2403,68 @@ const [
 
     const applyPercentageDiscount =
         (value: number) => {
-            removeTransactionDiscount();
+            const authorization =
+                getTransactionDiscountAuthorization();
 
-            addPricingRule(
-                DefaultPricingRules
+            if (!authorization) {
+                setShowTransactionDiscount(false);
+                setTransactionDiscountApproval(null);
+                return;
+            }
+
+            clearTransactionDiscountRules();
+
+            addPricingRule({
+                ...DefaultPricingRules
                     .transactionPercentage(
                         value,
                     ),
-            );
+                authorization,
+            });
 
-            setShowTransactionDiscount(
-                false,
-            );
+            setShowTransactionDiscount(false);
+            setTransactionDiscountApproval(null);
         };
 
     const applyAmountDiscount = (
         value: number,
     ) => {
-        removeTransactionDiscount();
+        const authorization =
+            getTransactionDiscountAuthorization();
 
-        addPricingRule(
-            DefaultPricingRules
+        if (!authorization) {
+            setShowTransactionDiscount(false);
+            setTransactionDiscountApproval(null);
+            return;
+        }
+
+        clearTransactionDiscountRules();
+
+        addPricingRule({
+            ...DefaultPricingRules
                 .transactionAmount(
                     value,
                 ),
-        );
+            authorization,
+        });
 
-        setShowTransactionDiscount(
-            false,
-        );
+        setShowTransactionDiscount(false);
+        setTransactionDiscountApproval(null);
+    };
+
+    const removeTransactionDiscount = () => {
+        const authorization =
+            getTransactionDiscountAuthorization();
+
+        if (!authorization) {
+            setShowTransactionDiscount(false);
+            setTransactionDiscountApproval(null);
+            return;
+        }
+
+        clearTransactionDiscountRules();
+        setShowTransactionDiscount(false);
+        setTransactionDiscountApproval(null);
     };
 
     const applyLinePercentageDiscount =
@@ -2104,6 +2472,15 @@ const [
             lineId: string,
             value: number,
         ) => {
+            const authorization =
+                getLineDiscountAuthorization();
+
+            if (!authorization) {
+                setEditingDiscountLineId(null);
+                setLineDiscountApproval(null);
+                return;
+            }
+
             addPricingRule(
                 DefaultPricingRules
                     .linePercentage(
@@ -2112,9 +2489,23 @@ const [
                     ),
             );
 
-            setEditingDiscountLineId(
-                null,
+            updateCartLines(
+                (current) =>
+                    current.map(
+                        (line) =>
+                            line.id === lineId &&
+                            line.kind === "sale"
+                                ? {
+                                    ...line,
+                                    lineDiscountAuthorization:
+                                        authorization,
+                                }
+                                : line,
+                    ),
             );
+
+            setEditingDiscountLineId(null);
+            setLineDiscountApproval(null);
         };
 
     const applyLineAmountDiscount =
@@ -2122,6 +2513,15 @@ const [
             lineId: string,
             value: number,
         ) => {
+            const authorization =
+                getLineDiscountAuthorization();
+
+            if (!authorization) {
+                setEditingDiscountLineId(null);
+                setLineDiscountApproval(null);
+                return;
+            }
+
             addPricingRule(
                 DefaultPricingRules
                     .lineAmount(
@@ -2130,21 +2530,58 @@ const [
                     ),
             );
 
-            setEditingDiscountLineId(
-                null,
+            updateCartLines(
+                (current) =>
+                    current.map(
+                        (line) =>
+                            line.id === lineId &&
+                            line.kind === "sale"
+                                ? {
+                                    ...line,
+                                    lineDiscountAuthorization:
+                                        authorization,
+                                }
+                                : line,
+                    ),
             );
+
+            setEditingDiscountLineId(null);
+            setLineDiscountApproval(null);
         };
 
     const removeLineDiscount = (
         lineId: string,
     ) => {
+        const authorization =
+            getLineDiscountAuthorization();
+
+        if (!authorization) {
+            setEditingDiscountLineId(null);
+            setLineDiscountApproval(null);
+            return;
+        }
+
         removePricingRule(
             `line-discount-${lineId}`,
         );
 
-        setEditingDiscountLineId(
-            null,
+        updateCartLines(
+            (current) =>
+                current.map(
+                    (line) =>
+                        line.id === lineId &&
+                        line.kind === "sale"
+                            ? {
+                                ...line,
+                                lineDiscountAuthorization:
+                                    authorization,
+                            }
+                            : line,
+                ),
         );
+
+        setEditingDiscountLineId(null);
+        setLineDiscountApproval(null);
     };
 
     const createSaleLines =
@@ -2202,7 +2639,16 @@ const [
                             line.unitPrice,
 
                         originalUnitPrice:
+
                             line.originalUnitPrice,
+
+
+                        priceOverrideAuthorization:
+
+                            line.priceOverrideAuthorization,
+
+                        lineDiscountAuthorization:
+                            line.lineDiscountAuthorization,
 
                         grossAmount:
                             gross * sign,
@@ -2275,6 +2721,7 @@ const [
     const completeTransaction = async (
         payments: Payment[],
         applyCancellationFee = false,
+        returnAuthorizationOverride?: PosActionAuthorization,
     ) => {
         const transactionNumber =
             await reserveOpenTransactionNumber();
@@ -2438,8 +2885,16 @@ const [
 
                     printDocumentNote,
 
+                    transactionDiscountAuthorization:
+                        currentPercentageRule?.authorization ??
+                        currentAmountRule?.authorization,
 
-                    storeCreditObligo,
+
+                    returnRefundAuthorization:
+                        returnAuthorizationOverride ??
+                        returnRefundAuthorization ??
+                        undefined,
+storeCreditObligo,
                 },
             );
         if (
@@ -2518,6 +2973,8 @@ const [
         setPrintDocumentNote(false);
         setNoteEditorKind(null);
         setCheckoutTotal(null);
+        setReturnRefundAuthorization(null);
+        setReturnRefundPermissionKey(null);
     };
 
     const transactionTotal =
@@ -2591,18 +3048,110 @@ const [
             },
         );
     };
-    const handleCheckout = () => {
+    const continueCheckout = (
+        authorization?: PosActionAuthorization,
+    ) => {
+        if (authorization) {
+            setReturnRefundAuthorization(
+                authorization,
+            );
+        }
+
         if (
             Math.abs(
                 transactionTotal,
             ) < 0.001
         ) {
-            completeTransaction([]);
+            void completeTransaction(
+                [],
+                false,
+                authorization,
+            );
             return;
         }
 
         setCheckoutTotal(
             transactionTotal,
+        );
+    };
+
+    const handleCheckout = () => {
+        const returnLines =
+            pricing.lines.filter(
+                (line) =>
+                    line.kind ===
+                    "return",
+            );
+
+        if (returnLines.length === 0) {
+            setReturnRefundAuthorization(
+                null,
+            );
+            setReturnRefundPermissionKey(
+                null,
+            );
+            continueCheckout();
+            return;
+        }
+
+        if (!currentOperator) {
+            return;
+        }
+
+        const hasExceptionReturn =
+            returnLines.some(
+                (line) =>
+                    line.returnSource !==
+                        "linked_document" ||
+                    !line.origin?.saleId ||
+                    !line.origin?.saleLineId,
+            );
+
+        const requiredPermissionKey:
+            | "pos.return_refund"
+            | "pos.return_refund.override" =
+            hasExceptionReturn
+                ? "pos.return_refund.override"
+                : "pos.return_refund";
+
+        if (
+            employeeRolesHavePermission(
+                currentOperator.roles,
+                requiredPermissionKey,
+            )
+        ) {
+            const authorization:
+                PosActionAuthorization = {
+                    actionPermissionKey:
+                        requiredPermissionKey,
+
+                    actor: {
+                        employeeId:
+                            currentOperator.id,
+                        employeeName:
+                            currentOperator.name,
+                    },
+
+                    authorizedAt:
+                        new Date().toISOString(),
+                };
+
+            setReturnRefundPermissionKey(
+                null,
+            );
+
+            continueCheckout(
+                authorization,
+            );
+            return;
+        }
+
+        setReturnRefundPermissionKey(
+            requiredPermissionKey,
+        );
+
+        setShowReturnRefundApproval(
+            true,
         );
     };
 
@@ -2621,6 +3170,96 @@ const [
         setNoteEditorKind(null);
         setMoreActionsOpen(false);
         setSelectedLineId(null);
+    };
+
+    const performVoidCancel =
+        async (
+            authorization:
+                PosActionAuthorization,
+        ) => {
+            if (
+                voidCancelInProgress ||
+                cartLines.length === 0
+            ) {
+                return;
+            }
+
+            setVoidCancelInProgress(
+                true,
+            );
+
+            try {
+                await recordPosVoidCancelAudit({
+                    authorization,
+                    lineCount:
+                        pricing.lines.length,
+                    total:
+                        transactionTotal,
+                    customerId:
+                        selectedCustomer.id,
+                    customerName:
+                        selectedCustomer.name,
+                });
+
+                clearSale();
+            }
+            catch (error) {
+                console.error(
+                    "LUMORA_VOID_CANCEL_AUDIT_FAILED",
+                    error,
+                );
+
+                setSystemMessage(
+                    "\u05dc\u05d0 \u05e0\u05d9\u05ea\u05df \u05dc\u05d1\u05d8\u05dc \u05d0\u05ea \u05d4\u05e2\u05e1\u05e7\u05d4 \u05db\u05e8\u05d2\u05e2. \u05e8\u05d9\u05e9\u05d5\u05dd \u05d4\u05d1\u05d9\u05e7\u05d5\u05e8\u05ea \u05e0\u05db\u05e9\u05dc.",
+                );
+            }
+            finally {
+                setVoidCancelInProgress(
+                    false,
+                );
+            }
+        };
+
+    const requestVoidCancel = () => {
+        if (
+            !currentOperator ||
+            cartLines.length === 0 ||
+            voidCancelInProgress
+        ) {
+            return;
+        }
+
+        if (
+            employeeRolesHavePermission(
+                currentOperator.roles,
+                "pos.void_cancel",
+            )
+        ) {
+            const authorization:
+                PosActionAuthorization = {
+                    actionPermissionKey:
+                        "pos.void_cancel",
+
+                    actor: {
+                        employeeId:
+                            currentOperator.id,
+                        employeeName:
+                            currentOperator.name,
+                    },
+
+                    authorizedAt:
+                        new Date().toISOString(),
+                };
+
+            void performVoidCancel(
+                authorization,
+            );
+            return;
+        }
+
+        setShowVoidCancelApproval(
+            true,
+        );
     };
 
     const refreshHeldSales = () => {
@@ -3622,7 +4261,7 @@ const [
                                         return;
                                     }
 
-                                    setEditingDiscountLineId(
+                                    requestLineDiscount(
                                         selectedSaleLine.id,
                                     );
                                 }}
@@ -3632,13 +4271,11 @@ const [
 
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setShowTransactionDiscount(
-                                        true,
-                                    )
+                                onClick={
+                                    requestTransactionDiscount
                                 }
                             >
-                                הנחת עסקה
+                                {"\u05d4\u05e0\u05d7\u05ea \u05e2\u05e1\u05e7\u05d4"}
                             </button>
 
                             <button
@@ -3655,7 +4292,7 @@ const [
                                         return;
                                     }
 
-                                    setEditingPriceLineId(
+                                    requestPriceOverride(
                                         selectedSaleLine.id,
                                     );
                                 }}
@@ -3961,7 +4598,9 @@ const [
                                 selectedLineId ??
                                 undefined
                             }
-                            onClear={clearSale}
+                            onClear={
+                                requestVoidCancel
+                            }
                             onIncrease={
                                 increaseQuantity
                             }
@@ -4512,6 +5151,158 @@ onEditDescription={
                     }
                 />
             )}
+            {showVoidCancelApproval &&
+                currentOperator && (
+                <PosManagerApprovalDialog
+                    actor={currentOperator}
+                    actionPermissionKey="pos.void_cancel"
+                    actionLabel={"\u05d1\u05d9\u05d8\u05d5\u05dc \u05e2\u05e1\u05e7\u05d4"}
+                    onApproved={(approval) => {
+                        const authorization:
+                            PosActionAuthorization = {
+                                actionPermissionKey:
+                                    approval.actionPermissionKey,
+
+                                actor: {
+                                    employeeId:
+                                        approval.actor.employeeId,
+                                    employeeName:
+                                        approval.actor.employeeName,
+                                },
+
+                                approver: {
+                                    approvalId:
+                                        approval.approvalId,
+                                    employeeId:
+                                        approval.approver.employeeId,
+                                    employeeName:
+                                        approval.approver.employeeName,
+                                    approvedAt:
+                                        approval.approvedAt,
+                                },
+
+                                authorizedAt:
+                                    approval.approvedAt,
+                            };
+
+                        setShowVoidCancelApproval(
+                            false,
+                        );
+
+                        void performVoidCancel(
+                            authorization,
+                        );
+                    }}
+                    onCancel={() => {
+                        setShowVoidCancelApproval(
+                            false,
+                        );
+                    }}
+                />
+            )}
+
+            {showReturnRefundApproval &&
+                currentOperator && (
+                <PosManagerApprovalDialog
+                    actor={currentOperator}
+                    actionPermissionKey={
+                        returnRefundPermissionKey ??
+                        "pos.return_refund"
+                    }
+                    actionLabel={
+                        returnRefundPermissionKey ===
+                        "pos.return_refund.override"
+                            ? "\u05d4\u05d7\u05d6\u05e8\u05d4 \u05dc\u05dc\u05d0 \u05de\u05e1\u05de\u05da / \u05d7\u05e8\u05d9\u05d2\u05d4"
+                            : "\u05d4\u05d7\u05d6\u05e8\u05d4 / \u05d6\u05d9\u05db\u05d5\u05d9"
+                    }
+                    onApproved={(approval) => {
+                        const authorization:
+                            PosActionAuthorization = {
+                                actionPermissionKey:
+                                    approval.actionPermissionKey,
+
+                                actor: {
+                                    employeeId:
+                                        approval.actor.employeeId,
+                                    employeeName:
+                                        approval.actor.employeeName,
+                                },
+
+                                approver: {
+                                    approvalId:
+                                        approval.approvalId,
+                                    employeeId:
+                                        approval.approver.employeeId,
+                                    employeeName:
+                                        approval.approver.employeeName,
+                                    approvedAt:
+                                        approval.approvedAt,
+                                },
+
+                                authorizedAt:
+                                    approval.approvedAt,
+                            };
+
+                        setShowReturnRefundApproval(
+                            false,
+                        );
+
+                        setReturnRefundPermissionKey(
+                            null,
+                        );
+
+                        continueCheckout(
+                            authorization,
+                        );
+                    }}
+                    onCancel={() => {
+                        setShowReturnRefundApproval(
+                            false,
+                        );
+
+                        setReturnRefundAuthorization(
+                            null,
+                        );
+
+                        setReturnRefundPermissionKey(
+                            null,
+                        );
+                    }}
+                />
+            )}
+
+
+            {showTransactionDiscountApproval &&
+                currentOperator && (
+                <PosManagerApprovalDialog
+                    actor={currentOperator}
+                    actionPermissionKey="pos.discount.transaction"
+                    actionLabel={"\u05d4\u05e0\u05d7\u05ea \u05e2\u05e1\u05e7\u05d4"}
+                    onApproved={(approval) => {
+                        setTransactionDiscountApproval(
+                            approval,
+                        );
+
+                        setShowTransactionDiscountApproval(
+                            false,
+                        );
+
+                        setShowTransactionDiscount(
+                            true,
+                        );
+                    }}
+                    onCancel={() => {
+                        setShowTransactionDiscountApproval(
+                            false,
+                        );
+
+                        setTransactionDiscountApproval(
+                            null,
+                        );
+                    }}
+                />
+            )}
+
             {showTransactionDiscount && (
                 <TransactionDiscountDialog
                     currentPercentage={
@@ -4522,28 +5313,101 @@ onEditDescription={
                         currentAmountRule
                             ?.value ?? 0
                     }
-                    onCancel={() =>
+                    onCancel={() => {
                         setShowTransactionDiscount(
                             false,
-                        )
-                    }
+                        );
+                        setTransactionDiscountApproval(
+                            null,
+                        );
+                    }}
                     onApplyPercentage={
                         applyPercentageDiscount
                     }
                     onApplyAmount={
                         applyAmountDiscount
                     }
-                    onRemove={() => {
-                        removeTransactionDiscount();
-
-                        setShowTransactionDiscount(
-                            false,
-                        );
-                    }}
+                    onRemove={
+                        removeTransactionDiscount
+                    }
                 />
             )}
 
+            {showPriceOverrideApproval &&
+
+
+                currentOperator && (
+
+
+                <PosManagerApprovalDialog
+
+
+                    actor={currentOperator}
+
+
+                    actionPermissionKey="pos.price_override"
+
+
+                    actionLabel={"\u05e9\u05d9\u05e0\u05d5\u05d9 \u05de\u05d7\u05d9\u05e8"}
+
+
+                    onApproved={(approval) => {
+
+
+                        setPriceOverrideApproval(approval);
+
+
+                        setShowPriceOverrideApproval(false);
+
+
+
+                        if (pendingPriceOverrideLineId) {
+
+
+                            setEditingPriceLineId(
+
+
+                                pendingPriceOverrideLineId,
+
+
+                            );
+
+
+                        }
+
+
+
+                        setPendingPriceOverrideLineId(null);
+
+
+                    }}
+
+
+                    onCancel={() => {
+
+
+                        setShowPriceOverrideApproval(false);
+
+
+                        setPendingPriceOverrideLineId(null);
+
+
+                        setPriceOverrideApproval(null);
+
+
+                    }}
+
+
+                />
+
+
+            )}
+
+
+
             {editingPriceLine && (
+
+
                 <PriceOverrideDialog
                     productName={
                         editingPriceLine
@@ -4578,17 +5442,61 @@ onEditDescription={
                 />
             )}
 
+            {showLineDiscountApproval &&
+                currentOperator && (
+                <PosManagerApprovalDialog
+                    actor={currentOperator}
+                    actionPermissionKey="pos.discount.line"
+                    actionLabel={"\u05d4\u05e0\u05d7\u05ea \u05e4\u05e8\u05d9\u05d8"}
+                    onApproved={(approval) => {
+                        setLineDiscountApproval(
+                            approval,
+                        );
+
+                        setShowLineDiscountApproval(
+                            false,
+                        );
+
+                        if (pendingLineDiscountLineId) {
+                            setEditingDiscountLineId(
+                                pendingLineDiscountLineId,
+                            );
+                        }
+
+                        setPendingLineDiscountLineId(
+                            null,
+                        );
+                    }}
+                    onCancel={() => {
+                        setShowLineDiscountApproval(
+                            false,
+                        );
+
+                        setPendingLineDiscountLineId(
+                            null,
+                        );
+
+                        setLineDiscountApproval(
+                            null,
+                        );
+                    }}
+                />
+            )}
+
             {editingDiscountLine && (
                 <LineDiscountDialog
                     productName={
                         editingDiscountLine
                             .product.name
                     }
-                    onCancel={() =>
+                    onCancel={() => {
                         setEditingDiscountLineId(
                             null,
-                        )
-                    }
+                        );
+                        setLineDiscountApproval(
+                            null,
+                        );
+                    }}
                     onApplyPercentage={(
                         value,
                     ) =>

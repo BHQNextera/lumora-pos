@@ -1,4 +1,4 @@
-﻿import {
+import {
     isTauri,
 } from "@tauri-apps/api/core";
 
@@ -179,6 +179,11 @@ export type OpenRegisterShiftInput = {
 
     openingCash: number;
     openingCashDeclaration?: CashDeclaration;
+
+    openingAuthorization:
+        NonNullable<
+            RegisterShift["openingAuthorization"]
+        >;
 };
 
 export function openRegisterShift(
@@ -240,6 +245,9 @@ export function openRegisterShift(
 
         openingCashDeclaration:
             input.openingCashDeclaration,
+
+        openingAuthorization:
+            input.openingAuthorization,
     };
 
     shifts = [
@@ -260,6 +268,10 @@ export type CloseRegisterShiftInput = {
 
     closingCash: number;
     closingCashDeclaration?: CashDeclaration;
+
+    closingAuthorization:
+        NonNullable<RegisterShift["closingAuthorization"]>;
+
 };
 
 export function closeRegisterShift(
@@ -313,6 +325,9 @@ export function closeRegisterShift(
 
         closingCashDeclaration:
             input.closingCashDeclaration,
+
+        closingAuthorization:
+            input.closingAuthorization,
     };
 
     shifts =

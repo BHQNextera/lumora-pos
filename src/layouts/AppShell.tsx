@@ -8,6 +8,11 @@ import Sidebar from "../components/layout/Sidebar";
 import WelcomeScreen from "../components/welcome/WelcomeScreen";
 import AttendancePanel from "../components/attendance/AttendancePanel";
 import CashMovementDialog from "../components/cash/CashMovementDialog";
+import PosManagerApprovalDialog from "../components/system/PosManagerApprovalDialog";
+
+import type {
+  PosManagerApproval,
+} from "../models/employee/PosManagerApprovalService";
 import ShiftXReportDialog from "../components/shift/ShiftXReportDialog";
 import ShiftZReportDialog from "../components/shift/ShiftZReportDialog";
 import CloseRegisterShiftDialog from "../components/shift/CloseRegisterShiftDialog";
@@ -22,12 +27,20 @@ import type {
   RegisterShift,
 } from "../models/shift/RegisterShift";
 import {
-  clockOutEmployee,
+  clockOutEmployeeAutomatically,
   getPresentAttendance,
 } from "../models/attendance/AttendanceRepository";
 import {
   hydrateEmployees,
 } from "../models/employee/EmployeeRepository";
+
+import type {
+  Employee,
+} from "../models/employee/Employee";
+
+import {
+  employeeRolesHavePermission,
+} from "../models/employee/EmployeeRoleCatalog";
 import {
   hydrateRegisterPrinterConfig,
 } from "../config/RegisterPrinterConfig";
@@ -157,10 +170,53 @@ function AppShell() {
     );
 
   const [
+    currentOperator,
+    setCurrentOperator,
+  ] =
+    useState<Employee | null>(
+      null,
+    );
+
+  const [
     showOpenShiftDialog,
     setShowOpenShiftDialog,
   ] =
     useState(true);
+
+  useEffect(() => {
+    if (
+      !activeShift ||
+      showOpenShiftDialog
+    ) {
+      setCurrentOperator(
+        null,
+      );
+    }
+  }, [
+    activeShift,
+    showOpenShiftDialog,
+  ]);
+
+  const [
+    showCashMovementApproval,
+    setShowCashMovementApproval,
+  ] =
+    useState(false);
+
+  const [
+    cashMovementApproval,
+    setCashMovementApproval,
+  ] =
+    useState<PosManagerApproval | null>(
+      null,
+    );
+
+  const canCurrentOperatorOpenCashMovement =
+    currentOperator !== null &&
+    employeeRolesHavePermission(
+      currentOperator.roles,
+      "pos.cash_movement",
+    );
 
   const [
     activeView,
@@ -438,6 +494,18 @@ const [
     useState(false);
 
   const [
+    showCloseShiftApproval,
+    setShowCloseShiftApproval,
+  ] = useState(false);
+
+  const [
+    closeShiftApproval,
+    setCloseShiftApproval,
+  ] = useState<PosManagerApproval | null>(
+    null,
+  );
+
+  const [
     completedZReport,
     setCompletedZReport,
   ] =
@@ -537,6 +605,7 @@ const [
         activeShift={
           activeShift
         }
+        canOpenCashMovement={currentOperator !== null}
         onOpenRegisterShift={() =>
           setShowOpenShiftDialog(
             true,
@@ -547,24 +616,64 @@ const [
             true,
           )
         }
-        onOpenCashMovement={() =>
-          setShowCashMovement(
-            true,
-          )
-        }
-        onOpenXReport={() =>
-          setShowXReport(
-            true,
-          )
-        }
-        onCloseRegisterShift={() => {
-          requestCashDrawerOpen(
-            "closing_count",
+        onOpenCashMovement={() => {
+          if (!currentOperator) {
+            return;
+          }
+
+          if (
+            canCurrentOperatorOpenCashMovement
+          ) {
+            setCashMovementApproval(
+              null,
+            );
+
+            setShowCashMovement(
+              true,
+            );
+
+            return;
+          }
+
+          setCashMovementApproval(
+            null,
           );
 
-          setShowCloseShift(
+          setShowCashMovementApproval(
             true,
           );
+        }}
+        onSwitchCashier={() => {
+          setCurrentOperator(null);
+
+          setShowOpenShiftDialog(
+            true,
+          );
+        }}
+        onCloseRegisterShift={() => {
+          if (!currentOperator) {
+            return;
+          }
+
+          if (
+            employeeRolesHavePermission(
+              currentOperator.roles,
+              "pos.register.close",
+            )
+          ) {
+            setCloseShiftApproval(null);
+
+            requestCashDrawerOpen(
+              "closing_count",
+            );
+
+            setShowCloseShift(true);
+
+            return;
+          }
+
+          setCloseShiftApproval(null);
+          setShowCloseShiftApproval(true);
         }}
       />
 
@@ -579,6 +688,7 @@ const [
           {activeView ===
             "sale" && (
             <SalePage
+              currentOperator={currentOperator}
               incomingReturnLines={
                 pendingReturnLines
               }
@@ -655,7 +765,13 @@ const [
             <GiftCardManagementPage />
           )}
           {activeView === "reports" && (
-            <ReportsPage />
+            <ReportsPage
+              onOpenXReport={() =>
+                setShowXReport(
+                  true,
+                )
+              }
+            />
           )}
           {activeView === "settings" && (
             <SettingsPage />
@@ -666,19 +782,21 @@ const [
           activeShift={
             activeShift
           }
+          currentOperator={
+            currentOperator
+          }
         />
       </div>
 
-      {showCloseShift && activeShift && (
+      {showCloseShift && activeShift && currentOperator && (
         <CloseRegisterShiftDialog
           shift={
             activeShift
           }
-          onClose={() =>
-            setShowCloseShift(
-              false,
-            )
-          }
+          onClose={() => {
+            setShowCloseShift(false);
+            setCloseShiftApproval(null);
+          }}
           onConfirm={async (closingCashDeclaration) => {
             /*
              * Make sure all trading activity already queued for
@@ -692,15 +810,50 @@ const [
             const closed =
               closeRegisterShift({
                 employeeId:
-                  activeShift.openedBy.employeeId,
+                  currentOperator.id,
 
                 employeeName:
-                  activeShift.openedBy.employeeName,
+                  currentOperator.name,
 
                 closingCash:
                   closingCashDeclaration.total,
 
                 closingCashDeclaration,
+
+
+                closingAuthorization: {
+                  actionPermissionKey:
+                    "pos.register.close",
+
+                  actor: {
+                    employeeId:
+                      currentOperator.id,
+
+                    employeeName:
+                      currentOperator.name,
+                  },
+
+                  approver:
+                    closeShiftApproval
+                      ? {
+                          approvalId:
+                            closeShiftApproval.approvalId,
+
+                          employeeId:
+                            closeShiftApproval.approver.employeeId,
+
+                          employeeName:
+                            closeShiftApproval.approver.employeeName,
+
+                          approvedAt:
+                            closeShiftApproval.approvedAt,
+                        }
+                      : undefined,
+
+                  authorizedAt:
+                    closeShiftApproval?.approvedAt ??
+                    new Date().toISOString(),
+                },
               });
 
             const zReport =
@@ -723,7 +876,7 @@ const [
 
             present.forEach(
               (entry) => {
-                clockOutEmployee(
+                clockOutEmployeeAutomatically(
                   entry.employeeId,
                 );
               },
@@ -740,23 +893,95 @@ const [
             setActiveShift(
               undefined,
             );
+
+            setCloseShiftApproval(null);
           }}
         />
       )}
 
-      {showCashMovement && activeShift && (
+      {showCloseShiftApproval &&
+        currentOperator && (
+        <PosManagerApprovalDialog
+          actor={currentOperator}
+          actionPermissionKey="pos.register.close"
+          actionLabel="סגירת קופה"
+          onApproved={(approval) => {
+            setCloseShiftApproval(approval);
+            setShowCloseShiftApproval(false);
+
+            requestCashDrawerOpen(
+              "closing_count",
+            );
+
+            setShowCloseShift(true);
+          }}
+          onCancel={() => {
+            setShowCloseShiftApproval(false);
+            setCloseShiftApproval(null);
+          }}
+        />
+      )}
+
+      {showCashMovementApproval &&
+        currentOperator && (
+        <PosManagerApprovalDialog
+          actor={currentOperator}
+          actionPermissionKey="pos.cash_movement"
+          actionLabel="הפקדה / משיכה"
+          onApproved={(approval) => {
+            setCashMovementApproval(
+              approval,
+            );
+
+            setShowCashMovementApproval(
+              false,
+            );
+
+            setShowCashMovement(
+              true,
+            );
+          }}
+          onCancel={() => {
+            setShowCashMovementApproval(
+              false,
+            );
+
+            setCashMovementApproval(
+              null,
+            );
+          }}
+        />
+      )}
+
+      {showCashMovement &&
+        activeShift &&
+        currentOperator && (
         <CashMovementDialog
           shift={
             activeShift
           }
-          onClose={() =>
+          currentOperator={
+            currentOperator
+          }
+          approval={
+            cashMovementApproval
+          }
+          onClose={() => {
             setShowCashMovement(
               false,
-            )
-          }
+            );
+
+            setCashMovementApproval(
+              null,
+            );
+          }}
           onCompleted={() => {
             setShowCashMovement(
               false,
+            );
+
+            setCashMovementApproval(
+              null,
             );
           }}
         />
@@ -806,9 +1031,13 @@ const [
         showOpenShiftDialog &&
         !completedZReport && (
         <OpenRegisterShiftDialog
-          onEnter={(shift) => {
+          onEnter={(shift, operator) => {
             setActiveShift(
               shift,
+            );
+
+            setCurrentOperator(
+              operator,
             );
 
             setShowOpenShiftDialog(

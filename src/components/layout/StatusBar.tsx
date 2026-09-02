@@ -27,6 +27,10 @@ import type {
   RegisterShift,
 } from "../../models/shift/RegisterShift";
 
+import type {
+  Employee,
+} from "../../models/employee/Employee";
+
 type SystemStatusTone =
   | "ready"
   | "warning"
@@ -65,10 +69,12 @@ Promise<boolean> {
 }
 type StatusBarProps = {
   activeShift?: RegisterShift;
+  currentOperator?: Employee | null;
 };
 
 function StatusBar({
   activeShift,
+  currentOperator,
 }: StatusBarProps) {
   const [
     isOnline,
@@ -310,9 +316,7 @@ function StatusBar({
 
           <strong>
             {
-              activeShift
-                ?.openedBy
-                .employeeName ??
+              currentOperator?.name ??
               "—"
             }
           </strong>

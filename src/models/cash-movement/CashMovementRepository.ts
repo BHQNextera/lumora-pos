@@ -1,4 +1,4 @@
-﻿import {
+import {
     isTauri,
 } from "@tauri-apps/api/core";
 
@@ -154,6 +154,11 @@ export function createCashMovement(
             employeeId: string;
             employeeName: string;
         };
+
+        authorization:
+            NonNullable<
+                CashMovement["authorization"]
+            >;
     },
 ): CashMovement {
     if (
@@ -204,6 +209,21 @@ export function createCashMovement(
 
         employee: {
             ...input.employee,
+        },
+
+        authorization: {
+            ...input.authorization,
+
+            actor: {
+                ...input.authorization.actor,
+            },
+
+            approver:
+                input.authorization.approver
+                    ? {
+                        ...input.authorization.approver,
+                    }
+                    : undefined,
         },
 
         createdAt:
