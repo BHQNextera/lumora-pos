@@ -11,6 +11,10 @@ import {
   syncLumoraEmployeeIdentitySnapshot,
 } from "./EmployeeNexteraSync";
 
+import {
+  pullAndApplyNexteraCustomers,
+} from "./CustomerNexteraSync";
+
 export const NEXTERA_SYNC_APPLIED_EVENT =
   "lumora:nextera-sync-applied";
 
@@ -76,7 +80,11 @@ Promise<NexteraCatalogSyncResult> {
   }
 
   const current =
-    pullAndApplyNexteraCatalog();
+    (async () => {
+      await pullAndApplyNexteraCustomers();
+
+      return pullAndApplyNexteraCatalog();
+    })();
 
   inFlight =
     current;

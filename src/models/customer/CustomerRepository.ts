@@ -7,6 +7,10 @@ import type {
 } from "./Customer";
 
 import {
+    enqueueLumoraCustomerSync,
+} from "../../integrations/nextera/CustomerNexteraOutbox";
+
+import {
     testCustomers,
 } from "./CustomerSeed";
 
@@ -234,6 +238,55 @@ function persistCustomers(
     );
 }
 
+function customerIdentityChanged(
+    previous:
+        Customer | undefined,
+    next:
+        Customer,
+): boolean {
+    if (!previous) {
+        return true;
+    }
+
+    return (
+        previous.name !==
+            next.name ||
+        previous.phone !==
+            next.phone ||
+        previous.email !==
+            next.email ||
+        previous.externalId !==
+            next.externalId ||
+        previous.birthDate !==
+            next.birthDate ||
+        previous.address !==
+            next.address ||
+        previous.notes !==
+            next.notes ||
+        (
+            previous.isActive !==
+            false
+        ) !==
+        (
+            next.isActive !==
+            false
+        )
+    );
+}
+
+export type NexteraCustomerSnapshot = {
+    id: string;
+    name: string;
+    phone?: string;
+    email?: string;
+    externalId?: string;
+    birthDate?: string;
+    address?: string;
+    notes?: string;
+    isActive: boolean;
+    updatedAt: string;
+};
+
 export function getCustomers() {
     return [
         ...customers,
@@ -297,12 +350,16 @@ export function saveCustomer(
                     : undefined,
     };
 
-    const exists =
-        customers.some(
+    const previousCustomer =
+        customers.find(
             (item) =>
                 item.id ===
                 normalizedCustomer.id,
         );
+
+    const exists =
+        previousCustomer !==
+        undefined;
 
     customers =
         exists
@@ -324,7 +381,109 @@ export function saveCustomer(
         customers,
     );
 
+    if (
+        customerIdentityChanged(
+            previousCustomer,
+            normalizedCustomer,
+        )
+    ) {
+        enqueueLumoraCustomerSync(
+            normalizedCustomer,
+        );
+    }
+
     return normalizedCustomer;
+}
+
+export function applyNexteraCustomerSnapshot(
+    snapshot:
+        NexteraCustomerSnapshot,
+): Customer {
+    const existing =
+        customers.find(
+            (customer) =>
+                customer.id ===
+                snapshot.id,
+        );
+
+    const projected:
+        Customer = {
+        id:
+            snapshot.id,
+
+        name:
+            snapshot.name,
+
+        phone:
+            snapshot.phone,
+
+        email:
+            snapshot.email,
+
+        externalId:
+            snapshot.externalId,
+
+        birthDate:
+            snapshot.birthDate,
+
+        address:
+            snapshot.address,
+
+        notes:
+            snapshot.notes,
+
+        groupIds:
+            existing
+                ? [
+                    ...existing.groupIds,
+                ]
+                : [],
+
+        isClubMember:
+            existing?.isClubMember ??
+            false,
+
+        storeCreditEnabled:
+            existing?.storeCreditEnabled,
+
+        creditLimit:
+            existing?.creditLimit,
+
+        accountBalance:
+            existing?.accountBalance,
+
+        isActive:
+            snapshot.isActive,
+
+        createdAt:
+            existing?.createdAt ??
+            snapshot.updatedAt,
+
+        updatedAt:
+            snapshot.updatedAt,
+    };
+
+    customers =
+        existing
+            ? customers.map(
+                (customer) =>
+                    customer.id ===
+                        projected.id
+                        ? projected
+                        : customer,
+            )
+            : [
+                ...customers,
+                projected,
+            ];
+
+    notifyCustomers();
+
+    persistCustomers(
+        customers,
+    );
+
+    return projected;
 }
 
 export function removeCustomer(
