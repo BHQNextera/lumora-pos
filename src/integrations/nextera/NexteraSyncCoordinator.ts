@@ -15,6 +15,10 @@ import {
   pullAndApplyNexteraCustomers,
 } from "./CustomerNexteraSync";
 
+import {
+  flushLumoraNexteraOutboxToNexteraStrict,
+} from "./LumoraNexteraSender";
+
 export const NEXTERA_SYNC_APPLIED_EVENT =
   "lumora:nextera-sync-applied";
 
@@ -70,7 +74,21 @@ Promise<NexteraCatalogSyncResult> {
     }
   }
 
-  return requestNexteraSync();
+  const result =
+    await requestNexteraSync();
+
+  /*
+   * Dependency order matters:
+   * 1. employee identities were pushed above,
+   * 2. customer outbox/pull ran inside requestNexteraSync,
+   * 3. only now flush commercial transactions.
+   *
+   * This gives seller/customer canonical identities the best
+   * chance to exist before the sale reaches Nextera.
+   */
+  await flushLumoraNexteraOutboxToNexteraStrict();
+
+  return result;
 }
 
 export function requestNexteraSync():

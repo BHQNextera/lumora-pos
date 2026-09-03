@@ -424,12 +424,32 @@ Promise<LumoraNexteraOutboxEvent[]> {
     const events =
         await getLumoraNexteraOutbox();
 
-    return events.filter(
-        (event) =>
-            event.status === "pending" ||
-            event.status === "failed" ||
-            event.status === "sending",
-    );
+    return events
+        .filter(
+            (event) =>
+                event.status === "pending" ||
+                event.status === "failed" ||
+                event.status === "sending",
+        )
+        .sort(
+            (
+                left,
+                right,
+            ) => {
+                const createdOrder =
+                    left.createdAt.localeCompare(
+                        right.createdAt,
+                    );
+
+                if (createdOrder !== 0) {
+                    return createdOrder;
+                }
+
+                return left.id.localeCompare(
+                    right.id,
+                );
+            },
+        );
 }
 
 async function updateLumoraNexteraOutboxEvent(

@@ -749,6 +749,18 @@ async function deliverEvent(
             result.status ===
                 "duplicate"
         ) {
+            if (
+                result.external_id !==
+                    event.saleId ||
+                typeof result.transaction_id !==
+                    "string" ||
+                !result.transaction_id.trim()
+            ) {
+                throw new Error(
+                    "Nextera acknowledgement does not match the Lumora sale identity.",
+                );
+            }
+
             await markLumoraNexteraOutboxDelivered(
                 event.id,
             );
@@ -866,6 +878,37 @@ Promise<void> {
             );
 
     return drainPromise;
+}
+
+/*
+ * Manual sync is an explicit operator request, so "success"
+ * must include the durable sales outbox as well as master-data
+ * and catalog synchronization.
+ *
+ * If a background drain is already running, wait for it first,
+ * then perform one fresh drain and verify that no transaction
+ * remains pending/failed/sending.
+ */
+export async function flushLumoraNexteraOutboxToNexteraStrict():
+Promise<void> {
+    const previousDrain =
+        drainPromise;
+
+    if (previousDrain) {
+        await previousDrain;
+    }
+
+    await flushLumoraNexteraOutboxToNextera();
+
+    const remaining =
+        await getPendingLumoraNexteraOutbox();
+
+    if (remaining.length > 0) {
+        throw new Error(
+            "NEXTERA_SALES_OUTBOX_NOT_DRAINED:" +
+                remaining.length,
+        );
+    }
 }
 
 if (
