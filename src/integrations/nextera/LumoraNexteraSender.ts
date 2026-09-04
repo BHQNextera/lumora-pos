@@ -394,12 +394,24 @@ function mapPayment(
             payment.createdAt,
 
         /*
-         * Card brand/last4 deliberately stay out of the replication
-         * payload. V1 sends no cardholder/card-number data.
+         * Safe card display metadata only.
+         * Never replicate PAN, CVV/CVC, PIN or cardholder credentials.
          */
         metadata: {
             lumora_payment_status:
                 payment.status,
+
+            card_brand:
+                payment.cardBrand?.trim() ||
+                undefined,
+
+            card_last4:
+                payment.cardLast4 &&
+                /^[0-9]{4}$/.test(
+                    payment.cardLast4,
+                )
+                    ? payment.cardLast4
+                    : undefined,
         },
     };
 }
